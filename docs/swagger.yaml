@@ -1,0 +1,419 @@
+basePath: /v1
+definitions:
+  CreateGuardianRelationRequest:
+    properties:
+      guardian_id:
+        example: uuid-guardian-123
+        type: string
+      relationship_type:
+        enum:
+        - father
+        - mother
+        - guardian
+        - other
+        example: father
+        type: string
+      student_id:
+        example: uuid-student-456
+        type: string
+    required:
+    - guardian_id
+    - relationship_type
+    - student_id
+    type: object
+  CreateSchoolResponse:
+    properties:
+      school_id:
+        example: school-uuid-123
+        type: string
+    type: object
+  CreateSubjectResponse:
+    properties:
+      subject_id:
+        example: subject-uuid-123
+        type: string
+    type: object
+  CreateUnitResponse:
+    properties:
+      unit_id:
+        example: unit-uuid-123
+        type: string
+    type: object
+  CreateUserRequest:
+    properties:
+      email:
+        example: usuario@example.com
+        type: string
+      name:
+        example: Juan Pérez
+        type: string
+      password:
+        example: password123
+        type: string
+      role:
+        example: teacher
+        type: string
+      school_id:
+        example: school-uuid-123
+        type: string
+    type: object
+  CreateUserResponse:
+    properties:
+      message:
+        example: Usuario creado
+        type: string
+      user_id:
+        example: user-uuid-123
+        type: string
+    type: object
+  ErrorResponse:
+    properties:
+      error:
+        example: Invalid request
+        type: string
+      message:
+        example: Field 'guardian_id' is required
+        type: string
+    type: object
+  GlobalStatsResponse:
+    properties:
+      active_users_30d:
+        example: 980
+        type: integer
+      total_materials:
+        example: 450
+        type: integer
+      total_users:
+        example: 1250
+        type: integer
+    type: object
+  GuardianRelationResponse:
+    properties:
+      created_at:
+        example: "2025-01-15T10:00:00Z"
+        type: string
+      guardian_id:
+        example: uuid-guardian-123
+        type: string
+      id:
+        example: uuid-relation-789
+        type: string
+      relationship_type:
+        example: father
+        type: string
+      student_id:
+        example: uuid-student-456
+        type: string
+    type: object
+  SubjectResponse:
+    properties:
+      created_at:
+        example: "2025-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Curso de matemáticas
+        type: string
+      id:
+        example: uuid-subject-101
+        type: string
+      metadata:
+        additionalProperties: true
+        type: object
+      name:
+        example: Matemáticas
+        type: string
+      updated_at:
+        example: "2025-01-15T10:00:00Z"
+        type: string
+    type: object
+  SuccessResponse:
+    properties:
+      message:
+        example: Operación exitosa
+        type: string
+    type: object
+  UpdateSubjectRequest:
+    properties:
+      description:
+        example: Curso avanzado de matemáticas
+        type: string
+      metadata:
+        additionalProperties: true
+        type: object
+      name:
+        example: Matemáticas Avanzadas
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: API para operaciones CRUD y administrativas en EduGo
+  title: EduGo API Administración
+  version: "1.0"
+paths:
+  /guardian-relations:
+    post:
+      consumes:
+      - application/json
+      description: Crea una relación entre un tutor (guardian) y un estudiante
+      parameters:
+      - description: Datos de la relación
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateGuardianRelationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/GuardianRelationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Relación ya existe
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Crear vínculo tutor-estudiante (Post-MVP)
+      tags:
+      - Guardians
+  /materials/{id}:
+    delete:
+      parameters:
+      - description: ID del material
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Eliminar material
+      tags:
+      - Materials
+  /schools:
+    post:
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/CreateSchoolResponse'
+      security:
+      - BearerAuth: []
+      summary: Crear escuela
+      tags:
+      - Schools
+  /stats/global:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GlobalStatsResponse'
+      security:
+      - BearerAuth: []
+      summary: Estadísticas globales
+      tags:
+      - Stats
+  /subjects:
+    post:
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/CreateSubjectResponse'
+      security:
+      - BearerAuth: []
+      summary: Crear materia
+      tags:
+      - Subjects
+  /subjects/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Actualiza información de una materia del catálogo
+      parameters:
+      - description: ID de la materia
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos a actualizar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateSubjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SubjectResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: Solo administradores
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Materia no encontrada
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Actualizar materia (Post-MVP)
+      tags:
+      - Subjects
+  /units:
+    post:
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/CreateUnitResponse'
+      security:
+      - BearerAuth: []
+      summary: Crear unidad académica
+      tags:
+      - Units
+  /units/{id}:
+    patch:
+      parameters:
+      - description: ID de la unidad
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Actualizar unidad
+      tags:
+      - Units
+  /units/{id}/members:
+    post:
+      parameters:
+      - description: ID de la unidad
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Asignar membresía
+      tags:
+      - Units
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Crear nuevo usuario con rol y perfil
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/CreateUserResponse'
+      security:
+      - BearerAuth: []
+      summary: Crear usuario
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Eliminar usuario
+      tags:
+      - Users
+    patch:
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Actualizar usuario
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

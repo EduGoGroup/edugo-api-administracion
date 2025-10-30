@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api-administracion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edugo-api-admin
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-edugo_pass}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://edugo_admin:edugo_pass@mongodb:27017/edugo?authSource=admin}
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+networks:
+  edugo-network:
+    external: true
+    name: edugo-network

@@ -1,0 +1,10 @@
+# Local Development
+database:
+  postgres:
+    password: "edugo_pass"
+  mongodb:
+    uri: "mongodb://edugo_admin:edugo_pass@localhost:27017/edugo?authSource=admin"
+
+logging:
+  level: "debug"
+  format: "text"
