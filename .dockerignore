@@ -8,7 +8,7 @@
 README.md
 CHANGELOG.md
 LICENSE
-docs/
+# docs/ - NECESARIO para Swagger, NO ignorar
 
 # CI/CD
 .github/
