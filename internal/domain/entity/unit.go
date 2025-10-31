@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
+	"github.com/EduGoGroup/edugo-shared/common/errors"
 )
 
 // Unit representa una unidad organizacional (departamento, grado, grupo, etc.)

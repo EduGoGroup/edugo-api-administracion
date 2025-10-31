@@ -7,8 +7,8 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
-	"github.com/EduGoGroup/edugo-shared/pkg/logger"
+	"github.com/EduGoGroup/edugo-shared/common/errors"
+	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
 // UnitHandler maneja las peticiones HTTP relacionadas con unidades

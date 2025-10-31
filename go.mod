@@ -3,7 +3,8 @@ module github.com/EduGoGroup/edugo-api-administracion
 go 1.25.3
 
 require (
-	github.com/EduGoGroup/edugo-shared v0.1.0
+	github.com/EduGoGroup/edugo-shared/common v0.0.0-20251031204120-ecc6528ef4b6
+	github.com/EduGoGroup/edugo-shared/logger v0.0.0-20251031204214-949cb60a661c
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9

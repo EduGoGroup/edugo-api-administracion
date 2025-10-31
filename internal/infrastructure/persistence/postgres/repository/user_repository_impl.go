@@ -7,7 +7,7 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/pkg/types/enum"
+	"github.com/EduGoGroup/edugo-shared/common/types/enum"
 )
 
 // postgresUserRepository implementa repository.UserRepository para PostgreSQL

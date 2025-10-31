@@ -7,7 +7,7 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
 	postgresRepo "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/postgres/repository"
-	"github.com/EduGoGroup/edugo-shared/pkg/logger"
+	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
 // Container es el contenedor de dependencias de la aplicación

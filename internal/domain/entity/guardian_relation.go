@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
-	"github.com/EduGoGroup/edugo-shared/pkg/types"
+	"github.com/EduGoGroup/edugo-shared/common/errors"
+	"github.com/EduGoGroup/edugo-shared/common/types"
 )
 
 // GuardianRelation representa la relación entre un guardian y un estudiante

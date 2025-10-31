@@ -5,7 +5,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/pkg/validator"
+	"github.com/EduGoGroup/edugo-shared/common/validator"
 )
 
 // CreateGuardianRelationRequest representa la solicitud para crear una relación

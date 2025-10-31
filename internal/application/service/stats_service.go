@@ -5,8 +5,8 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
-	"github.com/EduGoGroup/edugo-shared/pkg/logger"
+	"github.com/EduGoGroup/edugo-shared/common/errors"
+	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
 // StatsService define las operaciones de negocio para estadísticas

@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
-	"github.com/EduGoGroup/edugo-shared/pkg/logger"
+	"github.com/EduGoGroup/edugo-shared/common/errors"
+	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
 // MaterialHandler maneja las peticiones HTTP relacionadas con materiales
