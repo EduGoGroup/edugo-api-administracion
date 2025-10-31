@@ -50,14 +50,14 @@ func (r *postgresUnitRepository) FindByID(ctx context.Context, id valueobject.Un
 	`
 
 	var (
-		idStr        string
-		schoolIDStr  string
-		parentIDStr  sql.NullString
-		name         string
-		description  string
-		isActive     bool
-		createdAt    sql.NullTime
-		updatedAt    sql.NullTime
+		idStr       string
+		schoolIDStr string
+		parentIDStr sql.NullString
+		name        string
+		description string
+		isActive    bool
+		createdAt   sql.NullTime
+		updatedAt   sql.NullTime
 	)
 
 	err := r.db.QueryRowContext(ctx, query, id.String()).Scan(
@@ -190,14 +190,14 @@ func (r *postgresUnitRepository) scanRows(rows *sql.Rows) ([]*entity.Unit, error
 
 	for rows.Next() {
 		var (
-			idStr        string
-			schoolIDStr  string
-			parentIDStr  sql.NullString
-			name         string
-			description  string
-			isActive     bool
-			createdAt    sql.NullTime
-			updatedAt    sql.NullTime
+			idStr       string
+			schoolIDStr string
+			parentIDStr sql.NullString
+			name        string
+			description string
+			isActive    bool
+			createdAt   sql.NullTime
+			updatedAt   sql.NullTime
 		)
 
 		if err := rows.Scan(&idStr, &schoolIDStr, &parentIDStr, &name, &description, &isActive, &createdAt, &updatedAt); err != nil {

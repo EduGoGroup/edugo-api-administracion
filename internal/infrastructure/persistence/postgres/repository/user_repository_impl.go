@@ -54,14 +54,14 @@ func (r *postgresUserRepository) FindByID(
 	`
 
 	var (
-		idStr      string
-		email      string
-		firstName  string
-		lastName   string
-		roleStr    string
-		isActive   bool
-		createdAt  sql.NullTime
-		updatedAt  sql.NullTime
+		idStr     string
+		email     string
+		firstName string
+		lastName  string
+		roleStr   string
+		isActive  bool
+		createdAt sql.NullTime
+		updatedAt sql.NullTime
 	)
 
 	err := r.db.QueryRowContext(ctx, query, id.String()).Scan(
@@ -90,14 +90,14 @@ func (r *postgresUserRepository) FindByEmail(
 	`
 
 	var (
-		idStr      string
-		emailStr   string
-		firstName  string
-		lastName   string
-		roleStr    string
-		isActive   bool
-		createdAt  sql.NullTime
-		updatedAt  sql.NullTime
+		idStr     string
+		emailStr  string
+		firstName string
+		lastName  string
+		roleStr   string
+		isActive  bool
+		createdAt sql.NullTime
+		updatedAt sql.NullTime
 	)
 
 	err := r.db.QueryRowContext(ctx, query, email.String()).Scan(
@@ -213,14 +213,14 @@ func (r *postgresUserRepository) scanRows(rows *sql.Rows) ([]*entity.User, error
 
 	for rows.Next() {
 		var (
-			idStr      string
-			email      string
-			firstName  string
-			lastName   string
-			roleStr    string
-			isActive   bool
-			createdAt  sql.NullTime
-			updatedAt  sql.NullTime
+			idStr     string
+			email     string
+			firstName string
+			lastName  string
+			roleStr   string
+			isActive  bool
+			createdAt sql.NullTime
+			updatedAt sql.NullTime
 		)
 
 		err := rows.Scan(&idStr, &email, &firstName, &lastName, &roleStr, &isActive, &createdAt, &updatedAt)

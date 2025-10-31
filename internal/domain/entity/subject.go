@@ -57,13 +57,13 @@ func ReconstructSubject(
 
 // Getters
 
-func (s *Subject) ID() valueobject.SubjectID   { return s.id }
-func (s *Subject) Name() string                { return s.name }
-func (s *Subject) Description() string         { return s.description }
-func (s *Subject) Metadata() string            { return s.metadata }
-func (s *Subject) IsActive() bool              { return s.isActive }
-func (s *Subject) CreatedAt() time.Time        { return s.createdAt }
-func (s *Subject) UpdatedAt() time.Time        { return s.updatedAt }
+func (s *Subject) ID() valueobject.SubjectID { return s.id }
+func (s *Subject) Name() string              { return s.name }
+func (s *Subject) Description() string       { return s.description }
+func (s *Subject) Metadata() string          { return s.metadata }
+func (s *Subject) IsActive() bool            { return s.isActive }
+func (s *Subject) CreatedAt() time.Time      { return s.createdAt }
+func (s *Subject) UpdatedAt() time.Time      { return s.updatedAt }
 
 // Business Logic
 

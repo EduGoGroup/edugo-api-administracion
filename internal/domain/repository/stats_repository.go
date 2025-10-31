@@ -12,9 +12,9 @@ type StatsRepository interface {
 
 // GlobalStats representa las estadísticas globales
 type GlobalStats struct {
-	TotalUsers            int
-	TotalActiveUsers      int
-	TotalSchools          int
-	TotalSubjects         int
+	TotalUsers             int
+	TotalActiveUsers       int
+	TotalSchools           int
+	TotalSubjects          int
 	TotalGuardianRelations int
 }

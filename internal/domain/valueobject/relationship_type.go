@@ -10,10 +10,10 @@ import (
 type RelationshipType string
 
 const (
-	RelationshipTypeParent    RelationshipType = "parent"
-	RelationshipTypeGuardian  RelationshipType = "guardian"
-	RelationshipTypeRelative  RelationshipType = "relative"
-	RelationshipTypeOther     RelationshipType = "other"
+	RelationshipTypeParent   RelationshipType = "parent"
+	RelationshipTypeGuardian RelationshipType = "guardian"
+	RelationshipTypeRelative RelationshipType = "relative"
+	RelationshipTypeOther    RelationshipType = "other"
 )
 
 // NewRelationshipType crea y valida un nuevo RelationshipType

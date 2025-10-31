@@ -8,8 +8,8 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
-	"github.com/EduGoGroup/edugo-shared/logger"
 	"github.com/EduGoGroup/edugo-shared/common/types/enum"
+	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
 // UserService define las operaciones de negocio para usuarios

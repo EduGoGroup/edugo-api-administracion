@@ -39,10 +39,10 @@ func (s *statsService) GetGlobalStats(ctx context.Context) (*dto.GlobalStatsResp
 	)
 
 	return &dto.GlobalStatsResponse{
-		TotalUsers:            stats.TotalUsers,
-		TotalActiveUsers:      stats.TotalActiveUsers,
-		TotalSchools:          stats.TotalSchools,
-		TotalSubjects:         stats.TotalSubjects,
+		TotalUsers:             stats.TotalUsers,
+		TotalActiveUsers:       stats.TotalActiveUsers,
+		TotalSchools:           stats.TotalSchools,
+		TotalSubjects:          stats.TotalSubjects,
 		TotalGuardianRelations: stats.TotalGuardianRelations,
 	}, nil
 }
