@@ -1,0 +1,106 @@
+# Binarios compilados para Windows, Linux, MacOS
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Archivos de test
+*.test
+
+# Archivos de profiling y cobertura
+*.out
+*.prof
+coverage.txt
+coverage.html
+coverage/
+
+# Dependencias de Go
+vendor/
+
+# Binarios del proyecto
+bin/
+dist/
+api-admin
+edugo-api-administracion
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Variables de entorno y configuración local
+.env
+.env.local
+.env.*.local
+*.local
+
+# Logs
+*.log
+logs/
+
+# Archivos de sistema
+Thumbs.db
+desktop.ini
+
+# Directorios temporales
+tmp/
+temp/
+
+# Archivos de documentación generados
+docs/swagger.json
+docs/swagger.yaml
+docs/docs.go
+
+# Air (live reload para Go)
+.air.toml
+tmp/
+
+# Archivos de debug
+__debug_bin
+
+# Certificados y claves (NUNCA commitear)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Bases de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Node modules (si usas npm para algo)
+node_modules/
+
+# Artifacts de Docker
+.dockerignore.bak
+
+# Archivos de backup
+*.bak
+*.backup
+
+# macOS específicos
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
