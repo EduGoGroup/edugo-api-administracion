@@ -1,7 +1,7 @@
 package valueobject
 
 import (
-	"github.com/edugo/shared/pkg/types"
+	"github.com/EduGoGroup/edugo-shared/pkg/types"
 )
 
 // SchoolID representa el identificador único de una escuela

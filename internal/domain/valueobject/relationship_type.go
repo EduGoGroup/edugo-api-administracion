@@ -3,7 +3,7 @@ package valueobject
 import (
 	"fmt"
 
-	"github.com/edugo/shared/pkg/errors"
+	"github.com/EduGoGroup/edugo-shared/pkg/errors"
 )
 
 // RelationshipType representa el tipo de relación entre guardian y estudiante

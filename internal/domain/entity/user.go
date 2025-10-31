@@ -3,9 +3,9 @@ package entity
 import (
 	"time"
 
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/edugo/shared/pkg/errors"
-	"github.com/edugo/shared/pkg/types/enum"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-shared/pkg/errors"
+	"github.com/EduGoGroup/edugo-shared/pkg/types/enum"
 )
 
 // User representa un usuario del sistema

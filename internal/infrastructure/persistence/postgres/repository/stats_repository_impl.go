@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/edugo/api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 )
 
 type postgresStatsRepository struct {

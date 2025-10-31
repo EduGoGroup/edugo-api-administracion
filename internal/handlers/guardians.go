@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/edugo/api-administracion/internal/models/request"
-	"github.com/edugo/api-administracion/internal/models/response"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/models/request"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/models/response"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

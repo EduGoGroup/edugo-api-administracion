@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
-	"github.com/edugo/api-administracion/internal/domain/entity"
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/edugo/shared/pkg/types"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-shared/pkg/types"
 )
 
 // GuardianRepository define las operaciones de persistencia para GuardianRelation

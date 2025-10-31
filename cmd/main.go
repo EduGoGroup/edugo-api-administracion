@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/edugo/api-administracion/internal/config"
-	_ "github.com/edugo/api-administracion/docs" // Swagger docs generados
+	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
+	_ "github.com/EduGoGroup/edugo-api-administracion/docs" // Swagger docs generados
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

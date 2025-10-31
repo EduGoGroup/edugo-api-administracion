@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/edugo/api-administracion/internal/domain/entity"
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 )
 
 // UnitRepository define las operaciones de persistencia para Unit

@@ -3,11 +3,11 @@ package container
 import (
 	"database/sql"
 
-	"github.com/edugo/api-administracion/internal/application/service"
-	"github.com/edugo/api-administracion/internal/domain/repository"
-	"github.com/edugo/api-administracion/internal/infrastructure/http/handler"
-	postgresRepo "github.com/edugo/api-administracion/internal/infrastructure/persistence/postgres/repository"
-	"github.com/edugo/shared/pkg/logger"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
+	postgresRepo "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/postgres/repository"
+	"github.com/EduGoGroup/edugo-shared/pkg/logger"
 )
 
 // Container es el contenedor de dependencias de la aplicación

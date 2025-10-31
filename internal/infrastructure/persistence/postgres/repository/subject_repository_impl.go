@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/edugo/api-administracion/internal/domain/entity"
-	"github.com/edugo/api-administracion/internal/domain/repository"
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 )
 
 type postgresSubjectRepository struct {

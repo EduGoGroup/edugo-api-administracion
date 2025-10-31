@@ -3,8 +3,8 @@ package entity
 import (
 	"time"
 
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/edugo/shared/pkg/errors"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-shared/pkg/errors"
 )
 
 // Unit representa una unidad organizacional (departamento, grado, grupo, etc.)

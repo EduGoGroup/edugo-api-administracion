@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 )
 
 // MaterialRepository define las operaciones de persistencia para Material

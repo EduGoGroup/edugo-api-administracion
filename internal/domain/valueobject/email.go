@@ -3,8 +3,8 @@ package valueobject
 import (
 	"strings"
 
-	"github.com/edugo/shared/pkg/errors"
-	"github.com/edugo/shared/pkg/validator"
+	"github.com/EduGoGroup/edugo-shared/pkg/errors"
+	"github.com/EduGoGroup/edugo-shared/pkg/validator"
 )
 
 // Email representa un email válido

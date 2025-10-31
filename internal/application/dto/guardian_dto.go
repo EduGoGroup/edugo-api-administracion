@@ -3,9 +3,9 @@ package dto
 import (
 	"time"
 
-	"github.com/edugo/api-administracion/internal/domain/entity"
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/edugo/shared/pkg/validator"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-shared/pkg/validator"
 )
 
 // CreateGuardianRelationRequest representa la solicitud para crear una relación

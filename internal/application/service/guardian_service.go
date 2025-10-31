@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 
-	"github.com/edugo/api-administracion/internal/application/dto"
-	"github.com/edugo/api-administracion/internal/domain/entity"
-	"github.com/edugo/api-administracion/internal/domain/repository"
-	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/edugo/shared/pkg/errors"
-	"github.com/edugo/shared/pkg/logger"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-shared/pkg/errors"
+	"github.com/EduGoGroup/edugo-shared/pkg/logger"
 )
 
 // GuardianService define las operaciones de negocio para guardians

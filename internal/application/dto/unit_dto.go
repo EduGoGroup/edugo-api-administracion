@@ -3,8 +3,8 @@ package dto
 import (
 	"time"
 
-	"github.com/edugo/api-administracion/internal/domain/entity"
-	"github.com/edugo/shared/pkg/validator"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-shared/pkg/validator"
 )
 
 // CreateUnitRequest solicitud para crear unidad
