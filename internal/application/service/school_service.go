@@ -7,8 +7,8 @@ import (
 	"github.com/edugo/api-administracion/internal/domain/entity"
 	"github.com/edugo/api-administracion/internal/domain/repository"
 	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
-	"github.com/EduGoGroup/edugo-shared/pkg/logger"
+	"github.com/edugo/shared/pkg/errors"
+	"github.com/edugo/shared/pkg/logger"
 )
 
 // SchoolService define las operaciones de negocio para escuelas

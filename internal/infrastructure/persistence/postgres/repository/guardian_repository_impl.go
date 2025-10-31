@@ -7,7 +7,7 @@ import (
 	"github.com/edugo/api-administracion/internal/domain/entity"
 	"github.com/edugo/api-administracion/internal/domain/repository"
 	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/pkg/types"
+	"github.com/edugo/shared/pkg/types"
 )
 
 // postgresGuardianRepository implementa repository.GuardianRepository para PostgreSQL

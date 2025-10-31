@@ -3,7 +3,7 @@ module github.com/EduGoGroup/edugo-api-administracion
 go 1.25.3
 
 require (
-	github.com/EduGoGroup/edugo-shared v0.1.0-00010101000000-000000000000
+	github.com/EduGoGroup/edugo-shared v0.1.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
@@ -114,5 +114,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/edugo/shared => ../../shared

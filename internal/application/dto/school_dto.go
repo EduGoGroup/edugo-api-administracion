@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/edugo/api-administracion/internal/domain/entity"
-	"github.com/EduGoGroup/edugo-shared/pkg/validator"
+	"github.com/edugo/shared/pkg/validator"
 )
 
 // CreateSchoolRequest representa la solicitud para crear una escuela

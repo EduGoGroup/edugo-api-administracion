@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/edugo/api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
+	"github.com/edugo/shared/pkg/errors"
 )
 
 // School representa una escuela/institución educativa

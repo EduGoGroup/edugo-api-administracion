@@ -7,8 +7,8 @@ import (
 
 	"github.com/edugo/api-administracion/internal/application/dto"
 	"github.com/edugo/api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/pkg/errors"
-	"github.com/EduGoGroup/edugo-shared/pkg/logger"
+	"github.com/edugo/shared/pkg/errors"
+	"github.com/edugo/shared/pkg/logger"
 )
 
 // GuardianHandler maneja las peticiones HTTP relacionadas con guardians
