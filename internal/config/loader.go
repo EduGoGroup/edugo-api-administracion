@@ -12,7 +12,7 @@ func Load() (*Config, error) {
 	v := viper.New()
 
 	// Defaults
-	v.SetDefault("server.port", 8081)
+	v.SetDefault("server.port", 8080)
 	v.SetDefault("server.host", "0.0.0.0")
 	v.SetDefault("database.postgres.max_connections", 25)
 	v.SetDefault("logging.level", "info")
@@ -28,10 +28,14 @@ func Load() (*Config, error) {
 	v.AddConfigPath("./config")
 	v.AddConfigPath("../config")
 
-	// Base
+	// Base (opcional en Docker)
 	v.SetConfigName("config")
 	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("error reading base config: %w", err)
+		// En Docker, el archivo puede no existir (se usa solo env vars)
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, fmt.Errorf("error reading base config: %w", err)
+		}
+		// Archivo no encontrado es OK, continuamos con defaults + env vars
 	}
 
 	// Merge environment
