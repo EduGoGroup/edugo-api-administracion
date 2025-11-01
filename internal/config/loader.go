@@ -12,7 +12,7 @@ func Load() (*Config, error) {
 	v := viper.New()
 
 	// Defaults
-	v.SetDefault("server.port", 8081)
+	v.SetDefault("server.port", 8080)
 	v.SetDefault("server.host", "0.0.0.0")
 	v.SetDefault("database.postgres.max_connections", 25)
 	v.SetDefault("logging.level", "info")
