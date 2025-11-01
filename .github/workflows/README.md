@@ -1,51 +1,71 @@
 # 🔄 Workflows de CI/CD - edugo-api-administracion
 
-## 📋 Workflows Configurados
+## 🎯 Estrategia de Ejecución por Branch
 
-### 1️⃣ **release.yml** - Release Automático con Docker (TAGS)
+Esta tabla muestra **qué workflows se ejecutan en cada tipo de branch** para evitar ejecuciones innecesarias y notificaciones de falsos positivos:
 
-**Trigger:** Solo cuando creas un tag `v*` (ej: `v1.0.0`)
+| Workflow | feature/* | main | PR a main/dev | Tags v* | Manual |
+|----------|-----------|------|---------------|---------|--------|
+| **ci.yml** | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **test.yml** | ❌ | ❌ | ✅ | ❌ | ✅ |
+| **manual-release.yml** | ❌ | ❌ | ❌ | ❌ | ✅ (RECOMENDADO) |
+| **docker-only.yml** | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **release.yml** | ❌ | ❌ | ❌ | ✅ | ❌ |
+| **sync-main-to-dev.yml** | ❌ | ✅ | ❌ | ✅ | ❌ |
 
-**Ejecuta:**
-- ✅ Verificación de formato
-- ✅ Análisis estático (go vet)
-- ✅ Tests con race detection
-- ✅ Cobertura de código
-- ✅ Build de binarios para producción
-- ✅ **Build y push de imagen Docker a GHCR**
-- ✅ Creación automática de GitHub Release con binarios
+### 📌 Resumen por Escenario
 
-**Cuándo se ejecuta:**
 ```bash
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0  # ← AQUÍ se ejecuta automáticamente
+# Push a feature/* → SIN workflows automáticos
+git push origin feature/mi-feature
+# ✅ Sin ejecuciones, sin notificaciones
+
+# Crear PR desde feature/* → CI completo
+gh pr create --base main --head feature/mi-feature
+# ✅ ci.yml (tests, linter, security)
+# ✅ test.yml (cobertura)
+# ✅ Copilot code review
+
+# Merge PR a main → Solo CI
+# ✅ ci.yml se ejecuta
+# ⏸️ Espera a crear release manualmente
+
+# Crear release manualmente (RECOMENDADO)
+# Actions → Manual Release → Run workflow
+#   - Versión: 0.1.0
+#   - Tipo: minor
+# ✅ manual-release.yml (actualiza version.txt, CHANGELOG, crea tag)
+# ✅ release.yml (build Docker, GitHub Release) - AUTOMÁTICO
+# ✅ sync-main-to-dev.yml (sincroniza con dev) - AUTOMÁTICO
+
+# Build manual de Docker → Usar workflow_dispatch
+# Actions → Docker Build and Push → Run workflow
+# ✅ docker-only.yml (solo cuando lo necesites)
 ```
 
-**Docker Tags creados:**
-- `ghcr.io/edugogroup/edugo-api-administracion:1.0.0` (versión específica)
-- `ghcr.io/edugogroup/edugo-api-administracion:1.0` (major.minor)
-- `ghcr.io/edugogroup/edugo-api-administracion:1` (major)
-- `ghcr.io/edugogroup/edugo-api-administracion:latest`
-- `ghcr.io/edugogroup/edugo-api-administracion:production`
+### ⚠️ Nota sobre GitHub Actions
 
-**Duración estimada:** 5-7 minutos
+GitHub Actions **evalúa** todos los workflows en cualquier evento, pero solo **ejecuta** los que cumplen las condiciones de trigger. Esto es comportamiento normal de GitHub y no indica un error.
 
 ---
 
-### 2️⃣ **ci.yml** - Pipeline de Integración Continua
+## 📋 Workflows Configurados
+
+### 1️⃣ **ci.yml** - Pipeline de Integración Continua
 
 **Trigger:**
 - ✅ Pull Requests a `main` o `develop`
 - ✅ Push directo a `main` (red de seguridad)
 
 **Ejecuta:**
-- ✅ Verificación de formato
-- ✅ Verificación de go.mod/go.sum
+- ✅ Verificación de formato (gofmt)
+- ✅ Verificación de go.mod y go.sum sincronizados
 - ✅ Análisis estático (go vet)
 - ✅ Tests con race detection
 - ✅ Build verification
+- ✅ Verificación de Swagger docs
 - ✅ Linter (opcional, no bloquea)
-- ✅ Docker build test (sin push)
+- ✅ Security scan con gosec
 
 **Cuándo se ejecuta:**
 ```bash
@@ -60,17 +80,18 @@ git push origin main  # ← AQUÍ se ejecuta
 
 ---
 
-### 3️⃣ **test.yml** - Tests con Cobertura (MANUAL/PR)
+### 2️⃣ **test.yml** - Tests con Cobertura
 
 **Trigger:**
 - ✅ Manual (workflow_dispatch desde GitHub UI)
 - ✅ Pull Requests a `main` o `develop`
 
 **Ejecuta:**
-- ✅ Tests con cobertura detallada
+- ✅ Tests unitarios con cobertura detallada
 - ✅ Generación de reporte HTML
-- ✅ Upload de reportes a Codecov
-- ✅ Artifacts con reportes de cobertura (30 días)
+- ✅ Upload a Codecov
+- ✅ Comentario en PR con porcentaje de cobertura
+- ✅ Tests de integración con PostgreSQL y MongoDB (opcional)
 
 **Cuándo se ejecuta:**
 ```bash
@@ -78,40 +99,121 @@ git push origin main  # ← AQUÍ se ejecuta
 # Actions → Tests with Coverage → Run workflow
 
 # O automáticamente en PRs
-gh pr create  # ← AQUÍ se ejecuta junto con ci.yml
+gh pr create  # ← AQUÍ se ejecuta
 ```
 
-**Duración estimada:** 2-3 minutos
+**Duración estimada:** 4-5 minutos
 
 ---
 
-### 4️⃣ **build-and-push.yml** - Build Manual On-Demand
+### 3️⃣ **manual-release.yml** - Crear Release Manual ⭐ RECOMENDADO
 
 **Trigger:**
-- ✅ Solo Manual (workflow_dispatch)
+- ✅ Manual únicamente (workflow_dispatch)
 
 **Ejecuta:**
-- ✅ Tests completos
-- ✅ Build de imagen Docker
-- ✅ Push a GHCR con tags custom
+- ✅ Validación de formato de versión (semver)
+- ✅ Verificación de que el tag no exista
+- ✅ Actualización de `.github/version.txt`
+- ✅ Generación automática de entrada en CHANGELOG.md
+- ✅ Commit de cambios de versión a main
+- ✅ Creación y push de tag (dispara release.yml automáticamente)
 
-**Parámetros:**
-- `environment`: development | staging | production
-- `push_latest`: ¿Tagear como latest?
+**Cómo usarlo:**
+```bash
+# Desde GitHub UI:
+# 1. Ir a: Actions → Manual Release → Run workflow
+# 2. Seleccionar branch: main
+# 3. Ingresar versión: 0.1.0 (sin 'v')
+# 4. Seleccionar tipo: patch / minor / major
+# 5. Click "Run workflow"
+
+# El workflow automáticamente:
+# - Actualiza version.txt
+# - Actualiza CHANGELOG.md
+# - Crea commit en main
+# - Crea tag v0.1.0
+# - Dispara release.yml (que construye Docker)
+```
+
+**Inputs requeridos:**
+- `version`: Versión a crear (formato: 0.1.0)
+- `bump_type`: patch (bugfix) / minor (feature) / major (breaking/producción)
+
+**Qué dispara automáticamente:**
+- ✅ **release.yml** → Build Docker + GitHub Release
+- ✅ **sync-main-to-dev.yml** → Sincroniza cambios a dev
+
+**Duración estimada:** 1 minuto (luego dispara release.yml)
+
+**Ventajas:**
+- ✅ Control total sobre cuándo y qué versión crear
+- ✅ Proceso predecible y auditable
+- ✅ Actualiza CHANGELOG automáticamente
+- ✅ Dispara release completo (Docker + GitHub Release)
+
+---
+
+### 4️⃣ **build-and-push.yml** - Build y Push de Docker
+
+**Trigger:**
+- ✅ Manual (workflow_dispatch con selección de ambiente)
+- ✅ Push a `main` (automático)
+
+**Ejecuta:**
+- ✅ Tests antes del build
+- ✅ Build de imagen Docker
+- ✅ Push a GitHub Container Registry (ghcr.io)
+- ✅ Tags automáticos (latest, branch, sha, environment)
+- ✅ Resumen detallado del deployment
 
 **Cuándo se ejecuta:**
 ```bash
-# Manual desde GitHub UI:
+# Automático cuando haces push a main
+git push origin main  # ← AQUÍ se ejecuta
+
+# Manual desde GitHub UI con selección de ambiente:
 # Actions → Build and Push Docker Image → Run workflow
-# Seleccionar: environment = "staging"
+# Seleccionar: development, staging, o production
 ```
 
-**Docker Tags creados (ejemplo: staging):**
-- `ghcr.io/edugogroup/edugo-api-administracion:staging`
-- `ghcr.io/edugogroup/edugo-api-administracion:staging-abc1234` (SHA)
-- `ghcr.io/edugogroup/edugo-api-administracion:latest` (si push_latest=true)
+**Tags generados:**
+- `latest` - Último build de main
+- `main-<sha>` - Build específico por commit
+- `<environment>` - Tag del ambiente seleccionado (manual)
+- `<environment>-YYYYMMDD-HHmmss` - Tag con timestamp (manual)
 
-**Duración estimada:** 4-5 minutos
+**Duración estimada:** 5-8 minutos
+
+---
+
+### 4️⃣ **release.yml** - Release Completo (TAGS)
+
+**Trigger:** Solo cuando creas un tag `v*` (ej: `v1.0.0`, `v2.1.3`)
+
+**Ejecuta:**
+- ✅ Validación completa del código
+- ✅ Tests con cobertura
+- ✅ Build de imagen Docker con tags versionados
+- ✅ Creación automática de GitHub Release
+- ✅ Generación de changelog desde commits o CHANGELOG.md
+- ✅ Documentación de deployment en el release
+
+**Cuándo se ejecuta:**
+```bash
+# Crear y pushear tag
+git tag -a v1.0.0 -m "Release 1.0.0: Primera versión estable"
+git push origin v1.0.0  # ← AQUÍ se ejecuta
+```
+
+**Tags Docker generados:**
+- `v1.0.0` - Versión semántica completa
+- `v1.0` - Major.Minor
+- `v1` - Major
+- `latest` - Última versión
+- `v1.0.0-<sha>` - Con commit hash
+
+**Duración estimada:** 6-10 minutos
 
 ---
 
@@ -122,8 +224,9 @@ gh pr create  # ← AQUÍ se ejecuta junto con ci.yml
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  1. Desarrollo Local                                        │
-│     - Hacer cambios en código                               │
-│     - go test ./... (local)                                 │
+│     - Hacer cambios en tu branch                           │
+│     - Ejecutar tests localmente: go test ./...             │
+│     - Verificar formato: gofmt -w .                        │
 │     - git commit                                            │
 │     ✅ NO GASTA MINUTOS DE GITHUB                           │
 └─────────────────────────────────────────────────────────────┘
@@ -133,7 +236,8 @@ gh pr create  # ← AQUÍ se ejecuta junto con ci.yml
 │  2. Crear Pull Request                                      │
 │     - gh pr create                                          │
 │     - CI automático (ci.yml + test.yml)                     │
-│     - Revisar resultados en GitHub                          │
+│     - Revisar resultados y cobertura                        │
+│     - Aprobar y mergear                                     │
 │     ✅ VALIDA ANTES DE MERGE                                │
 └─────────────────────────────────────────────────────────────┘
                          │
@@ -141,27 +245,20 @@ gh pr create  # ← AQUÍ se ejecuta junto con ci.yml
 ┌─────────────────────────────────────────────────────────────┐
 │  3. Merge a Main                                            │
 │     - gh pr merge                                           │
-│     - CI de seguridad (ci.yml) si se hace push directo     │
-│     ✅ CÓDIGO VALIDADO EN MAIN                              │
+│     - CI de seguridad (ci.yml)                             │
+│     - Build automático de imagen Docker                     │
+│     ✅ CÓDIGO VALIDADO + IMAGEN EN GHCR                     │
 └─────────────────────────────────────────────────────────────┘
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  4. Deploy Manual (Opcional)                                │
-│     - GitHub UI → build-and-push.yml                        │
-│     - Seleccionar environment (dev/staging/prod)            │
-│     ✅ DEPLOY ON-DEMAND                                     │
-└─────────────────────────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│  5. Crear Release (IMPORTANTE)                              │
-│     - git tag -a v1.0.0 -m "Release v1.0.0"                 │
-│     - git push origin v1.0.0                                │
-│     - Release automático (release.yml)                      │
-│     - ✅ Docker images creadas AUTOMÁTICAMENTE              │
-│     - ✅ GitHub Release con binarios                        │
-│     ✅ RELEASE CON VALIDACIÓN COMPLETA                      │
+│  4. Crear Release Manualmente (cuando estés listo)         │
+│     - Ir a Actions → Manual Release                         │
+│     - Seleccionar branch: main                              │
+│     - Ingresar versión: 0.1.0                              │
+│     - Seleccionar tipo: patch/minor/major                   │
+│     - Click "Run workflow"                                  │
+│     ✅ ACTUALIZA CHANGELOG + CREA TAG + DISPARA RELEASE    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -169,69 +266,50 @@ gh pr create  # ← AQUÍ se ejecuta junto con ci.yml
 
 ## 🐳 Gestión de Imágenes Docker
 
-### **Releases (Automático con Tags)**
-
-Cuando creas un tag, **release.yml** construye automáticamente las imágenes Docker:
-
+### **Después de cada push a main:**
 ```bash
-# 1. Crear tag
-git tag -a v1.2.0 -m "Release v1.2.0"
-git push origin v1.2.0
-
-# 2. GitHub Actions construye AUTOMÁTICAMENTE estas imágenes:
-# - ghcr.io/edugogroup/edugo-api-administracion:1.2.0
-# - ghcr.io/edugogroup/edugo-api-administracion:1.2
-# - ghcr.io/edugogroup/edugo-api-administracion:1
-# - ghcr.io/edugogroup/edugo-api-administracion:latest
-# - ghcr.io/edugogroup/edugo-api-administracion:production
-
-# 3. Descargar la imagen:
-docker pull ghcr.io/edugogroup/edugo-api-administracion:1.2.0
+# La imagen se publica automáticamente como:
+docker pull ghcr.io/edugogroup/edugo-api-administracion:latest
+docker pull ghcr.io/edugogroup/edugo-api-administracion:main-abc1234
 ```
 
-### **Deploys On-Demand (Manual)**
-
-Para despliegues a ambientes específicos sin crear release:
-
+### **Cuando creas un release (tag):**
 ```bash
-# 1. GitHub UI → Actions → "Build and Push Docker Image"
-# 2. Run workflow
-# 3. Seleccionar: environment = "staging"
-# 4. Opcional: push_latest = true
+# Se publican múltiples tags versionados:
+docker pull ghcr.io/edugogroup/edugo-api-administracion:v1.2.0
+docker pull ghcr.io/edugogroup/edugo-api-administracion:v1.2
+docker pull ghcr.io/edugogroup/edugo-api-administracion:v1
+docker pull ghcr.io/edugogroup/edugo-api-administracion:latest
+```
+
+### **Deploy manual de ambiente específico:**
+```bash
+# Desde GitHub UI: Actions → Build and Push → Run workflow
+# Seleccionar ambiente: production
 
 # Resultado:
-# - ghcr.io/edugogroup/edugo-api-administracion:staging
-# - ghcr.io/edugogroup/edugo-api-administracion:staging-abc1234
-# - ghcr.io/edugogroup/edugo-api-administracion:latest (si activaste push_latest)
+docker pull ghcr.io/edugogroup/edugo-api-administracion:production
+docker pull ghcr.io/edugogroup/edugo-api-administracion:production-20251031-143000
 ```
 
 ---
 
 ## 💰 Ahorro de Minutos de GitHub Actions
 
-### **Antes (sin optimización):**
-```
-Push a main → 3 workflows × 5 min = 15 minutos
-10 pushes al día = 150 minutos/día
-Mes = 4,500 minutos (¡casi 100% del plan gratuito!)
-```
+### **Estrategia Optimizada:**
 
-### **Después (optimizado):**
-```
-Push a main → 1 workflow × 3 min = 3 minutos
-PR → 2 workflows × 6 min = 12 minutos
-Tag/Release → 1 workflow × 6 min = 6 minutos
-Manual deploy → 1 workflow × 5 min = 5 minutos (solo cuando necesitas)
+| Escenario | Workflows Ejecutados | Minutos Estimados |
+|-----------|---------------------|-------------------|
+| Push a branch feature | 0 (no ejecuta nada) | 0 min |
+| Crear PR | ci.yml + test.yml | ~8 min |
+| Merge a main | ci.yml + build-and-push.yml | ~12 min |
+| Crear release (tag) | release.yml | ~10 min |
 
-Mes típico:
-- 5 PRs = 60 minutos
-- 2 releases = 12 minutos
-- 3 deploys manuales = 15 minutos
-- 5 pushes directos = 15 minutos
-Total = 102 minutos/mes (✅ Solo 4-5% del plan gratuito)
-```
-
-**Ahorro:** ~95% de minutos 🎉
+**Mes típico (10 PRs, 3 releases):**
+- 10 PRs = 80 minutos
+- 10 merges a main = 120 minutos
+- 3 releases = 30 minutos
+- **Total = 230 minutos/mes** (✅ Solo ~10% del plan gratuito de 2,000 min)
 
 ---
 
@@ -239,127 +317,66 @@ Total = 102 minutos/mes (✅ Solo 4-5% del plan gratuito)
 
 ### **Para desarrollo normal:**
 ```bash
-# 1. Desarrollar localmente
-vim internal/application/service/user_service.go
+# 1. Crear branch de feature
+git checkout -b feature/nueva-funcionalidad
 
-# 2. Probar localmente (NO usa GitHub)
+# 2. Desarrollar y probar localmente
 go test ./...
+gofmt -w .
 
-# 3. Commit
-git commit -m "feat: nueva funcionalidad de usuarios"
-
-# 4. Push a tu rama
+# 3. Commit y push
+git commit -m "feat: nueva funcionalidad"
 git push origin feature/nueva-funcionalidad
 
-# 5. Crear PR (ejecuta CI automáticamente)
+# 4. Crear PR (ejecuta ci.yml + test.yml automáticamente)
 gh pr create --title "Nueva funcionalidad" --body "..."
 
-# 6. Esperar aprobación y merge
+# 5. Esperar aprobación y merge
+# Al hacer merge, se ejecuta automáticamente build-and-push.yml
 ```
 
-### **Para crear una release con Docker:**
+### **Para crear una release:**
 ```bash
-# 1. Probar todo localmente
-go test ./...
-go build ./...
+# 1. Asegurarse de estar en main actualizado
+git checkout main
+git pull origin main
 
-# 2. Actualizar CHANGELOG.md (opcional pero recomendado)
-vim CHANGELOG.md
-
-# 3. Commit cambios finales
-git add .
-git commit -m "chore: preparar release v1.2.0"
-git push origin main
-
-# 4. Crear y push tag (ejecuta release.yml AUTOMÁTICAMENTE)
-git tag -a v1.2.0 -m "Release v1.2.0"
-git push origin v1.2.0
-
-# 5. GitHub Actions automáticamente:
-#    - Ejecuta tests
-#    - Construye binarios
-#    - Construye imagen Docker
-#    - Publica a GHCR
-#    - Crea GitHub Release
-
-# 6. Descargar y usar la imagen:
-docker pull ghcr.io/edugogroup/edugo-api-administracion:1.2.0
-docker run -d -p 8081:8081 ghcr.io/edugogroup/edugo-api-administracion:1.2.0
-```
-
-### **Para deploy manual a staging/production:**
-```bash
-# 1. GitHub UI → Actions → "Build and Push Docker Image (On-Demand)"
-# 2. Click "Run workflow"
-# 3. Seleccionar:
+# 2. Ir a GitHub UI:
+#    - Actions → Manual Release → Run workflow
 #    - Branch: main
-#    - Environment: staging (o production)
-#    - Tag as latest: false (o true si quieres)
+#    - Version: 0.1.0 (sin 'v')
+#    - Bump type: patch / minor / major
+#    - Click "Run workflow"
+
+# 3. GitHub Actions automáticamente:
+#    - Valida formato de versión
+#    - Actualiza version.txt
+#    - Actualiza CHANGELOG.md
+#    - Crea commit en main
+#    - Crea tag v0.1.0
+#    - Dispara release.yml (build Docker + GitHub Release)
+#    - Dispara sync-main-to-dev.yml
+```
+
+### **Para deploy manual a un ambiente:**
+```bash
+# Opción 1: Desde GitHub UI
+# 1. Ir a Actions → Build and Push Docker Image
+# 2. Click en "Run workflow"
+# 3. Seleccionar ambiente (development/staging/production)
 # 4. Click "Run workflow"
 
-# 5. Esperar 4-5 minutos
-
-# 6. Descargar la imagen:
-docker pull ghcr.io/edugogroup/edugo-api-administracion:staging
+# Opción 2: Desde CLI con gh
+gh workflow run build-and-push.yml -f environment=production
 ```
 
 ---
 
-## 🔑 Autenticación con GitHub Container Registry
+## 📊 Monitoreo de Workflows
 
-Para descargar imágenes privadas:
-
+### **Ver estado de workflows:**
 ```bash
-# 1. Crear un Personal Access Token (PAT) en GitHub
-# Settings → Developer settings → Personal access tokens → Tokens (classic)
-# Permisos necesarios: read:packages
-
-# 2. Login a GHCR
-echo $GITHUB_TOKEN | docker login ghcr.io -u TU_USERNAME --password-stdin
-
-# 3. Pull de la imagen
-docker pull ghcr.io/edugogroup/edugo-api-administracion:latest
-
-# 4. Run
-docker run -d -p 8081:8081 \
-  -e DB_HOST=postgres \
-  -e DB_PORT=5432 \
-  ghcr.io/edugogroup/edugo-api-administracion:latest
-```
-
----
-
-## 📊 Comparación de Configuraciones
-
-| Escenario | Workflow | Triggers | Docker Build | Duración |
-|-----------|----------|----------|--------------|----------|
-| Pull Request | ci.yml + test.yml | PR creado | Test only | 6 min |
-| Push a main | ci.yml | Push directo | Test only | 3 min |
-| Release | release.yml | Tag v* | ✅ **Si + Push** | 6 min |
-| Deploy manual | build-and-push.yml | Manual | ✅ **Si + Push** | 5 min |
-
----
-
-## 🛡️ Branch Protection (Recomendado)
-
-Para forzar el uso de PRs, configura protección de rama:
-
-1. GitHub → Settings → Branches → Add rule
-2. Branch name pattern: `main`
-3. Configurar:
-   - ✅ Require pull request before merging
-   - ✅ Require status checks to pass before merging
-   - ✅ Status checks: "Test and Build", "Test Coverage"
-   - ✅ Require branches to be up to date before merging
-
-Esto previene push directo a `main` y garantiza que todo pase por PR + CI.
-
----
-
-## 🔍 Ver Estado de Workflows
-
-```bash
-# Ver últimos workflows ejecutados
+# Listar últimos workflows ejecutados
 gh run list --limit 10
 
 # Ver detalles de un workflow específico
@@ -371,40 +388,149 @@ gh run view <run-id> --log
 # Re-ejecutar un workflow fallido
 gh run rerun <run-id>
 
-# Ver workflows de release.yml
-gh run list --workflow=release.yml
+# Ver workflows en ejecución
+gh run watch
+```
+
+### **Ver imagen Docker publicada:**
+```bash
+# Autenticarse en GHCR
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+
+# Ver tags disponibles
+gh api /orgs/EduGoGroup/packages/container/edugo-api-administracion/versions
+
+# Pull de la imagen
+docker pull ghcr.io/edugogroup/edugo-api-administracion:latest
 ```
 
 ---
 
-## 📝 Notas Importantes
+## 🛡️ Branch Protection (Recomendado)
 
-### **¿Cuándo se construyen imágenes Docker?**
+Para forzar el uso de PRs y garantizar calidad:
 
-✅ **SÍ se construye y publica:**
-- Cuando creas un tag (`git push origin v1.0.0`) → **release.yml**
-- Cuando ejecutas manualmente build-and-push.yml → **build-and-push.yml**
-
-❌ **NO se construye/publica:**
-- En Pull Requests → solo test de build
-- En push a main → solo test de build
-
-### **Recomendaciones:**
-
-1. **Para producción**: Usa tags (`v1.0.0`) → release automático
-2. **Para staging**: Usa build manual on-demand
-3. **Para development**: Usa build manual on-demand o local
+1. GitHub → Settings → Branches → Add rule
+2. Branch name pattern: `main`
+3. Configurar:
+   - ✅ Require pull request before merging
+   - ✅ Require approvals: 1
+   - ✅ Require status checks to pass:
+     - `Tests and Validation`
+     - `Tests with Coverage`
+   - ✅ Require branches to be up to date
+   - ✅ Do not allow bypassing the above settings
 
 ---
 
-## 📚 Recursos
+## 🔍 Troubleshooting
 
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+### **Error: "GOPRIVATE no configurado"**
+```bash
+# Asegúrate de que el workflow tiene acceso a repos privados
+# Ya está configurado en los workflows con:
+git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+```
+
+### **Error: "No se puede pushear imagen Docker"**
+```bash
+# Verifica permisos del workflow
+# Los workflows necesitan: permissions.packages: write
+# Ya está configurado en build-and-push.yml y release.yml
+```
+
+### **Workflow no se ejecuta en tag:**
+```bash
+# Asegúrate de que el tag tenga el prefijo 'v'
+git tag v1.0.0  # ✅ Correcto
+git tag 1.0.0   # ❌ No ejecutará release.yml
+
+# Push del tag
+git push origin v1.0.0
+```
+
+---
+
+## 🤖 GitHub Copilot - Code Review Automático
+
+Este repositorio incluye **instrucciones personalizadas para GitHub Copilot** que mejoran:
+- ✅ Sugerencias de código en tu IDE
+- ✅ Code reviews automáticos en Pull Requests
+- ✅ Comentarios contextuales según tu arquitectura
+
+### 📄 Archivo de Configuración
+
+**Ubicación:** `.github/copilot-instructions.md`
+
+Este archivo contiene:
+- Arquitectura del proyecto (Clean Architecture)
+- Convenciones de código y naming
+- Reglas de uso de `edugo-shared`
+- TODOs y deuda técnica conocida
+- **Configuración de idioma:** Todos los comentarios en español
+
+### 🎯 Copilot en Pull Requests
+
+Cuando creas un PR, Copilot **automáticamente**:
+
+1. **Analiza el código** según las instrucciones personalizadas
+2. **Genera comentarios** sobre mejoras, bugs potenciales, o mejores prácticas
+3. **Reporta cobertura** de tests (si está configurado)
+4. **Sugiere implementaciones** alineadas con tu arquitectura
+
+**Ejemplo de comentario de Copilot:**
+```
+⚠️ Considera usar errors.NewValidationError() de edugo-shared
+en lugar de fmt.Errorf() para mantener consistencia con la
+arquitectura del proyecto.
+```
+
+### 📝 Actualizar Instrucciones
+
+Si cambias patrones arquitectónicos o agregas nuevas convenciones:
+
+```bash
+# Editar instrucciones
+vim .github/copilot-instructions.md
+
+# Commit
+git add .github/copilot-instructions.md
+git commit -m "docs: actualizar instrucciones de Copilot"
+
+# Las nuevas instrucciones se aplicarán en el próximo PR
+```
+
+### 📖 Más Información
+
+- [Documentación oficial de Copilot Custom Instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot)
+- [Archivo de instrucciones actual](../copilot-instructions.md)
+
+---
+
+## 📚 Recursos Adicionales
+
+- [Documentación de GitHub Actions](https://docs.github.com/en/actions)
 - [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-- [Dockerfile](../../Dockerfile)
+- [Codecov Documentation](https://docs.codecov.com/)
+- [Guía de Migración edugo-shared](../../MIGRACION_EDUGO_SHARED_V2.0.5.md)
 
 ---
 
-**Última actualización:** 2025-10-31
+## 📝 Checklist para Nuevos Proyectos
+
+Si vas a replicar estos workflows en otros proyectos:
+
+- [ ] Copiar los 4 archivos de workflows
+- [ ] Actualizar `GO_VERSION` a la versión de Go del proyecto
+- [ ] Actualizar `IMAGE_NAME` si es necesario
+- [ ] Verificar que existe Swagger (o comentar esa sección)
+- [ ] Configurar branch protection en GitHub
+- [ ] Hacer un PR de prueba para validar ci.yml y test.yml
+- [ ] Crear un tag de prueba para validar release.yml
+- [ ] Documentar workflows específicos del proyecto
+
+---
+
+**Última actualización:** 2025-11-01
 **Mantenedor:** Equipo EduGo
 **Proyecto:** edugo-api-administracion
