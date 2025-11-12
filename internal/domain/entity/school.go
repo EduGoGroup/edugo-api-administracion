@@ -7,18 +7,21 @@ import (
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 )
 
-// School representa una escuela/institución educativa
+// School representa una escuela/institución educativa en la jerarquía académica
 type School struct {
-	id        valueobject.SchoolID
-	name      string
-	address   string
-	isActive  bool
-	createdAt time.Time
-	updatedAt time.Time
+	id           valueobject.SchoolID
+	name         string
+	code         string
+	address      string
+	contactEmail *valueobject.Email
+	contactPhone string
+	metadata     map[string]interface{}
+	createdAt    time.Time
+	updatedAt    time.Time
 }
 
 // NewSchool crea una nueva escuela con validaciones de negocio
-func NewSchool(name, address string) (*School, error) {
+func NewSchool(name, code, address string) (*School, error) {
 	// Validaciones de negocio
 	if name == "" {
 		return nil, errors.NewValidationError("name is required")
@@ -28,8 +31,12 @@ func NewSchool(name, address string) (*School, error) {
 		return nil, errors.NewValidationError("name must be at least 3 characters")
 	}
 
-	if address == "" {
-		return nil, errors.NewValidationError("address is required")
+	if code == "" {
+		return nil, errors.NewValidationError("code is required")
+	}
+
+	if len(code) < 3 {
+		return nil, errors.NewValidationError("code must be at least 3 characters")
 	}
 
 	now := time.Now()
@@ -37,8 +44,9 @@ func NewSchool(name, address string) (*School, error) {
 	return &School{
 		id:        valueobject.NewSchoolID(),
 		name:      name,
+		code:      code,
 		address:   address,
-		isActive:  true,
+		metadata:  make(map[string]interface{}),
 		createdAt: now,
 		updatedAt: now,
 	}, nil
@@ -48,18 +56,28 @@ func NewSchool(name, address string) (*School, error) {
 func ReconstructSchool(
 	id valueobject.SchoolID,
 	name string,
+	code string,
 	address string,
-	isActive bool,
+	contactEmail *valueobject.Email,
+	contactPhone string,
+	metadata map[string]interface{},
 	createdAt time.Time,
 	updatedAt time.Time,
 ) *School {
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+
 	return &School{
-		id:        id,
-		name:      name,
-		address:   address,
-		isActive:  isActive,
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		id:           id,
+		name:         name,
+		code:         code,
+		address:      address,
+		contactEmail: contactEmail,
+		contactPhone: contactPhone,
+		metadata:     metadata,
+		createdAt:    createdAt,
+		updatedAt:    updatedAt,
 	}
 }
 
@@ -73,12 +91,29 @@ func (s *School) Name() string {
 	return s.name
 }
 
+func (s *School) Code() string {
+	return s.code
+}
+
 func (s *School) Address() string {
 	return s.address
 }
 
-func (s *School) IsActive() bool {
-	return s.isActive
+func (s *School) ContactEmail() *valueobject.Email {
+	return s.contactEmail
+}
+
+func (s *School) ContactPhone() string {
+	return s.contactPhone
+}
+
+func (s *School) Metadata() map[string]interface{} {
+	// Retornar copia para evitar mutaciones externas
+	copy := make(map[string]interface{})
+	for k, v := range s.metadata {
+		copy[k] = v
+	}
+	return copy
 }
 
 func (s *School) CreatedAt() time.Time {
@@ -91,7 +126,7 @@ func (s *School) UpdatedAt() time.Time {
 
 // Business Logic Methods
 
-// UpdateInfo actualiza la información de la escuela
+// UpdateInfo actualiza la información básica de la escuela
 func (s *School) UpdateInfo(name, address string) error {
 	if name == "" && address == "" {
 		return errors.NewValidationError("at least one field must be provided")
@@ -112,24 +147,59 @@ func (s *School) UpdateInfo(name, address string) error {
 	return nil
 }
 
-// Deactivate desactiva la escuela
-func (s *School) Deactivate() error {
-	if !s.isActive {
-		return errors.NewBusinessRuleError("school is already inactive")
+// UpdateContactInfo actualiza la información de contacto
+func (s *School) UpdateContactInfo(email *valueobject.Email, phone string) error {
+	if email == nil && phone == "" {
+		return errors.NewValidationError("at least one contact field must be provided")
 	}
 
-	s.isActive = false
+	if email != nil {
+		s.contactEmail = email
+	}
+
+	if phone != "" {
+		s.contactPhone = phone
+	}
+
 	s.updatedAt = time.Now()
 	return nil
 }
 
-// Activate activa la escuela
-func (s *School) Activate() error {
-	if s.isActive {
-		return errors.NewBusinessRuleError("school is already active")
+// SetMetadata establece un valor en el metadata
+func (s *School) SetMetadata(key string, value interface{}) {
+	if s.metadata == nil {
+		s.metadata = make(map[string]interface{})
+	}
+	s.metadata[key] = value
+	s.updatedAt = time.Now()
+}
+
+// GetMetadata obtiene un valor del metadata
+func (s *School) GetMetadata(key string) (interface{}, bool) {
+	if s.metadata == nil {
+		return nil, false
+	}
+	val, exists := s.metadata[key]
+	return val, exists
+}
+
+// Validate valida el estado completo de la entidad
+func (s *School) Validate() error {
+	if s.name == "" {
+		return errors.NewValidationError("name is required")
 	}
 
-	s.isActive = true
-	s.updatedAt = time.Now()
+	if len(s.name) < 3 {
+		return errors.NewValidationError("name must be at least 3 characters")
+	}
+
+	if s.code == "" {
+		return errors.NewValidationError("code is required")
+	}
+
+	if len(s.code) < 3 {
+		return errors.NewValidationError("code must be at least 3 characters")
+	}
+
 	return nil
 }

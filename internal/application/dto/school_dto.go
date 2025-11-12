@@ -4,48 +4,65 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
-	"github.com/EduGoGroup/edugo-shared/common/validator"
 )
 
 // CreateSchoolRequest representa la solicitud para crear una escuela
 type CreateSchoolRequest struct {
-	Name    string `json:"name"`
-	Address string `json:"address"`
+	Name         string                 `json:"name" validate:"required,min=3"`
+	Code         string                 `json:"code" validate:"required,min=3"`
+	Address      string                 `json:"address"`
+	ContactEmail string                 `json:"contact_email" validate:"omitempty,email"`
+	ContactPhone string                 `json:"contact_phone"`
+	Metadata     map[string]interface{} `json:"metadata"`
 }
 
-// Validate valida el request
-func (r *CreateSchoolRequest) Validate() error {
-	v := validator.New()
-
-	v.Required(r.Name, "name")
-	v.MinLength(r.Name, 3, "name")
-	v.MaxLength(r.Name, 100, "name")
-
-	v.Required(r.Address, "address")
-	v.MinLength(r.Address, 5, "address")
-	v.MaxLength(r.Address, 200, "address")
-
-	return v.GetError()
+// UpdateSchoolRequest representa la solicitud para actualizar una escuela
+type UpdateSchoolRequest struct {
+	Name         *string                `json:"name" validate:"omitempty,min=3"`
+	Address      *string                `json:"address"`
+	ContactEmail *string                `json:"contact_email" validate:"omitempty,email"`
+	ContactPhone *string                `json:"contact_phone"`
+	Metadata     map[string]interface{} `json:"metadata"`
 }
 
-// SchoolResponse representa la respuesta de una escuela
+// SchoolResponse representa la respuesta con datos de una escuela
 type SchoolResponse struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Address   string    `json:"address"`
-	IsActive  bool      `json:"is_active"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID           string                 `json:"id"`
+	Name         string                 `json:"name"`
+	Code         string                 `json:"code"`
+	Address      string                 `json:"address"`
+	ContactEmail string                 `json:"contact_email,omitempty"`
+	ContactPhone string                 `json:"contact_phone,omitempty"`
+	Metadata     map[string]interface{} `json:"metadata,omitempty"`
+	CreatedAt    time.Time              `json:"created_at"`
+	UpdatedAt    time.Time              `json:"updated_at"`
 }
 
-// ToSchoolResponse convierte una entidad School a DTO
-func ToSchoolResponse(school *entity.School) *SchoolResponse {
-	return &SchoolResponse{
-		ID:        school.ID().String(),
-		Name:      school.Name(),
-		Address:   school.Address(),
-		IsActive:  school.IsActive(),
-		CreatedAt: school.CreatedAt(),
-		UpdatedAt: school.UpdatedAt(),
+// ToSchoolResponse convierte una entidad School a SchoolResponse
+func ToSchoolResponse(school *entity.School) SchoolResponse {
+	var email string
+	if school.ContactEmail() != nil {
+		email = school.ContactEmail().String()
 	}
+
+	return SchoolResponse{
+		ID:           school.ID().String(),
+		Name:         school.Name(),
+		Code:         school.Code(),
+		Address:      school.Address(),
+		ContactEmail: email,
+		ContactPhone: school.ContactPhone(),
+		Metadata:     school.Metadata(),
+		CreatedAt:    school.CreatedAt(),
+		UpdatedAt:    school.UpdatedAt(),
+	}
+}
+
+// ToSchoolResponseList convierte una lista de entidades a lista de responses
+func ToSchoolResponseList(schools []*entity.School) []SchoolResponse {
+	responses := make([]SchoolResponse, len(schools))
+	for i, school := range schools {
+		responses[i] = ToSchoolResponse(school)
+	}
+	return responses
 }
