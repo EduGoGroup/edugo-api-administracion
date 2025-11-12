@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	_ "github.com/EduGoGroup/edugo-api-administracion/docs" // Swagger docs generados
+	_ "github.com/EduGoGroup/edugo-api-administracion/docs"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/bootstrap"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -23,113 +28,147 @@ import (
 // @name Authorization
 
 func main() {
-	// Cargar configuración
+	log.Println("🔄 EduGo API Administración iniciando...")
+
+	ctx := context.Background()
+
+	// 1. Cargar configuración
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("❌ Error loading configuration: %v", err)
 	}
 
-	env := os.Getenv("APP_ENV")
-	if env == "" {
-		env = "local"
+	// 2. Inicializar infraestructura con shared/bootstrap
+	resources, cleanup, err := bootstrap.Initialize(ctx, cfg)
+	if err != nil {
+		log.Fatalf("❌ Error inicializando infraestructura: %v", err)
 	}
-	log.Printf("🌍 Environment: %s", env)
+	defer func() {
+		if err := cleanup(); err != nil {
+			resources.Logger.Error("Error durante cleanup", "error", err)
+		}
+	}()
 
+	resources.Logger.Info("✅ API Administración iniciada", "port", cfg.Server.Port)
+
+	// 3. Configurar Gin
 	r := gin.Default()
 
+	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy", "service": "edugo-api-admin"})
 	})
 
+	// Swagger
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Rutas v1
 	v1 := r.Group("/v1")
 	v1.Use(AdminAuthRequired())
 	{
 		// Users CRUD
-		v1.POST("/users", CreateUser)       // POST /v1/users
-		v1.PATCH("/users/:id", UpdateUser)  // PATCH /v1/users/:id
-		v1.DELETE("/users/:id", DeleteUser) // DELETE /v1/users/:id
+		v1.POST("/users", CreateUser)
+		v1.PATCH("/users/:id", UpdateUser)
+		v1.DELETE("/users/:id", DeleteUser)
 
 		// Units (Jerarquía Académica)
-		v1.POST("/schools", CreateSchool)               // POST /v1/schools
-		v1.POST("/units", CreateUnit)                   // POST /v1/units
-		v1.PATCH("/units/:id", UpdateUnit)              // PATCH /v1/units/:id
-		v1.POST("/units/:id/members", AssignMembership) // POST /v1/units/:id/members
+		v1.POST("/schools", CreateSchool)
+		v1.POST("/units", CreateUnit)
+		v1.PATCH("/units/:id", UpdateUnit)
+		v1.POST("/units/:id/members", AssignMembership)
 
 		// Subjects
-		v1.POST("/subjects", CreateSubject) // POST /v1/subjects
+		v1.POST("/subjects", CreateSubject)
 
 		// Materials Admin
-		v1.DELETE("/materials/:id", DeleteMaterial) // DELETE /v1/materials/:id
+		v1.DELETE("/materials/:id", DeleteMaterial)
 
 		// Stats
-		v1.GET("/stats/global", GetGlobalStats) // GET /v1/stats/global
+		v1.GET("/stats/global", GetGlobalStats)
 	}
 
+	// 4. Servidor con graceful shutdown
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
-	log.Printf("🔧 API Administración running on http://localhost:%d", cfg.Server.Port)
-	log.Printf("📚 Swagger: http://localhost:%d/swagger/index.html", cfg.Server.Port)
-
-	if err := r.Run(addr); err != nil {
-		log.Fatalf("❌ Error starting server: %v", err)
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      r,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
 	}
+
+	resources.Logger.Info("🔧 API Administración running",
+		"addr", addr,
+		"swagger", fmt.Sprintf("http://localhost:%d/swagger/index.html", cfg.Server.Port))
+
+	// Iniciar servidor en goroutine
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			resources.Logger.Error("Server error", "error", err.Error())
+		}
+	}()
+
+	// Graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	resources.Logger.Info("🛑 Apagando servidor...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		resources.Logger.Error("Server shutdown error", "error", err.Error())
+	}
+
+	resources.Logger.Info("✅ Servidor apagado correctamente")
 }
 
-// Middleware Admin
+// Middleware y Handlers (mantener por ahora como mock)
+
 func AdminAuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO: Validar JWT y verificar role = admin
 		c.Set("admin_id", "admin-mock")
 		c.Next()
 	}
 }
 
-// Request/Response types para Swagger
+// Handlers mock con Swagger annotations
 
-// CreateUserRequest representa la petición para crear usuario
 type CreateUserRequest struct {
 	Email    string `json:"email" example:"usuario@example.com"`
 	Password string `json:"password" example:"password123"`
 	Name     string `json:"name" example:"Juan Pérez"`
 	Role     string `json:"role" example:"teacher"`
 	SchoolID string `json:"school_id" example:"school-uuid-123"`
-} // @name CreateUserRequest
+}
 
-// CreateUserResponse representa la respuesta al crear usuario
 type CreateUserResponse struct {
 	UserID  string `json:"user_id" example:"user-uuid-123"`
 	Message string `json:"message" example:"Usuario creado"`
-} // @name CreateUserResponse
+}
 
-// SuccessResponse representa una respuesta genérica de éxito
 type SuccessResponse struct {
 	Message string `json:"message" example:"Operación exitosa"`
-} // @name SuccessResponse
+}
 
-// CreateSchoolResponse representa la respuesta al crear escuela
 type CreateSchoolResponse struct {
 	SchoolID string `json:"school_id" example:"school-uuid-123"`
-} // @name CreateSchoolResponse
+}
 
-// CreateUnitResponse representa la respuesta al crear unidad
 type CreateUnitResponse struct {
 	UnitID string `json:"unit_id" example:"unit-uuid-123"`
-} // @name CreateUnitResponse
+}
 
-// CreateSubjectResponse representa la respuesta al crear materia
 type CreateSubjectResponse struct {
 	SubjectID string `json:"subject_id" example:"subject-uuid-123"`
-} // @name CreateSubjectResponse
+}
 
-// GlobalStatsResponse representa las estadísticas globales
 type GlobalStatsResponse struct {
 	TotalUsers     int `json:"total_users" example:"1250"`
 	TotalMaterials int `json:"total_materials" example:"450"`
 	ActiveUsers30d int `json:"active_users_30d" example:"980"`
-} // @name GlobalStatsResponse
-
-// Mock handlers con Swagger annotations
+}
 
 // CreateUser godoc
 // @Summary Crear usuario

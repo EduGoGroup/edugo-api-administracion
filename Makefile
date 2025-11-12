@@ -1,5 +1,5 @@
 # ============================================
-# Makefile - API Mobile (EduGo)
+# Makefile - API Administración (EduGo)
 # ============================================
 
 # Variables

@@ -12,10 +12,12 @@ func Load() (*Config, error) {
 	v := viper.New()
 
 	// Defaults
-	v.SetDefault("server.port", 8080)
+	v.SetDefault("server.port", 8081)
 	v.SetDefault("server.host", "0.0.0.0")
 	v.SetDefault("database.postgres.max_connections", 25)
+	v.SetDefault("database.postgres.ssl_mode", "disable")
 	v.SetDefault("logging.level", "info")
+	v.SetDefault("logging.format", "json")
 
 	// Ambiente
 	env := os.Getenv("APP_ENV")
@@ -57,13 +59,14 @@ func Load() (*Config, error) {
 
 	// Unmarshal
 	var cfg Config
+	cfg.Environment = env
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("error unmarshaling config: %w", err)
 	}
 
-	// Validate
-	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("config validation failed: %w", err)
+	// Validate usando función separada
+	if err := Validate(&cfg); err != nil {
+		return nil, err
 	}
 
 	return &cfg, nil
