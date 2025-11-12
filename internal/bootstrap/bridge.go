@@ -64,7 +64,7 @@ func bridgeToSharedBootstrap(ctx context.Context, cfg *config.Config) (*Resource
 	resources := &Resources{
 		Logger:     loggerAdapter,
 		PostgreSQL: wrapper.sqlDB,
-		JWTSecret:  "",  // api-admin no usa JWT por ahora
+		JWTSecret:  "", // api-admin no usa JWT por ahora
 	}
 
 	cleanup := func() error {

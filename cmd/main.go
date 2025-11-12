@@ -43,7 +43,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("❌ Error inicializando infraestructura: %v", err)
 	}
-	defer func() { if err := cleanup(); err != nil { resources.Logger.Error("Error durante cleanup", "error", err) } }()
+	defer func() {
+		if err := cleanup(); err != nil {
+			resources.Logger.Error("Error durante cleanup", "error", err)
+		}
+	}()
 
 	resources.Logger.Info("✅ API Administración iniciada", "port", cfg.Server.Port)
 
@@ -92,7 +96,7 @@ func main() {
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
 
-	resources.Logger.Info("🔧 API Administración running", 
+	resources.Logger.Info("🔧 API Administración running",
 		"addr", addr,
 		"swagger", fmt.Sprintf("http://localhost:%d/swagger/index.html", cfg.Server.Port))
 

@@ -7,9 +7,9 @@ import (
 
 type Config struct {
 	Environment string         `mapstructure:"environment"`
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
-	Logging  LoggingConfig  `mapstructure:"logging"`
+	Server      ServerConfig   `mapstructure:"server"`
+	Database    DatabaseConfig `mapstructure:"database"`
+	Logging     LoggingConfig  `mapstructure:"logging"`
 }
 
 type ServerConfig struct {
@@ -48,14 +48,4 @@ type LoggingConfig struct {
 func (c *PostgresConfig) GetConnectionString() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		c.Host, c.Port, c.User, c.Password, c.Database, c.SSLMode)
-}
-
-func (c *Config) Validate() error {
-	if c.Database.Postgres.Password == "" {
-		return fmt.Errorf("POSTGRES_PASSWORD is required")
-	}
-	if c.Database.MongoDB.URI == "" {
-		return fmt.Errorf("MONGODB_URI is required")
-	}
-	return nil
 }
