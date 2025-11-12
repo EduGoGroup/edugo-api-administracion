@@ -2,8 +2,8 @@ package bootstrap
 
 import (
 	"context"
-	"fmt"
 	"database/sql"
+	"fmt"
 
 	sharedBootstrap "github.com/EduGoGroup/edugo-shared/bootstrap"
 	"github.com/sirupsen/logrus"
@@ -51,7 +51,10 @@ func (f *customPostgreSQLFactory) CreateConnection(ctx context.Context, cfg shar
 		return nil, err
 	}
 	f.wrapper.gormDB = db
-	sqlDB, err := db.DB(); if err != nil { return nil, fmt.Errorf("failed to get sql.DB: %w", err) }
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sql.DB: %w", err)
+	}
 	f.wrapper.sqlDB = sqlDB
 	return db, nil
 }

@@ -36,8 +36,8 @@ func Validate(cfg *Config) error {
 
 	// Si hay errores, retornar un error compuesto con mensaje claro
 	if len(validationErrors) > 0 {
-		errorMsg := "Configuration validation failed:\n  - " + 
-			strings.Join(validationErrors, "\n  - ") + 
+		errorMsg := "Configuration validation failed:\n  - " +
+			strings.Join(validationErrors, "\n  - ") +
 			"\n\nPlease check your .env file or environment variables.\nFor local development, copy .env.example to .env and fill in the values."
 		return fmt.Errorf("%s", errorMsg)
 	}
