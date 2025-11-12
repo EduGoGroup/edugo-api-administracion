@@ -31,12 +31,16 @@ func (r *postgresSchoolRepository) Create(ctx context.Context, school *entity.Sc
 		contactEmail = &email
 	}
 
-	metadataJSON, err := json.Marshal(school.Metadata())
-	if err != nil {
-		return errors.NewInternalError("failed to marshal metadata", err)
+	var metadataJSON []byte
+	if len(school.Metadata()) > 0 {
+		var err error
+		metadataJSON, err = json.Marshal(school.Metadata())
+		if err != nil {
+			return errors.NewDatabaseError("marshal metadata", err)
+		}
 	}
 
-	_, err = r.db.ExecContext(ctx, query,
+	_, err := r.db.ExecContext(ctx, query,
 		school.ID().String(),
 		school.Name(),
 		school.Code(),
@@ -163,12 +167,16 @@ func (r *postgresSchoolRepository) Update(ctx context.Context, school *entity.Sc
 		contactEmail = &email
 	}
 
-	metadataJSON, err := json.Marshal(school.Metadata())
-	if err != nil {
-		return errors.NewInternalError("failed to marshal metadata", err)
+	var metadataJSON []byte
+	if len(school.Metadata()) > 0 {
+		var err error
+		metadataJSON, err = json.Marshal(school.Metadata())
+		if err != nil {
+			return errors.NewDatabaseError("marshal metadata", err)
+		}
 	}
 
-	_, err = r.db.ExecContext(ctx, query,
+	_, err := r.db.ExecContext(ctx, query,
 		school.Name(),
 		school.Address(),
 		contactEmail,
@@ -255,14 +263,14 @@ func (r *postgresSchoolRepository) scanSchool(
 ) (*entity.School, error) {
 	schoolID, err := valueobject.SchoolIDFromString(idStr)
 	if err != nil {
-		return nil, errors.NewInternalError("invalid school ID", err)
+		return nil, errors.NewDatabaseError("parse school ID", err)
 	}
 
 	var email *valueobject.Email
 	if contactEmail.Valid && contactEmail.String != "" {
 		e, err := valueobject.NewEmail(contactEmail.String)
 		if err != nil {
-			return nil, errors.NewInternalError("invalid email", err)
+			return nil, errors.NewDatabaseError("parse email", err)
 		}
 		email = &e
 	}
@@ -270,7 +278,7 @@ func (r *postgresSchoolRepository) scanSchool(
 	var metadata map[string]interface{}
 	if len(metadataJSON) > 0 {
 		if err := json.Unmarshal(metadataJSON, &metadata); err != nil {
-			return nil, errors.NewInternalError("failed to unmarshal metadata", err)
+			return nil, errors.NewDatabaseError("unmarshal metadata", err)
 		}
 	}
 

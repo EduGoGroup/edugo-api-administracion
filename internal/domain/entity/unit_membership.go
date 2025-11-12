@@ -149,7 +149,7 @@ func (um *UnitMembership) IsActiveAt(t time.Time) bool {
 	}
 
 	// Debe estar antes de validUntil
-	return t.Before(*um.validUntil)
+	return t.Before(*um.validUntil) || t.Equal(*um.validUntil)
 }
 
 // SetValidUntil establece la fecha de fin de la membresía

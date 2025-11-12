@@ -209,10 +209,22 @@ func (s *schoolService) ListSchools(ctx context.Context) ([]dto.SchoolResponse, 
 }
 
 // DeleteSchool elimina una escuela
+// DeleteSchool elimina una escuela
 func (s *schoolService) DeleteSchool(ctx context.Context, id string) error {
 	schoolID, err := valueobject.SchoolIDFromString(id)
 	if err != nil {
 		return errors.NewValidationError("invalid school ID")
+	}
+
+	// Verificar que la escuela existe antes de eliminar
+	school, err := s.schoolRepo.FindByID(ctx, schoolID)
+	if err != nil {
+		s.logger.Error("failed to find school", "error", err, "id", id)
+		return errors.NewDatabaseError("find school", err)
+	}
+
+	if school == nil {
+		return errors.NewNotFoundError("school")
 	}
 
 	if err := s.schoolRepo.Delete(ctx, schoolID); err != nil {
