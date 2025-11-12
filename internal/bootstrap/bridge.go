@@ -35,7 +35,7 @@ func bridgeToSharedBootstrap(ctx context.Context, cfg *config.Config) (*Resource
 		Environment string
 		PostgreSQL  sharedBootstrap.PostgreSQLConfig
 	}{
-		Environment: "production",
+		Environment: cfg.Environment,
 		PostgreSQL: sharedBootstrap.PostgreSQLConfig{
 			Host:     cfg.Database.Postgres.Host,
 			Port:     cfg.Database.Postgres.Port,

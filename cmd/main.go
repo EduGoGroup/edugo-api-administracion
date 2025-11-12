@@ -43,7 +43,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("❌ Error inicializando infraestructura: %v", err)
 	}
-	defer cleanup()
+	defer func() { if err := cleanup(); err != nil { resources.Logger.Error("Error durante cleanup", "error", err) } }()
 
 	resources.Logger.Info("✅ API Administración iniciada", "port", cfg.Server.Port)
 
@@ -110,10 +110,10 @@ func main() {
 
 	resources.Logger.Info("🛑 Apagando servidor...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		resources.Logger.Error("Server shutdown error", "error", err.Error())
 	}
 

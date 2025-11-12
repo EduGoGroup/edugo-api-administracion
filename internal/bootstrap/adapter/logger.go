@@ -6,7 +6,7 @@ import (
 )
 
 // LoggerAdapter adapta *logrus.Logger (de shared/bootstrap) a logger.Logger (interfaz de shared/logger)
-// Este adapter permite que el código de api-mobile siga usando la interfaz logger.Logger
+// Este adapter permite que el código de api-administracion siga usando la interfaz logger.Logger
 // mientras internamente usamos *logrus.Logger retornado por shared/bootstrap
 type LoggerAdapter struct {
 	logrus *logrus.Logger
