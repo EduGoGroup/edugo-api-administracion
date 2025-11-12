@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS school (
     
     CONSTRAINT school_name_not_empty CHECK (LENGTH(TRIM(name)) > 0),
     CONSTRAINT school_code_not_empty CHECK (LENGTH(TRIM(code)) > 0),
-    CONSTRAINT school_email_format CHECK (contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' OR contact_email IS NULL)
+    CONSTRAINT school_email_format CHECK (contact_email IS NULL OR contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' OR contact_email IS NULL)
 );
 
 CREATE INDEX IF NOT EXISTS idx_school_code ON school(code);
@@ -115,7 +115,12 @@ BEGIN
     END IF;
     
     current_parent_id := NEW.parent_unit_id;
-    visited_ids := ARRAY[NEW.id];
+    
+    -- Inicializar array vacío y agregar NEW.id solo si no es NULL
+    visited_ids := ARRAY[]::UUID[];
+    IF NEW.id IS NOT NULL THEN
+        visited_ids := array_append(visited_ids, NEW.id);
+    END IF;
     
     WHILE current_parent_id IS NOT NULL AND depth < max_depth LOOP
         IF current_parent_id = ANY(visited_ids) THEN

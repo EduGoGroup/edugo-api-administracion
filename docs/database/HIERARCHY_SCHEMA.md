@@ -321,27 +321,36 @@ RETURNING id INTO grade_id;
 -- 4. Crear sección
 INSERT INTO academic_unit (parent_unit_id, school_id, unit_type, display_name, code) VALUES
   (grade_id, school_id, 'section', 'Quinto Grado - Sección C', 'ESC-004-G5-C')
-RETURNING id INTO section_id;
-```
-
-### Consultar Árbol Jerárquico
 
 ```sql
--- Árbol completo de una escuela
-SELECT 
-    REPEAT('  ', depth - 1) || display_name AS jerarquia,
-    unit_type,
-    code
-FROM v_unit_tree
-WHERE school_name = 'Colegio San José'
-ORDER BY path;
+-- Ejemplo correcto usando bloque PL/pgSQL
+DO $$
+DECLARE
+    school_id UUID;
+    root_id UUID;
+    grade_id UUID;
+    section_id UUID;
+BEGIN
+    -- 1. Crear escuela
+    INSERT INTO school (name, code) VALUES ('Mi Escuela', 'ESC-004')
+    RETURNING id INTO school_id;
+
+    -- 2. Crear unidad raíz
+    INSERT INTO academic_unit (school_id, unit_type, display_name, code) VALUES
+      (school_id, 'school', 'Mi Escuela', 'ESC-004-ROOT')
+    RETURNING id INTO root_id;
+
+    -- 3. Crear grado
+    INSERT INTO academic_unit (parent_unit_id, school_id, unit_type, display_name, code) VALUES
+      (root_id, school_id, 'grade', 'Quinto Grado', 'ESC-004-G5')
+    RETURNING id INTO grade_id;
+
+    -- 4. Crear sección
+    INSERT INTO academic_unit (parent_unit_id, school_id, unit_type, display_name, code) VALUES
+      (grade_id, school_id, 'section', 'Quinto Grado - Sección C', 'ESC-004-G5-C')
+    RETURNING id INTO section_id;
+END $$;
 ```
-
-### Asignar Membresías
-
-```sql
--- Asignar estudiantes a una sección
-INSERT INTO unit_membership (unit_id, user_id, role, valid_from) VALUES
   ('section-id', 'user-1-id', 'student', '2025-01-15'),
   ('section-id', 'user-2-id', 'student', '2025-01-15');
 
