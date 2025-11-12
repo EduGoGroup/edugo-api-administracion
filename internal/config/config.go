@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Environment string         `mapstructure:"environment"`
 	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"database"`
 	Logging  LoggingConfig  `mapstructure:"logging"`
