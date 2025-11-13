@@ -71,13 +71,13 @@ func (m *MockSchoolService) DeleteSchool(ctx context.Context, id string) error {
 // MockLogger es un mock simple del logger
 type MockLogger struct{}
 
-func (m *MockLogger) Debug(msg string, fields ...interface{})          {}
-func (m *MockLogger) Info(msg string, fields ...interface{})           {}
-func (m *MockLogger) Warn(msg string, fields ...interface{})           {}
-func (m *MockLogger) Error(msg string, fields ...interface{})          {}
-func (m *MockLogger) Fatal(msg string, fields ...interface{})          {}
+func (m *MockLogger) Debug(msg string, fields ...interface{})  {}
+func (m *MockLogger) Info(msg string, fields ...interface{})   {}
+func (m *MockLogger) Warn(msg string, fields ...interface{})   {}
+func (m *MockLogger) Error(msg string, fields ...interface{})  {}
+func (m *MockLogger) Fatal(msg string, fields ...interface{})  {}
 func (m *MockLogger) With(fields ...interface{}) logger.Logger { return m }
-func (m *MockLogger) Sync() error                                      { return nil }
+func (m *MockLogger) Sync() error                              { return nil }
 
 func setupSchoolHandler() (*SchoolHandler, *MockSchoolService) {
 	gin.SetMode(gin.TestMode)
@@ -114,13 +114,13 @@ func TestSchoolHandler_CreateSchool_Success(t *testing.T) {
 	handler.CreateSchool(c)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
-	
+
 	var resp dto.SchoolResponse
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "school-123", resp.ID)
 	assert.Equal(t, "Test School", resp.Name)
-	
+
 	mockService.AssertExpectations(t)
 }
 
@@ -178,12 +178,12 @@ func TestSchoolHandler_GetSchool_Success(t *testing.T) {
 	handler.GetSchool(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var resp dto.SchoolResponse
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "school-123", resp.ID)
-	
+
 	mockService.AssertExpectations(t)
 }
 
@@ -221,12 +221,12 @@ func TestSchoolHandler_ListSchools_Success(t *testing.T) {
 	handler.ListSchools(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var resp []dto.SchoolResponse
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Len(t, resp, 2)
-	
+
 	mockService.AssertExpectations(t)
 }
 

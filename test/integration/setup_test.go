@@ -5,8 +5,8 @@ package integration
 import (
 	"context"
 	"database/sql"
-	"testing"
 	"os"
+	"testing"
 
 	_ "github.com/lib/pq"
 	"go.mongodb.org/mongo-driver/mongo"

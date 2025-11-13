@@ -40,15 +40,15 @@ type Container struct {
 	GuardianService       service.GuardianService
 
 	// Handlers
-	UserHandler             *handler.UserHandler
-	SchoolHandler           *handler.SchoolHandler
-	AcademicUnitHandler     *handler.AcademicUnitHandler
-	UnitMembershipHandler   *handler.UnitMembershipHandler
-	UnitHandler             *handler.UnitHandler
-	SubjectHandler          *handler.SubjectHandler
-	MaterialHandler         *handler.MaterialHandler
-	StatsHandler            *handler.StatsHandler
-	GuardianHandler         *handler.GuardianHandler
+	UserHandler           *handler.UserHandler
+	SchoolHandler         *handler.SchoolHandler
+	AcademicUnitHandler   *handler.AcademicUnitHandler
+	UnitMembershipHandler *handler.UnitMembershipHandler
+	UnitHandler           *handler.UnitHandler
+	SubjectHandler        *handler.SubjectHandler
+	MaterialHandler       *handler.MaterialHandler
+	StatsHandler          *handler.StatsHandler
+	GuardianHandler       *handler.GuardianHandler
 }
 
 // NewContainer crea un nuevo contenedor e inicializa todas las dependencias
