@@ -62,3 +62,180 @@ func (h *SchoolHandler) CreateSchool(c *gin.Context) {
 	h.logger.Info("school created", "school_id", school.ID, "name", school.Name)
 	c.JSON(http.StatusCreated, school)
 }
+
+// GetSchool godoc
+// @Summary Get a school by ID
+// @Description Retrieves a school by its ID
+// @Tags schools
+// @Produce json
+// @Param id path string true "School ID"
+// @Success 200 {object} dto.SchoolResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /v1/schools/{id} [get]
+// @Security BearerAuth
+func (h *SchoolHandler) GetSchool(c *gin.Context) {
+	id := c.Param("id")
+
+	if id == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		return
+	}
+
+	school, err := h.schoolService.GetSchool(c.Request.Context(), id)
+	if err != nil {
+		if appErr, ok := errors.GetAppError(err); ok {
+			h.logger.Error("get school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
+			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
+			return
+		}
+
+		h.logger.Error("unexpected error", "error", err, "school_id", id)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		return
+	}
+
+	c.JSON(http.StatusOK, school)
+}
+
+// GetSchoolByCode godoc
+// @Summary Get a school by code
+// @Description Retrieves a school by its unique code
+// @Tags schools
+// @Produce json
+// @Param code path string true "School Code"
+// @Success 200 {object} dto.SchoolResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /v1/schools/code/{code} [get]
+// @Security BearerAuth
+func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
+	code := c.Param("code")
+
+	if code == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school code is required", Code: "INVALID_REQUEST"})
+		return
+	}
+
+	school, err := h.schoolService.GetSchoolByCode(c.Request.Context(), code)
+	if err != nil {
+		if appErr, ok := errors.GetAppError(err); ok {
+			h.logger.Error("get school by code failed", "error", appErr.Message, "code", appErr.Code, "school_code", code)
+			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
+			return
+		}
+
+		h.logger.Error("unexpected error", "error", err, "school_code", code)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		return
+	}
+
+	c.JSON(http.StatusOK, school)
+}
+
+// ListSchools godoc
+// @Summary List all schools
+// @Description Retrieves a list of all schools in the system
+// @Tags schools
+// @Produce json
+// @Success 200 {array} dto.SchoolResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /v1/schools [get]
+// @Security BearerAuth
+func (h *SchoolHandler) ListSchools(c *gin.Context) {
+	schools, err := h.schoolService.ListSchools(c.Request.Context())
+	if err != nil {
+		if appErr, ok := errors.GetAppError(err); ok {
+			h.logger.Error("list schools failed", "error", appErr.Message, "code", appErr.Code)
+			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
+			return
+		}
+
+		h.logger.Error("unexpected error", "error", err)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		return
+	}
+
+	c.JSON(http.StatusOK, schools)
+}
+
+// UpdateSchool godoc
+// @Summary Update a school
+// @Description Updates an existing school
+// @Tags schools
+// @Accept json
+// @Produce json
+// @Param id path string true "School ID"
+// @Param request body dto.UpdateSchoolRequest true "Updated school data"
+// @Success 200 {object} dto.SchoolResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /v1/schools/{id} [put]
+// @Security BearerAuth
+func (h *SchoolHandler) UpdateSchool(c *gin.Context) {
+	id := c.Param("id")
+
+	if id == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		return
+	}
+
+	var req dto.UpdateSchoolRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Warn("invalid request body", "error", err, "school_id", id)
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		return
+	}
+
+	school, err := h.schoolService.UpdateSchool(c.Request.Context(), id, req)
+	if err != nil {
+		if appErr, ok := errors.GetAppError(err); ok {
+			h.logger.Error("update school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
+			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
+			return
+		}
+
+		h.logger.Error("unexpected error", "error", err, "school_id", id)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		return
+	}
+
+	h.logger.Info("school updated", "school_id", id)
+	c.JSON(http.StatusOK, school)
+}
+
+// DeleteSchool godoc
+// @Summary Delete a school
+// @Description Soft deletes a school from the system
+// @Tags schools
+// @Produce json
+// @Param id path string true "School ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /v1/schools/{id} [delete]
+// @Security BearerAuth
+func (h *SchoolHandler) DeleteSchool(c *gin.Context) {
+	id := c.Param("id")
+
+	if id == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		return
+	}
+
+	err := h.schoolService.DeleteSchool(c.Request.Context(), id)
+	if err != nil {
+		if appErr, ok := errors.GetAppError(err); ok {
+			h.logger.Error("delete school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
+			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
+			return
+		}
+
+		h.logger.Error("unexpected error", "error", err, "school_id", id)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		return
+	}
+
+	h.logger.Info("school deleted", "school_id", id)
+	c.Status(http.StatusNoContent)
+}
