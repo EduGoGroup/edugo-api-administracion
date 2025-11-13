@@ -1,0 +1,780 @@
+# 🔄 Workflows de CI/CD - edugo-api-mobile
+
+## 🎯 Estrategia de Ejecución por Branch
+
+Esta tabla muestra **qué workflows se ejecutan en cada tipo de branch** para evitar ejecuciones innecesarias y notificaciones de falsos positivos:
+
+| Workflow | feature/* | dev | main | PR a main/dev | Tags v* | Manual |
+|----------|-----------|-----|------|---------------|---------|--------|
+| **ci.yml** | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **test.yml** | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| **manual-release.yml** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (RECOMENDADO) |
+| **docker-only.yml** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **release.yml** | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| **sync-main-to-dev-ff.yml** | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
+
+### 📌 Resumen por Escenario
+
+```bash
+# 1. Desarrollo en feature branch
+git checkout dev
+git checkout -b feature/nueva-funcionalidad
+git push origin feature/nueva-funcionalidad
+# ✅ Sin workflows automáticos
+
+# 2. PR de feature → dev
+gh pr create --base dev --head feature/nueva-funcionalidad
+# ✅ ci.yml (tests, linter, security)
+# ✅ test.yml (cobertura)
+# Merge después de aprobación
+
+# 3. Cuando estés listo para release: PR de dev → main
+gh pr create --base main --head dev --title "Release v0.1.7"
+# ✅ ci.yml valida todo
+# ✅ test.yml (cobertura)
+# Merge con estrategia: MERGE NORMAL (no squash, no rebase)
+
+# 4. Crear release manualmente (RECOMENDADO) ⭐
+# Actions → Manual Release → Run workflow
+#   - Branch: main
+#   - Versión: 0.1.7
+#   - Tipo: minor
+# ✅ manual-release.yml ejecuta:
+#    - Actualiza version.txt y CHANGELOG.md
+#    - Crea commit "chore: release v0.1.7" en main
+#    - Crea tag v0.1.7
+#    - Construye y publica imagen Docker
+#    - Crea GitHub Release
+# ✅ sync-main-to-dev-ff.yml (AUTOMÁTICO):
+#    - Fast-forward dev a main
+#    - Verifica que main y dev tengan mismo SHA
+#    - dev recibe el commit de release automáticamente
+
+# 5. Verificar sincronización (opcional)
+git fetch origin
+git log --oneline origin/main..origin/dev  # ← Debe estar vacío
+git rev-parse origin/main                  # ← Mismo SHA
+git rev-parse origin/dev                   # ← Mismo SHA
+
+# Build manual de Docker para testing
+# Actions → Docker Build and Push → Run workflow
+# ✅ docker-only.yml (solo cuando lo necesites)
+```
+
+### ⚠️ Nota sobre GitHub Actions
+
+GitHub Actions **evalúa** todos los workflows en cualquier evento, pero solo **ejecuta** los que cumplen las condiciones de trigger. Esto es comportamiento normal de GitHub y no indica un error.
+
+---
+
+## 🔀 Estrategia de Ramas: Fast-Forward Only
+
+### Principio Fundamental
+
+**"main y dev SIEMPRE apuntan al mismo commit después de sincronización"**
+
+### Garantías
+
+```bash
+# Después de cada release:
+git rev-parse main == git rev-parse dev  # ← MISMO SHA
+git diff main dev                         # ← Sin diferencias
+git log main..dev                         # ← Vacío
+```
+
+### Flujo Visual
+
+```
+Estado Inicial (después de release):
+main: A---B---C (v0.1.6)
+dev:  A---B---C (v0.1.6) ← MISMO commit
+
+Desarrollo en dev:
+main: A---B---C (sin cambios)
+dev:  A---B---C---D---E (nueva feature)
+
+PR de dev → main (merge normal):
+main: A---B---C---D---E ← Fast-forward
+dev:  A---B---C---D---E ← IGUALES
+
+Manual Release (crea commit F):
+main: A---B---C---D---E---F (v0.1.7)
+                          ↑
+                      commit de release
+dev:  A---B---C---D---E (sin F todavía)
+
+Sync Automático (fast-forward):
+main: A---B---C---D---E---F (v0.1.7)
+dev:  A---B---C---D---E---F (v0.1.7) ← MISMO commit
+```
+
+### Ventajas
+
+- ✅ **Transparencia**: Historial idéntico, verificable visualmente
+- ✅ **Confianza**: Mismo SHA = mismo contenido GARANTIZADO
+- ✅ **Simplicidad**: Sin merges bidireccionales, sin commits de sync confusos
+- ✅ **Verificable**: `git log main..dev` siempre vacío después de sync
+
+### Documentación Completa
+
+Ver archivos en la raíz del proyecto:
+- `ESTRATEGIA_RAMAS_PROPUESTA.md` - Estrategia completa y plan de migración
+- `FLUJO_COMPLETO_RELEASE.md` - Flujo detallado paso a paso con ejemplos
+
+---
+
+## 🤖 Configuración: GitHub App para Sincronización Automática (Opcional)
+
+El workflow `sync-main-to-dev-ff.yml` usa `GITHUB_TOKEN` por defecto, que es suficiente para el flujo actual.
+
+### ¿Por qué GitHub App?
+
+**Problema con GITHUB_TOKEN**:
+- ❌ Los commits realizados con `GITHUB_TOKEN` NO disparan workflows automáticamente
+- ❌ Esto es una limitación de seguridad de GitHub Actions
+- ❌ Sin esto, `sync-main-to-dev.yml` nunca se ejecutaba después de `manual-release.yml`
+
+**Solución con GitHub App**:
+- ✅ Los commits con App Token SÍ disparan workflows
+- ✅ Sincronización automática de main → dev funciona
+- ✅ Permisos granulares y seguros
+- ✅ Tokens expiran automáticamente
+
+### Secretos Requeridos
+
+A nivel de **organización** (EduGoGroup):
+
+| Secret | Valor | Descripción |
+|--------|-------|-------------|
+| `APP_ID` | Número (ej: 123456) | ID de la GitHub App |
+| `APP_PRIVATE_KEY` | Contenido del .pem | Private key de la App |
+
+### Cómo Crear la GitHub App
+
+1. **Crear App**:
+   - Settings → Developer settings → GitHub Apps → **New GitHub App**
+   - Name: `EduGo Sync Bot` (o cualquier nombre)
+   - Homepage URL: `https://github.com/EduGoGroup`
+   - Webhook: Desactivar (no necesario)
+
+2. **Configurar Permisos**:
+   ```
+   Repository permissions:
+   - Contents: Read and write ✅
+   - Workflows: Read and write ✅
+   - Metadata: Read-only (automático)
+   ```
+
+3. **Generar Private Key**:
+   - Scroll a sección "Private keys"
+   - Click **"Generate a private key"**
+   - Se descarga archivo `.pem` automáticamente
+   - **Guardar en lugar seguro** (se necesita para configurar secretos)
+
+4. **Instalar la App**:
+   - Click "Install App" (lado izquierdo)
+   - Seleccionar organización: **EduGoGroup**
+   - Repository access: **Selected repositories**
+     - Seleccionar: edugo-api-mobile, edugo-shared, edugo-worker, edugo-api-administracion
+   - Click **"Install"**
+
+5. **Configurar Secretos**:
+   - Ir a: https://github.com/organizations/EduGoGroup/settings/secrets/actions
+   - Click **"New organization secret"**
+
+   **Secreto 1 - APP_ID**:
+   - Name: `APP_ID`
+   - Secret: `123456` (el App ID visible en la página de la App)
+   - Repository access: **Selected repositories** (los 4 repos)
+
+   **Secreto 2 - APP_PRIVATE_KEY**:
+   - Name: `APP_PRIVATE_KEY`
+   - Secret: Abrir el .pem en editor y copiar TODO el contenido
+   ```
+   -----BEGIN RSA PRIVATE KEY-----
+   MIIEpAIBAAKCAQEA...
+   ...
+   -----END RSA PRIVATE KEY-----
+   ```
+   - Repository access: **Selected repositories** (los 4 repos)
+
+6. **Verificar**:
+   - Los 4 repos deben tener acceso a ambos secretos
+   - La App debe estar instalada en los 4 repos
+   - Los permisos deben estar correctos
+
+### Uso en Workflows
+
+```yaml
+- name: Generar token desde GitHub App
+  id: generate_token
+  uses: actions/create-github-app-token@v1
+  with:
+    app-id: ${{ secrets.APP_ID }}
+    private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+- name: Checkout con App Token
+  uses: actions/checkout@v4
+  with:
+    token: ${{ steps.generate_token.outputs.token }}
+```
+
+**Beneficio**: Los commits realizados con este token SÍ disparan workflows subsecuentes.
+
+---
+
+## 📋 Workflows Configurados
+
+### 1️⃣ **ci.yml** - Pipeline de Integración Continua
+
+**Trigger:**
+- ✅ Pull Requests a `main` o `develop`
+- ✅ Push directo a `main` (red de seguridad)
+
+**Ejecuta:**
+- ✅ Verificación de formato (gofmt)
+- ✅ Verificación de go.mod y go.sum sincronizados
+- ✅ Análisis estático (go vet)
+- ✅ Tests con race detection
+- ✅ Build verification
+- ✅ Verificación de Swagger docs
+- ✅ Linter (opcional, no bloquea)
+- ✅ Security scan con gosec
+
+**Cuándo se ejecuta:**
+```bash
+# Cuando creas un PR
+gh pr create --title "..." --body "..."  # ← AQUÍ se ejecuta
+
+# O cuando alguien hace push directo a main (no recomendado)
+git push origin main  # ← AQUÍ se ejecuta
+```
+
+**Duración estimada:** 3-4 minutos
+
+---
+
+### 2️⃣ **test.yml** - Tests con Cobertura
+
+**Trigger:**
+- ✅ Manual (workflow_dispatch desde GitHub UI)
+- ✅ Pull Requests a `main` o `develop`
+
+**Ejecuta:**
+- ✅ Tests unitarios con cobertura detallada
+- ✅ Generación de reporte HTML
+- ✅ Upload a Codecov
+- ✅ Comentario en PR con porcentaje de cobertura
+- ✅ Tests de integración con PostgreSQL y MongoDB (opcional)
+
+**Cuándo se ejecuta:**
+```bash
+# Manual desde GitHub UI:
+# Actions → Tests with Coverage → Run workflow
+
+# O automáticamente en PRs
+gh pr create  # ← AQUÍ se ejecuta
+```
+
+**Duración estimada:** 4-5 minutos
+
+---
+
+### 3️⃣ **manual-release.yml** - Crear Release Manual ⭐ RECOMENDADO
+
+**Trigger:**
+- ✅ Manual únicamente (workflow_dispatch)
+
+**Ejecuta:**
+- ✅ Validación de formato de versión (semver)
+- ✅ Verificación de que el tag no exista
+- ✅ Actualización de `.github/version.txt`
+- ✅ Generación automática de entrada en CHANGELOG.md
+- ✅ Commit de cambios de versión a main
+- ✅ Creación y push de tag (dispara release.yml automáticamente)
+
+**Cómo usarlo:**
+```bash
+# Desde GitHub UI:
+# 1. Ir a: Actions → Manual Release → Run workflow
+# 2. Seleccionar branch: main
+# 3. Ingresar versión: 0.1.0 (sin 'v')
+# 4. Seleccionar tipo: patch / minor / major
+# 5. Click "Run workflow"
+
+# El workflow automáticamente:
+# - Actualiza version.txt
+# - Actualiza CHANGELOG.md
+# - Crea commit en main
+# - Crea tag v0.1.0
+# - Dispara release.yml (que construye Docker)
+```
+
+**Inputs requeridos:**
+- `version`: Versión a crear (formato: 0.1.0)
+- `bump_type`: patch (bugfix) / minor (feature) / major (breaking/producción)
+
+**Qué dispara automáticamente:**
+- ✅ **release.yml** → Build Docker + GitHub Release
+- ✅ **sync-main-to-dev.yml** → Sincroniza cambios a dev
+
+**Duración estimada:** 1 minuto (luego dispara release.yml)
+
+**Ventajas:**
+- ✅ Control total sobre cuándo y qué versión crear
+- ✅ No depende de auto-version inestable
+- ✅ Proceso predecible y auditable
+- ✅ Actualiza CHANGELOG automáticamente
+- ✅ Dispara release completo (Docker + GitHub Release)
+
+---
+
+### 4️⃣ **build-and-push.yml** - Build y Push de Docker
+
+**Trigger:**
+- ✅ Manual (workflow_dispatch con selección de ambiente)
+- ✅ Push a `main` (automático)
+
+**Ejecuta:**
+- ✅ Tests antes del build
+- ✅ Build de imagen Docker
+- ✅ Push a GitHub Container Registry (ghcr.io)
+- ✅ Tags automáticos (latest, branch, sha, environment)
+- ✅ Resumen detallado del deployment
+
+**Cuándo se ejecuta:**
+```bash
+# Automático cuando haces push a main
+git push origin main  # ← AQUÍ se ejecuta
+
+# Manual desde GitHub UI con selección de ambiente:
+# Actions → Build and Push Docker Image → Run workflow
+# Seleccionar: development, staging, o production
+```
+
+**Tags generados:**
+- `latest` - Último build de main
+- `main-<sha>` - Build específico por commit
+- `<environment>` - Tag del ambiente seleccionado (manual)
+- `<environment>-YYYYMMDD-HHmmss` - Tag con timestamp (manual)
+
+**Duración estimada:** 5-8 minutos
+
+---
+
+### 4️⃣ **release.yml** - Release Completo (TAGS)
+
+**Trigger:** Solo cuando creas un tag `v*` (ej: `v1.0.0`, `v2.1.3`)
+
+**Ejecuta:**
+- ✅ Validación completa del código
+- ✅ Tests con cobertura
+- ✅ Build de imagen Docker con tags versionados
+- ✅ Creación automática de GitHub Release
+- ✅ Generación de changelog desde commits o CHANGELOG.md
+- ✅ Documentación de deployment en el release
+
+**Cuándo se ejecuta:**
+```bash
+# Crear y pushear tag
+git tag -a v1.0.0 -m "Release 1.0.0: Primera versión estable"
+git push origin v1.0.0  # ← AQUÍ se ejecuta
+```
+
+**Tags Docker generados:**
+- `v1.0.0` - Versión semántica completa
+- `v1.0` - Major.Minor
+- `v1` - Major
+- `latest` - Última versión
+- `v1.0.0-<sha>` - Con commit hash
+
+**Duración estimada:** 6-10 minutos
+
+---
+
+## 🎯 Estrategia de CI/CD Optimizada
+
+### **Flujo Normal de Desarrollo:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. Desarrollo Local                                        │
+│     - Hacer cambios en tu branch                           │
+│     - Ejecutar tests localmente: go test ./...             │
+│     - Verificar formato: gofmt -w .                        │
+│     - git commit                                            │
+│     ✅ NO GASTA MINUTOS DE GITHUB                           │
+└─────────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  2. Crear Pull Request                                      │
+│     - gh pr create                                          │
+│     - CI automático (ci.yml + test.yml)                     │
+│     - Revisar resultados y cobertura                        │
+│     - Aprobar y mergear                                     │
+│     ✅ VALIDA ANTES DE MERGE                                │
+└─────────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  3. Merge a Main                                            │
+│     - gh pr merge                                           │
+│     - CI de seguridad (ci.yml)                             │
+│     - Build automático de imagen Docker                     │
+│     ✅ CÓDIGO VALIDADO + IMAGEN EN GHCR                     │
+└─────────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. Crear Release (cuando estés listo)                     │
+│     - Actualizar CHANGELOG.md (opcional)                    │
+│     - git tag -a v1.2.0 -m "Release 1.2.0"                  │
+│     - git push origin v1.2.0                                │
+│     - Release automático (release.yml)                      │
+│     - Imagen Docker con tags versionados                    │
+│     ✅ RELEASE COMPLETO CON DOCUMENTACIÓN                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🐳 Gestión de Imágenes Docker
+
+### **Después de cada push a main:**
+```bash
+# La imagen se publica automáticamente como:
+docker pull ghcr.io/edugogroup/edugo-api-mobile:latest
+docker pull ghcr.io/edugogroup/edugo-api-mobile:main-abc1234
+```
+
+### **Cuando creas un release (tag):**
+```bash
+# Se publican múltiples tags versionados:
+docker pull ghcr.io/edugogroup/edugo-api-mobile:v1.2.0
+docker pull ghcr.io/edugogroup/edugo-api-mobile:v1.2
+docker pull ghcr.io/edugogroup/edugo-api-mobile:v1
+docker pull ghcr.io/edugogroup/edugo-api-mobile:latest
+```
+
+### **Deploy manual de ambiente específico:**
+```bash
+# Desde GitHub UI: Actions → Build and Push → Run workflow
+# Seleccionar ambiente: production
+
+# Resultado:
+docker pull ghcr.io/edugogroup/edugo-api-mobile:production
+docker pull ghcr.io/edugogroup/edugo-api-mobile:production-20251031-143000
+```
+
+---
+
+## 💰 Ahorro de Minutos de GitHub Actions
+
+### **Estrategia Optimizada:**
+
+| Escenario | Workflows Ejecutados | Minutos Estimados |
+|-----------|---------------------|-------------------|
+| Push a branch feature | 0 (no ejecuta nada) | 0 min |
+| Crear PR | ci.yml + test.yml | ~8 min |
+| Merge a main | ci.yml + build-and-push.yml | ~12 min |
+| Crear release (tag) | release.yml | ~10 min |
+
+**Mes típico (10 PRs, 3 releases):**
+- 10 PRs = 80 minutos
+- 10 merges a main = 120 minutos
+- 3 releases = 30 minutos
+- **Total = 230 minutos/mes** (✅ Solo ~10% del plan gratuito de 2,000 min)
+
+---
+
+## 🚀 Guía Rápida
+
+### **Para desarrollo normal:**
+```bash
+# 1. Crear branch de feature
+git checkout -b feature/nueva-funcionalidad
+
+# 2. Desarrollar y probar localmente
+go test ./...
+gofmt -w .
+
+# 3. Commit y push
+git commit -m "feat: nueva funcionalidad"
+git push origin feature/nueva-funcionalidad
+
+# 4. Crear PR (ejecuta ci.yml + test.yml automáticamente)
+gh pr create --title "Nueva funcionalidad" --body "..."
+
+# 5. Esperar aprobación y merge
+# Al hacer merge, se ejecuta automáticamente build-and-push.yml
+```
+
+### **Para crear una release:**
+```bash
+# 1. Asegurarse de estar en main actualizado
+git checkout main
+git pull origin main
+
+# 2. Actualizar CHANGELOG.md (opcional pero recomendado)
+vim CHANGELOG.md
+git add CHANGELOG.md
+git commit -m "chore: actualizar changelog para v1.2.0"
+git push origin main
+
+# 3. Crear y pushear tag (ejecuta release.yml automáticamente)
+git tag -a v1.2.0 -m "Release 1.2.0: Nuevas funcionalidades X, Y, Z"
+git push origin v1.2.0
+
+# 4. GitHub Actions:
+#    - Valida todo el código
+#    - Ejecuta tests
+#    - Construye imagen Docker
+#    - Crea GitHub Release automáticamente
+#    - Publica documentación
+```
+
+### **Para deploy manual a un ambiente:**
+```bash
+# Opción 1: Desde GitHub UI
+# 1. Ir a Actions → Build and Push Docker Image
+# 2. Click en "Run workflow"
+# 3. Seleccionar ambiente (development/staging/production)
+# 4. Click "Run workflow"
+
+# Opción 2: Desde CLI con gh
+gh workflow run build-and-push.yml -f environment=production
+```
+
+---
+
+## 📊 Monitoreo de Workflows
+
+### **Ver estado de workflows:**
+```bash
+# Listar últimos workflows ejecutados
+gh run list --limit 10
+
+# Ver detalles de un workflow específico
+gh run view <run-id>
+
+# Ver logs de un workflow
+gh run view <run-id> --log
+
+# Re-ejecutar un workflow fallido
+gh run rerun <run-id>
+
+# Ver workflows en ejecución
+gh run watch
+```
+
+### **Ver imagen Docker publicada:**
+```bash
+# Autenticarse en GHCR
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+
+# Ver tags disponibles
+gh api /orgs/EduGoGroup/packages/container/edugo-api-mobile/versions
+
+# Pull de la imagen
+docker pull ghcr.io/edugogroup/edugo-api-mobile:latest
+```
+
+---
+
+## 🛡️ Branch Protection (Recomendado)
+
+Para forzar el uso de PRs y garantizar calidad:
+
+1. GitHub → Settings → Branches → Add rule
+2. Branch name pattern: `main`
+3. Configurar:
+   - ✅ Require pull request before merging
+   - ✅ Require approvals: 1
+   - ✅ Require status checks to pass:
+     - `Tests and Validation`
+     - `Tests with Coverage`
+   - ✅ Require branches to be up to date
+   - ✅ Do not allow bypassing the above settings
+
+---
+
+## 🔍 Troubleshooting
+
+### **Error: "GOPRIVATE no configurado"**
+```bash
+# Asegúrate de que el workflow tiene acceso a repos privados
+# Ya está configurado en los workflows con:
+git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+```
+
+### **Error: "No se puede pushear imagen Docker"**
+```bash
+# Verifica permisos del workflow
+# Los workflows necesitan: permissions.packages: write
+# Ya está configurado en build-and-push.yml y release.yml
+```
+
+### **Workflow no se ejecuta en tag:**
+```bash
+# Asegúrate de que el tag tenga el prefijo 'v'
+git tag v1.0.0  # ✅ Correcto
+git tag 1.0.0   # ❌ No ejecutará release.yml
+
+# Push del tag
+git push origin v1.0.0
+```
+
+---
+
+## 🤖 GitHub Copilot - Code Review Automático
+
+Este repositorio incluye **instrucciones personalizadas para GitHub Copilot** que mejoran:
+- ✅ Sugerencias de código en tu IDE
+- ✅ Code reviews automáticos en Pull Requests
+- ✅ Comentarios contextuales según tu arquitectura
+
+### 📄 Archivo de Configuración
+
+**Ubicación:** `.github/copilot-instructions.md`
+
+Este archivo contiene:
+- Arquitectura del proyecto (Clean Architecture)
+- Convenciones de código y naming
+- Reglas de uso de `edugo-shared`
+- TODOs y deuda técnica conocida
+- **Configuración de idioma:** Todos los comentarios en español
+
+### 🎯 Copilot en Pull Requests
+
+Cuando creas un PR, Copilot **automáticamente**:
+
+1. **Analiza el código** según las instrucciones personalizadas
+2. **Genera comentarios** sobre mejoras, bugs potenciales, o mejores prácticas
+3. **Reporta cobertura** de tests (si está configurado)
+4. **Sugiere implementaciones** alineadas con tu arquitectura
+
+**Ejemplo de comentario de Copilot:**
+```
+⚠️ Considera usar errors.NewValidationError() de edugo-shared
+en lugar de fmt.Errorf() para mantener consistencia con la
+arquitectura del proyecto.
+```
+
+### 📝 Actualizar Instrucciones
+
+Si cambias patrones arquitectónicos o agregas nuevas convenciones:
+
+```bash
+# Editar instrucciones
+vim .github/copilot-instructions.md
+
+# Commit
+git add .github/copilot-instructions.md
+git commit -m "docs: actualizar instrucciones de Copilot"
+
+# Las nuevas instrucciones se aplicarán en el próximo PR
+```
+
+### 📖 Más Información
+
+- [Documentación oficial de Copilot Custom Instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot)
+- [Archivo de instrucciones actual](../copilot-instructions.md)
+
+---
+
+## 📚 Recursos Adicionales
+
+- [Documentación de GitHub Actions](https://docs.github.com/en/actions)
+- [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+- [Codecov Documentation](https://docs.codecov.com/)
+- [Guía de Migración edugo-shared](../../MIGRACION_EDUGO_SHARED_V2.0.5.md)
+
+---
+
+## 📝 Checklist para Nuevos Proyectos
+
+Si vas a replicar estos workflows en otros proyectos:
+
+- [ ] Copiar los 4 archivos de workflows
+- [ ] Actualizar `GO_VERSION` a la versión de Go del proyecto
+- [ ] Actualizar `IMAGE_NAME` si es necesario
+- [ ] Verificar que existe Swagger (o comentar esa sección)
+- [ ] Configurar branch protection en GitHub
+- [ ] Hacer un PR de prueba para validar ci.yml y test.yml
+- [ ] Crear un tag de prueba para validar release.yml
+- [ ] Documentar workflows específicos del proyecto
+
+---
+
+**Última actualización:** 2025-11-01
+**Mantenedor:** Equipo EduGo
+**Proyecto:** edugo-api-mobile
+
+## 🧪 Workflows de Testing (Nuevos - 2025-11-09)
+
+### **test-unit-quick.yml** - Tests Unitarios Rápidos
+
+**NO IMPLEMENTADO** (se usa ci.yml mejorado)
+
+Los tests unitarios se ejecutan dentro de `ci.yml` con control ON/OFF mediante:
+- Variable: `ENABLE_TESTS: true`
+- Labels: `skip-tests`, `WIP`
+
+### **test-coverage.yml** - Verificación de Cobertura
+
+**MEJORADO** (test.yml existente)
+
+Ahora incluye:
+- ✅ Filtrado de cobertura con .coverignore
+- ✅ Scripts check-coverage.sh
+- ✅ Control con label `skip-coverage`
+- ✅ Umbral configurable en workflow_dispatch
+- ✅ Comentario mejorado en PR con comandos útiles
+
+### **Control de Testing con Labels**
+
+Agrega labels a tus PRs para controlar la ejecución:
+
+```bash
+# Saltar TODOS los tests
+gh pr edit 123 --add-label "skip-tests"
+
+# Saltar solo verificación de cobertura
+gh pr edit 123 --add-label "skip-coverage"
+
+# Ejecutar tests de integración (deshabilitados por defecto)
+gh pr edit 123 --add-label "run-integration-tests"
+
+# Work in Progress (salta tests automáticamente)
+gh pr create --draft --label "WIP"
+```
+
+### **Archivo de Configuración Central**
+
+Ver: `.github/testing-config.yml`
+
+Controla globalmente:
+- ON/OFF de cada tipo de test
+- Umbrales de cobertura
+- Timeouts
+- Reglas por branch (main vs dev vs feature)
+
+---
+
+## 📊 Badges Agregados al README
+
+Los siguientes badges se agregaron al README:
+
+1. **CI Pipeline**: Estado de integración continua
+2. **Tests with Coverage**: Estado de tests con cobertura
+3. **Codecov**: Porcentaje de cobertura (actualización automática)
+4. **Go Version**: Versión de Go del proyecto
+5. **Release**: Último release publicado
+
+Ver ejemplos en la cabecera del [README.md](../../README.md)
+
+---
+
+**Última actualización:** 2025-11-09  
+**Cambios:** Integración de sistema de testing mejorado
