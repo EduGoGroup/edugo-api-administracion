@@ -29,13 +29,13 @@ func TestMembershipRepository_Create(t *testing.T) {
 	schoolRepo.Create(ctx, school)
 
 	unitType, _ := valueobject.NewUnitType("section")
-	unit, _ := entity.NewAcademicUnit(school.ID(), unitType, "Section A", "", "")
+	unit, _ := entity.NewAcademicUnit(school.ID(), unitType, "Section A", "")
 	unitRepo.Create(ctx, unit)
 
 	// Crear membership
 	userID, _ := valueobject.UserIDFromString("user-123")
 	role, _ := valueobject.NewMembershipRole("student")
-	membership, err := entity.NewUnitMembership(unit.ID(), userID, role, time.Now(), nil)
+	membership, err := entity.NewUnitMembership(unit.ID(), userID, role, time.Now())
 	require.NoError(t, err)
 
 	err = membershipRepo.Create(ctx, membership)
@@ -47,7 +47,7 @@ func TestMembershipRepository_Create(t *testing.T) {
 	assert.Equal(t, membership.Role(), found.Role())
 }
 
-func TestMembershipRepository_FindByUnit(t *testing.T) {
+func TestMembershipRepository_FindByUnitID(t *testing.T) {
 	db, cleanup := setupTestDBWithMigrations(t)
 	defer cleanup()
 
@@ -61,7 +61,7 @@ func TestMembershipRepository_FindByUnit(t *testing.T) {
 	schoolRepo.Create(ctx, school)
 
 	unitType, _ := valueobject.NewUnitType("section")
-	unit, _ := entity.NewAcademicUnit(school.ID(), unitType, "Section B", "", "")
+	unit, _ := entity.NewAcademicUnit(school.ID(), unitType, "Section B", "")
 	unitRepo.Create(ctx, unit)
 
 	// Crear 2 membresías
@@ -69,45 +69,14 @@ func TestMembershipRepository_FindByUnit(t *testing.T) {
 	userID2, _ := valueobject.UserIDFromString("user-2")
 	role, _ := valueobject.NewMembershipRole("student")
 
-	m1, _ := entity.NewUnitMembership(unit.ID(), userID1, role, time.Now(), nil)
-	m2, _ := entity.NewUnitMembership(unit.ID(), userID2, role, time.Now(), nil)
+	m1, _ := entity.NewUnitMembership(unit.ID(), userID1, role, time.Now())
+	m2, _ := entity.NewUnitMembership(unit.ID(), userID2, role, time.Now())
 
 	membershipRepo.Create(ctx, m1)
 	membershipRepo.Create(ctx, m2)
 
 	// Buscar por unidad
-	memberships, err := membershipRepo.FindByUnit(ctx, unit.ID(), true)
+	memberships, err := membershipRepo.FindByUnitID(ctx, unit.ID(), true)
 	assert.NoError(t, err)
 	assert.Len(t, memberships, 2)
-}
-
-func TestMembershipRepository_FindActiveAt(t *testing.T) {
-	db, cleanup := setupTestDBWithMigrations(t)
-	defer cleanup()
-
-	ctx := context.Background()
-	schoolRepo := postgresRepo.NewPostgresSchoolRepository(db)
-	unitRepo := postgresRepo.NewPostgresAcademicUnitRepository(db)
-	membershipRepo := postgresRepo.NewPostgresUnitMembershipRepository(db)
-
-	// Setup
-	school, _ := entity.NewSchool("Test School", "MEM003", "")
-	schoolRepo.Create(ctx, school)
-
-	unitType, _ := valueobject.NewUnitType("section")
-	unit, _ := entity.NewAcademicUnit(school.ID(), unitType, "Section C", "", "")
-	unitRepo.Create(ctx, unit)
-
-	// Crear membership activa
-	userID, _ := valueobject.UserIDFromString("user-active")
-	role, _ := valueobject.NewMembershipRole("student")
-	validUntil := time.Now().AddDate(1, 0, 0) // Válida por 1 año
-
-	membership, _ := entity.NewUnitMembership(unit.ID(), userID, role, time.Now(), &validUntil)
-	membershipRepo.Create(ctx, membership)
-
-	// Buscar activas
-	active, err := membershipRepo.FindActiveAt(ctx, unit.ID(), time.Now())
-	assert.NoError(t, err)
-	assert.Len(t, active, 1)
 }
