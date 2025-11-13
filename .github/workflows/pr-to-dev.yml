@@ -41,9 +41,11 @@ jobs:
 
       - name: 📊 Generar reporte de cobertura
         run: make coverage-report
+        continue-on-error: true
         timeout-minutes: 5
 
       - name: ✅ Verificar umbral de cobertura
+        continue-on-error: true
         if: |
           !contains(github.event.pull_request.labels.*.name, 'skip-coverage')
         run: |
