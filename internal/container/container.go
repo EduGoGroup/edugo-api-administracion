@@ -18,31 +18,37 @@ type Container struct {
 	Logger logger.Logger
 
 	// Repositories
-	UserRepository     repository.UserRepository
-	SchoolRepository   repository.SchoolRepository
-	UnitRepository     repository.UnitRepository
-	SubjectRepository  repository.SubjectRepository
-	MaterialRepository repository.MaterialRepository
-	StatsRepository    repository.StatsRepository
-	GuardianRepository repository.GuardianRepository
+	UserRepository           repository.UserRepository
+	SchoolRepository         repository.SchoolRepository
+	AcademicUnitRepository   repository.AcademicUnitRepository
+	UnitMembershipRepository repository.UnitMembershipRepository
+	UnitRepository           repository.UnitRepository
+	SubjectRepository        repository.SubjectRepository
+	MaterialRepository       repository.MaterialRepository
+	StatsRepository          repository.StatsRepository
+	GuardianRepository       repository.GuardianRepository
 
 	// Services
-	UserService     service.UserService
-	SchoolService   service.SchoolService
-	UnitService     service.UnitService
-	SubjectService  service.SubjectService
-	MaterialService service.MaterialService
-	StatsService    service.StatsService
-	GuardianService service.GuardianService
+	UserService           service.UserService
+	SchoolService         service.SchoolService
+	AcademicUnitService   service.AcademicUnitService
+	UnitMembershipService service.UnitMembershipService
+	UnitService           service.UnitService
+	SubjectService        service.SubjectService
+	MaterialService       service.MaterialService
+	StatsService          service.StatsService
+	GuardianService       service.GuardianService
 
 	// Handlers
-	UserHandler     *handler.UserHandler
-	SchoolHandler   *handler.SchoolHandler
-	UnitHandler     *handler.UnitHandler
-	SubjectHandler  *handler.SubjectHandler
-	MaterialHandler *handler.MaterialHandler
-	StatsHandler    *handler.StatsHandler
-	GuardianHandler *handler.GuardianHandler
+	UserHandler           *handler.UserHandler
+	SchoolHandler         *handler.SchoolHandler
+	AcademicUnitHandler   *handler.AcademicUnitHandler
+	UnitMembershipHandler *handler.UnitMembershipHandler
+	UnitHandler           *handler.UnitHandler
+	SubjectHandler        *handler.SubjectHandler
+	MaterialHandler       *handler.MaterialHandler
+	StatsHandler          *handler.StatsHandler
+	GuardianHandler       *handler.GuardianHandler
 }
 
 // NewContainer crea un nuevo contenedor e inicializa todas las dependencias
@@ -55,6 +61,8 @@ func NewContainer(db *sql.DB, logger logger.Logger) *Container {
 	// Inicializar repositories (capa de infraestructura)
 	c.UserRepository = postgresRepo.NewPostgresUserRepository(db)
 	c.SchoolRepository = postgresRepo.NewPostgresSchoolRepository(db)
+	c.AcademicUnitRepository = postgresRepo.NewPostgresAcademicUnitRepository(db)
+	c.UnitMembershipRepository = postgresRepo.NewPostgresUnitMembershipRepository(db)
 	c.UnitRepository = postgresRepo.NewPostgresUnitRepository(db)
 	c.SubjectRepository = postgresRepo.NewPostgresSubjectRepository(db)
 	c.MaterialRepository = postgresRepo.NewPostgresMaterialRepository(db)
@@ -68,6 +76,16 @@ func NewContainer(db *sql.DB, logger logger.Logger) *Container {
 	)
 	c.SchoolService = service.NewSchoolService(
 		c.SchoolRepository,
+		logger,
+	)
+	c.AcademicUnitService = service.NewAcademicUnitService(
+		c.AcademicUnitRepository,
+		c.SchoolRepository,
+		logger,
+	)
+	c.UnitMembershipService = service.NewUnitMembershipService(
+		c.UnitMembershipRepository,
+		c.AcademicUnitRepository,
 		logger,
 	)
 	c.UnitService = service.NewUnitService(
@@ -98,6 +116,14 @@ func NewContainer(db *sql.DB, logger logger.Logger) *Container {
 	)
 	c.SchoolHandler = handler.NewSchoolHandler(
 		c.SchoolService,
+		logger,
+	)
+	c.AcademicUnitHandler = handler.NewAcademicUnitHandler(
+		c.AcademicUnitService,
+		logger,
+	)
+	c.UnitMembershipHandler = handler.NewUnitMembershipHandler(
+		c.UnitMembershipService,
 		logger,
 	)
 	c.UnitHandler = handler.NewUnitHandler(

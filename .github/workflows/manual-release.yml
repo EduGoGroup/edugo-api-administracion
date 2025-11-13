@@ -6,24 +6,24 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Versión a crear (sin v, ejemplo: 0.1.0)'
+        description: "Versión a crear (sin v, ejemplo: 0.1.0)"
         required: true
         type: string
       bump_type:
-        description: 'Tipo de incremento'
+        description: "Tipo de incremento"
         required: true
         type: choice
         options:
-          - patch  # 0.0.1 → 0.0.2 (bugfix)
-          - minor  # 0.0.1 → 0.1.0 (nueva feature)
-          - major  # 0.0.1 → 1.0.0 (breaking change o producción)
+          - patch # 0.0.1 → 0.0.2 (bugfix)
+          - minor # 0.0.1 → 0.1.0 (nueva feature)
+          - major # 0.0.1 → 1.0.0 (breaking change o producción)
 
 permissions:
   contents: write
   packages: write
 
 env:
-  GO_VERSION: '1.25.3'
+  GO_VERSION: "1.24"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -39,7 +39,7 @@ jobs:
       # - Requiere secretos: APP_ID y APP_PRIVATE_KEY (configurados a nivel de organización)
       - name: Generar token desde GitHub App
         id: generate_token
-        uses: actions/create-github-app-token@v2.1.4  # Commit SHA: 6701853
+        uses: actions/create-github-app-token@v2.1.4 # Commit SHA: 6701853
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}

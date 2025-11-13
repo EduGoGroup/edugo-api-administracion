@@ -22,7 +22,7 @@ func SetupContainers(t *testing.T) (*TestContainers, func()) {
 		postgres.WithDatabase("edugo"),
 		postgres.WithUsername("edugo_user"),
 		postgres.WithPassword("edugo_pass"),
-		postgres.WithInitScripts("../../../scripts/postgresql/01_schema.sql"),
+		postgres.WithInitScripts("../../scripts/postgresql/01_academic_hierarchy.sql"),
 	)
 	if err != nil {
 		t.Fatalf("Failed to start Postgres: %v", err)

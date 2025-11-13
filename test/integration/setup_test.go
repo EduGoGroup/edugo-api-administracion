@@ -5,6 +5,7 @@ package integration
 import (
 	"context"
 	"database/sql"
+	"os"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -103,4 +104,27 @@ func TestSetupMongoDB(t *testing.T) {
 	}
 
 	t.Logf("✅ MongoDB testcontainer inicializado correctamente (collections: %d)", len(collections))
+}
+
+// execSQLFile ejecuta un archivo SQL completo en la base de datos
+func execSQLFile(t *testing.T, db *sql.DB, filepath string) {
+	sqlBytes, err := os.ReadFile(filepath)
+	if err != nil {
+		t.Fatalf("Failed to read SQL file %s: %v", filepath, err)
+	}
+
+	_, err = db.Exec(string(sqlBytes))
+	if err != nil {
+		t.Fatalf("Failed to execute SQL file %s: %v", filepath, err)
+	}
+}
+
+// setupTestDBWithMigrations crea una BD con las migraciones aplicadas
+func setupTestDBWithMigrations(t *testing.T) (*sql.DB, func()) {
+	db, cleanup := setupTestDB(t)
+
+	// Ejecutar migraciones
+	execSQLFile(t, db, "../../scripts/postgresql/01_academic_hierarchy.sql")
+
+	return db, cleanup
 }

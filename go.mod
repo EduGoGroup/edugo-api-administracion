@@ -1,12 +1,12 @@
 module github.com/EduGoGroup/edugo-api-administracion
 
-go 1.25.3
+go 1.24.10
 
 require (
-	github.com/EduGoGroup/edugo-shared/bootstrap v0.4.0
-	github.com/EduGoGroup/edugo-shared/common v0.0.0-20251031204120-ecc6528ef4b6
-	github.com/EduGoGroup/edugo-shared/lifecycle v0.4.0
-	github.com/EduGoGroup/edugo-shared/logger v0.4.0
+	github.com/EduGoGroup/edugo-shared/bootstrap v0.5.0
+	github.com/EduGoGroup/edugo-shared/common v0.5.0
+	github.com/EduGoGroup/edugo-shared/lifecycle v0.5.0
+	github.com/EduGoGroup/edugo-shared/logger v0.5.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/lib/pq v1.10.9
 	github.com/sirupsen/logrus v1.9.3
@@ -119,6 +119,7 @@ require (
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/testcontainers/testcontainers-go v0.39.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
