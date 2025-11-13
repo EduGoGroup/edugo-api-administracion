@@ -54,8 +54,8 @@ func Load() (*Config, error) {
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	// Secrets
-	v.BindEnv("database.postgres.password", "POSTGRES_PASSWORD")
-	v.BindEnv("database.mongodb.uri", "MONGODB_URI")
+	_ = v.BindEnv("database.postgres.password", "POSTGRES_PASSWORD")
+	_ = v.BindEnv("database.mongodb.uri", "MONGODB_URI")
 
 	// Unmarshal
 	var cfg Config

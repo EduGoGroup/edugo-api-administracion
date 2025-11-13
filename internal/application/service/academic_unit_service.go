@@ -107,7 +107,9 @@ func (s *academicUnitService) CreateUnit(ctx context.Context, schoolID string, r
 
 	// 6. Agregar descripción y metadata
 	if req.Description != "" {
-		unit.UpdateInfo(req.DisplayName, req.Description)
+		if err := unit.UpdateInfo(req.DisplayName, req.Description); err != nil {
+			return nil, err
+		}
 	}
 
 	if req.Metadata != nil {
