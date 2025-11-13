@@ -1,12 +1,12 @@
 module github.com/EduGoGroup/edugo-api-administracion
 
-go 1.25.3
+go 1.24.10
 
 require (
-	github.com/EduGoGroup/edugo-shared/bootstrap v0.4.0
-	github.com/EduGoGroup/edugo-shared/common v0.0.0-20251031204120-ecc6528ef4b6
-	github.com/EduGoGroup/edugo-shared/lifecycle v0.4.0
-	github.com/EduGoGroup/edugo-shared/logger v0.4.0
+	github.com/EduGoGroup/edugo-shared/bootstrap v0.4.1
+	github.com/EduGoGroup/edugo-shared/common v0.4.1
+	github.com/EduGoGroup/edugo-shared/lifecycle v0.4.1
+	github.com/EduGoGroup/edugo-shared/logger v0.4.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/lib/pq v1.10.9
 	github.com/sirupsen/logrus v1.9.3
