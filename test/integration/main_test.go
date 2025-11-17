@@ -5,6 +5,7 @@ package integration
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -60,7 +61,7 @@ func setupSharedContainers() error {
 	// Configurar PostgreSQL
 	pg := manager.PostgreSQL()
 	if pg == nil {
-		return err
+		return fmt.Errorf("failed to get PostgreSQL container from manager")
 	}
 
 	connString, err := pg.ConnectionString(ctx)

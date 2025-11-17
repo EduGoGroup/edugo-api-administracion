@@ -5,9 +5,11 @@ package integration
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"testing"
 
 	"github.com/EduGoGroup/edugo-shared/testing/containers"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -77,7 +79,9 @@ func cleanupTestData(t *testing.T) {
 
 	for _, table := range tables {
 		// TRUNCATE CASCADE es más rápido que DELETE
-		_, err := sharedDB.ExecContext(ctx, "TRUNCATE TABLE "+table+" CASCADE")
+		// Usar QuoteIdentifier para prevenir SQL injection
+		query := fmt.Sprintf("TRUNCATE TABLE %s CASCADE", pq.QuoteIdentifier(table))
+		_, err := sharedDB.ExecContext(ctx, query)
 		if err != nil {
 			// Si la tabla no existe, ignorar el error
 			t.Logf("Warning: Failed to truncate table %s: %v", table, err)
