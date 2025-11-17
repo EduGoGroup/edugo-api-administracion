@@ -19,7 +19,7 @@ func NewPostgresUnitRepository(db *sql.DB) repository.UnitRepository {
 
 func (r *postgresUnitRepository) Create(ctx context.Context, unit *entity.Unit) error {
 	query := `
-		INSERT INTO units (id, school_id, parent_unit_id, name, description, is_active, created_at, updated_at)
+		INSERT INTO academic_units (id, school_id, parent_unit_id, name, description, is_active, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 
@@ -92,7 +92,7 @@ func (r *postgresUnitRepository) Update(ctx context.Context, unit *entity.Unit) 
 }
 
 func (r *postgresUnitRepository) Delete(ctx context.Context, id valueobject.UnitID) error {
-	query := `UPDATE units SET is_active = false, updated_at = NOW() WHERE id = $1`
+	query := `UPDATE academic_units SET is_active = false, updated_at = NOW() WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id.String())
 	return err
 }
@@ -132,7 +132,7 @@ func (r *postgresUnitRepository) FindChildren(ctx context.Context, parentID valu
 }
 
 func (r *postgresUnitRepository) HasChildren(ctx context.Context, unitID valueobject.UnitID) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM units WHERE parent_unit_id = $1)`
+	query := `SELECT EXISTS(SELECT 1 FROM academic_units WHERE parent_unit_id = $1)`
 
 	var hasChildren bool
 	err := r.db.QueryRowContext(ctx, query, unitID.String()).Scan(&hasChildren)
@@ -144,10 +144,10 @@ func (r *postgresUnitRepository) IsDescendantOf(ctx context.Context, unitID, anc
 	// Usa recursive CTE
 	query := `
 		WITH RECURSIVE ancestors AS (
-			SELECT id, parent_unit_id FROM units WHERE id = $1
+			SELECT id, parent_unit_id FROM academic_units WHERE id = $1
 			UNION ALL
 			SELECT u.id, u.parent_unit_id
-			FROM units u
+			FROM academic_units u
 			INNER JOIN ancestors a ON u.id = a.parent_unit_id
 		)
 		SELECT EXISTS(SELECT 1 FROM ancestors WHERE id = $2)

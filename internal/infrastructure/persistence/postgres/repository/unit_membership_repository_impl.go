@@ -22,7 +22,7 @@ func NewPostgresUnitMembershipRepository(db *sql.DB) repository.UnitMembershipRe
 
 func (r *postgresUnitMembershipRepository) Create(ctx context.Context, membership *entity.UnitMembership) error {
 	query := `
-		INSERT INTO unit_membership (id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at)
+		INSERT INTO memberships (id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
@@ -53,7 +53,7 @@ func (r *postgresUnitMembershipRepository) Create(ctx context.Context, membershi
 func (r *postgresUnitMembershipRepository) FindByID(ctx context.Context, id valueobject.MembershipID) (*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE id = $1
 	`
 
@@ -63,7 +63,7 @@ func (r *postgresUnitMembershipRepository) FindByID(ctx context.Context, id valu
 func (r *postgresUnitMembershipRepository) FindByUnitID(ctx context.Context, unitID valueobject.UnitID, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1
 	`
 
@@ -79,7 +79,7 @@ func (r *postgresUnitMembershipRepository) FindByUnitID(ctx context.Context, uni
 func (r *postgresUnitMembershipRepository) FindByUserID(ctx context.Context, userID valueobject.UserID, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE user_id = $1
 	`
 
@@ -95,7 +95,7 @@ func (r *postgresUnitMembershipRepository) FindByUserID(ctx context.Context, use
 func (r *postgresUnitMembershipRepository) FindByUnitAndUser(ctx context.Context, unitID valueobject.UnitID, userID valueobject.UserID) (*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1 AND user_id = $2
 		ORDER BY valid_from DESC
 		LIMIT 1
@@ -107,7 +107,7 @@ func (r *postgresUnitMembershipRepository) FindByUnitAndUser(ctx context.Context
 func (r *postgresUnitMembershipRepository) FindByRole(ctx context.Context, unitID valueobject.UnitID, role valueobject.MembershipRole, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1 AND role = $2
 	`
 
@@ -123,7 +123,7 @@ func (r *postgresUnitMembershipRepository) FindByRole(ctx context.Context, unitI
 func (r *postgresUnitMembershipRepository) FindActiveAt(ctx context.Context, unitID valueobject.UnitID, at time.Time) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1
 		  AND valid_from <= $2
 		  AND (valid_until IS NULL OR valid_until >= $2)
@@ -135,7 +135,7 @@ func (r *postgresUnitMembershipRepository) FindActiveAt(ctx context.Context, uni
 
 func (r *postgresUnitMembershipRepository) Update(ctx context.Context, membership *entity.UnitMembership) error {
 	query := `
-		UPDATE unit_membership
+		UPDATE memberships
 		SET role = $1, valid_until = $2, metadata = $3, updated_at = $4
 		WHERE id = $5
 	`
@@ -161,7 +161,7 @@ func (r *postgresUnitMembershipRepository) Update(ctx context.Context, membershi
 }
 
 func (r *postgresUnitMembershipRepository) Delete(ctx context.Context, id valueobject.MembershipID) error {
-	query := `DELETE FROM unit_membership WHERE id = $1`
+	query := `DELETE FROM memberships WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, id.String())
 	return err
@@ -170,7 +170,7 @@ func (r *postgresUnitMembershipRepository) Delete(ctx context.Context, id valueo
 func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Context, unitID valueobject.UnitID, userID valueobject.UserID) (bool, error) {
 	query := `
 		SELECT EXISTS(
-			SELECT 1 FROM unit_membership 
+			SELECT 1 FROM memberships 
 			WHERE unit_id = $1 AND user_id = $2 
 			  AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)
 		)
@@ -182,7 +182,7 @@ func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Conte
 }
 
 func (r *postgresUnitMembershipRepository) CountByUnit(ctx context.Context, unitID valueobject.UnitID, activeOnly bool) (int, error) {
-	query := `SELECT COUNT(*) FROM unit_membership WHERE unit_id = $1`
+	query := `SELECT COUNT(*) FROM memberships WHERE unit_id = $1`
 
 	if activeOnly {
 		query += " AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)"
@@ -195,7 +195,7 @@ func (r *postgresUnitMembershipRepository) CountByUnit(ctx context.Context, unit
 
 func (r *postgresUnitMembershipRepository) CountByRole(ctx context.Context, unitID valueobject.UnitID, role valueobject.MembershipRole) (int, error) {
 	query := `
-		SELECT COUNT(*) FROM unit_membership 
+		SELECT COUNT(*) FROM memberships 
 		WHERE unit_id = $1 AND role = $2
 		  AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)
 	`

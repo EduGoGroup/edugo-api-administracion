@@ -21,8 +21,6 @@ vendor/
 # Binarios del proyecto
 bin/
 dist/
-api-admin
-edugo-api-administracion
 
 # IDEs y editores
 .vscode/
@@ -51,11 +49,6 @@ desktop.ini
 # Directorios temporales
 tmp/
 temp/
-
-# Archivos de documentación generados
-docs/swagger.json
-docs/swagger.yaml
-docs/docs.go
 
 # Air (live reload para Go)
 .air.toml
@@ -92,16 +85,6 @@ node_modules/
 .LSOverride
 Icon
 ._*
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
+
 .envrc
+api-admin
