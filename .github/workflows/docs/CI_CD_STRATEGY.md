@@ -278,7 +278,7 @@ git push origin feature/nueva-funcionalidad
 
 | Variable | Valor | Descripción |
 |----------|-------|-------------|
-| `GO_VERSION` | 1.25.3 | Versión de Go |
+| `GO_VERSION` | 1.24 | Versión de Go |
 | `COVERAGE_THRESHOLD` | 33 | Umbral mínimo de cobertura |
 | `RUN_INTEGRATION_TESTS` | true | Habilitar tests de integración |
 

@@ -79,6 +79,27 @@ test-integration: ## Tests de integración (con testcontainers)
 	@echo "$(YELLOW)🐳 Tests de integración...$(RESET)"
 	@$(GOTEST) -v -tags=integration ./test/integration/... -timeout 5m
 
+coverage-report: ## Generar reporte de cobertura filtrado para CI
+	@echo "$(YELLOW)📊 Generando reporte de cobertura (filtrado)...$(RESET)"
+	@mkdir -p $(COVERAGE_DIR)
+	@echo "$(BLUE)→ Ejecutando tests con cobertura...$(RESET)"
+	@$(GOTEST) -v -race -coverprofile=$(COVERAGE_DIR)/coverage.out -covermode=atomic ./...
+	@echo "$(BLUE)→ Filtrando archivos según .coverignore...$(RESET)"
+	@./scripts/filter-coverage.sh $(COVERAGE_DIR)/coverage.out $(COVERAGE_DIR)/coverage-filtered.out
+	@echo "$(BLUE)→ Generando reporte HTML...$(RESET)"
+	@$(GOCMD) tool cover -html=$(COVERAGE_DIR)/coverage-filtered.out -o $(COVERAGE_DIR)/coverage.html
+	@echo "$(BLUE)→ Resumen de cobertura:$(RESET)"
+	@$(GOCMD) tool cover -func=$(COVERAGE_DIR)/coverage-filtered.out | tail -1
+	@echo "$(GREEN)✓ Reportes generados:$(RESET)"
+	@echo "  - $(COVERAGE_DIR)/coverage.out (completo)"
+	@echo "  - $(COVERAGE_DIR)/coverage-filtered.out (filtrado)"
+	@echo "  - $(COVERAGE_DIR)/coverage.html"
+	@echo "$(BLUE)💡 Abrir reporte: open $(COVERAGE_DIR)/coverage.html$(RESET)"
+
+coverage-check: coverage-report ## Verificar umbral de cobertura
+	@echo "$(YELLOW)✅ Verificando umbral de cobertura...$(RESET)"
+	@./scripts/check-coverage.sh $(COVERAGE_DIR)/coverage-filtered.out 33
+
 benchmark: ## Ejecutar benchmarks
 	@echo "$(YELLOW)⚡ Ejecutando benchmarks...$(RESET)"
 	@$(GOTEST) -bench=. -benchmem ./...

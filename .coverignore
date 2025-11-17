@@ -1,0 +1,78 @@
+# .coverignore - Exclusiones de Cobertura de Código
+# Este archivo lista patrones de archivos y paquetes que deben excluirse del
+# cálculo de cobertura de código para obtener métricas más precisas.
+
+# ============================================
+# Código Generado Automáticamente
+# ============================================
+# Estos archivos son generados por herramientas y no requieren tests
+
+# Documentación Swagger generada
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+
+# ============================================
+# DTOs y Estructuras Simples
+# ============================================
+# Estructuras de datos simples sin lógica de negocio
+
+# DTOs de aplicación (solo estructuras de transferencia)
+internal/application/dto/
+
+# Entities de dominio (solo structs, sin lógica)
+# NOTA: Si se agrega lógica de negocio a entities, remover esta exclusión
+internal/domain/entity/
+
+# Value Objects (mayormente validación simple)
+internal/domain/valueobject/
+
+# ============================================
+# Mocks y Helpers de Testing
+# ============================================
+# Código de soporte para tests que no necesita tests propios
+
+# Archivos de mocks generados
+*_mock.go
+*/mocks_test.go
+
+# Helpers de testing
+*/testing_helpers.go
+test/integration/testhelpers.go
+test/integration/setup.go
+test/integration/config.go
+
+# ============================================
+# Entry Points y Bootstrap
+# ============================================
+# Código de bootstrap y entry point (difícil de testear, bajo valor)
+
+# Main entry point
+cmd/main.go
+cmd/
+
+# Bootstrap y contenedor de dependencias
+internal/bootstrap/
+internal/container/
+
+# ============================================
+# Configuración
+# ============================================
+# Código de configuración (estructuras simples)
+
+internal/config/
+
+# ============================================
+# Tests
+# ============================================
+# No cubrir los propios tests
+
+*_test.go
+test/
+mock/
+
+# ============================================
+# Vendor y Third-party
+# ============================================
+
+vendor/

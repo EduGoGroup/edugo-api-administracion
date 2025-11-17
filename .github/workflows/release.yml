@@ -5,10 +5,10 @@ name: Release CI/CD
 on:
   push:
     tags:
-      - 'v*'  # v1.0.0, v1.1.0, v2.0.0, etc.
+      - "v*" # v1.0.0, v1.1.0, v2.0.0, etc.
 
 env:
-  GO_VERSION: '1.25.3'
+  GO_VERSION: "1.24"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Necesario para changelog
+          fetch-depth: 0 # Necesario para changelog
 
       - name: Setup Go
         uses: actions/setup-go@v5
