@@ -21,7 +21,7 @@ func NewPostgresSchoolRepository(db *sql.DB) repository.SchoolRepository {
 
 func (r *postgresSchoolRepository) Create(ctx context.Context, school *entity.School) error {
 	query := `
-		INSERT INTO school (id, name, code, address, contact_email, contact_phone, metadata, created_at, updated_at)
+		INSERT INTO schools (id, name, code, address, email, phone, metadata, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
@@ -57,7 +57,7 @@ func (r *postgresSchoolRepository) Create(ctx context.Context, school *entity.Sc
 
 func (r *postgresSchoolRepository) FindByID(ctx context.Context, id valueobject.SchoolID) (*entity.School, error) {
 	query := `
-		SELECT id, name, code, address, contact_email, contact_phone, metadata, created_at, updated_at
+		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
 		FROM school
 		WHERE id = $1
 	`
@@ -90,7 +90,7 @@ func (r *postgresSchoolRepository) FindByID(ctx context.Context, id valueobject.
 
 func (r *postgresSchoolRepository) FindByCode(ctx context.Context, code string) (*entity.School, error) {
 	query := `
-		SELECT id, name, code, address, contact_email, contact_phone, metadata, created_at, updated_at
+		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
 		FROM school
 		WHERE code = $1
 	`
@@ -123,7 +123,7 @@ func (r *postgresSchoolRepository) FindByCode(ctx context.Context, code string) 
 
 func (r *postgresSchoolRepository) FindByName(ctx context.Context, name string) (*entity.School, error) {
 	query := `
-		SELECT id, name, code, address, contact_email, contact_phone, metadata, created_at, updated_at
+		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
 		FROM school
 		WHERE name = $1
 	`
@@ -157,7 +157,7 @@ func (r *postgresSchoolRepository) FindByName(ctx context.Context, name string) 
 func (r *postgresSchoolRepository) Update(ctx context.Context, school *entity.School) error {
 	query := `
 		UPDATE school
-		SET name = $1, address = $2, contact_email = $3, contact_phone = $4, metadata = $5, updated_at = $6
+		SET name = $1, address = $2, email = $3, phone = $4, metadata = $5, updated_at = $6
 		WHERE id = $7
 	`
 
@@ -190,14 +190,14 @@ func (r *postgresSchoolRepository) Update(ctx context.Context, school *entity.Sc
 }
 
 func (r *postgresSchoolRepository) Delete(ctx context.Context, id valueobject.SchoolID) error {
-	query := `DELETE FROM school WHERE id = $1`
+	query := `DELETE FROM schools WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id.String())
 	return err
 }
 
 func (r *postgresSchoolRepository) List(ctx context.Context, filters repository.ListFilters) ([]*entity.School, error) {
 	query := `
-		SELECT id, name, code, address, contact_email, contact_phone, metadata, created_at, updated_at
+		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
 		FROM school
 		ORDER BY name
 	`
@@ -238,7 +238,7 @@ func (r *postgresSchoolRepository) List(ctx context.Context, filters repository.
 }
 
 func (r *postgresSchoolRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM school WHERE name = $1)`
+	query := `SELECT EXISTS(SELECT 1 FROM schools WHERE name = $1)`
 
 	var exists bool
 	err := r.db.QueryRowContext(ctx, query, name).Scan(&exists)
@@ -246,7 +246,7 @@ func (r *postgresSchoolRepository) ExistsByName(ctx context.Context, name string
 }
 
 func (r *postgresSchoolRepository) ExistsByCode(ctx context.Context, code string) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM school WHERE code = $1)`
+	query := `SELECT EXISTS(SELECT 1 FROM schools WHERE code = $1)`
 
 	var exists bool
 	err := r.db.QueryRowContext(ctx, query, code).Scan(&exists)

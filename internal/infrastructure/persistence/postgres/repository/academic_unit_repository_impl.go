@@ -22,7 +22,7 @@ func NewPostgresAcademicUnitRepository(db *sql.DB) repository.AcademicUnitReposi
 
 func (r *postgresAcademicUnitRepository) Create(ctx context.Context, unit *entity.AcademicUnit) error {
 	query := `
-		INSERT INTO academic_unit (id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at)
+		INSERT INTO academic_units (id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`
 
@@ -175,7 +175,7 @@ func (r *postgresAcademicUnitRepository) Update(ctx context.Context, unit *entit
 }
 
 func (r *postgresAcademicUnitRepository) SoftDelete(ctx context.Context, id valueobject.UnitID) error {
-	query := `UPDATE academic_unit SET deleted_at = $1, updated_at = $2 WHERE id = $3`
+	query := `UPDATE academic_units SET deleted_at = $1, updated_at = $2 WHERE id = $3`
 
 	now := time.Now()
 	_, err := r.db.ExecContext(ctx, query, now, now, id.String())
@@ -183,14 +183,14 @@ func (r *postgresAcademicUnitRepository) SoftDelete(ctx context.Context, id valu
 }
 
 func (r *postgresAcademicUnitRepository) Restore(ctx context.Context, id valueobject.UnitID) error {
-	query := `UPDATE academic_unit SET deleted_at = NULL, updated_at = $1 WHERE id = $2`
+	query := `UPDATE academic_units SET deleted_at = NULL, updated_at = $1 WHERE id = $2`
 
 	_, err := r.db.ExecContext(ctx, query, time.Now(), id.String())
 	return err
 }
 
 func (r *postgresAcademicUnitRepository) HardDelete(ctx context.Context, id valueobject.UnitID) error {
-	query := `DELETE FROM academic_unit WHERE id = $1`
+	query := `DELETE FROM academic_units WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, id.String())
 	return err
@@ -206,7 +206,7 @@ func (r *postgresAcademicUnitRepository) GetHierarchyPath(ctx context.Context, i
 			UNION ALL
 			
 			SELECT au.id, au.parent_unit_id, au.school_id, au.unit_type, au.display_name, au.code, au.description, au.metadata, au.created_at, au.updated_at, au.deleted_at, p.depth + 1
-			FROM academic_unit au
+			FROM academic_units au
 			INNER JOIN path p ON au.id = p.parent_unit_id
 		)
 		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
@@ -218,7 +218,7 @@ func (r *postgresAcademicUnitRepository) GetHierarchyPath(ctx context.Context, i
 }
 
 func (r *postgresAcademicUnitRepository) ExistsBySchoolIDAndCode(ctx context.Context, schoolID valueobject.SchoolID, code string) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM academic_unit WHERE school_id = $1 AND code = $2 AND deleted_at IS NULL)`
+	query := `SELECT EXISTS(SELECT 1 FROM academic_units WHERE school_id = $1 AND code = $2 AND deleted_at IS NULL)`
 
 	var exists bool
 	err := r.db.QueryRowContext(ctx, query, schoolID.String(), code).Scan(&exists)
@@ -226,7 +226,7 @@ func (r *postgresAcademicUnitRepository) ExistsBySchoolIDAndCode(ctx context.Con
 }
 
 func (r *postgresAcademicUnitRepository) HasChildren(ctx context.Context, id valueobject.UnitID) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM academic_unit WHERE parent_unit_id = $1 AND deleted_at IS NULL)`
+	query := `SELECT EXISTS(SELECT 1 FROM academic_units WHERE parent_unit_id = $1 AND deleted_at IS NULL)`
 
 	var exists bool
 	err := r.db.QueryRowContext(ctx, query, id.String()).Scan(&exists)

@@ -22,7 +22,7 @@ func NewPostgresUnitMembershipRepository(db *sql.DB) repository.UnitMembershipRe
 
 func (r *postgresUnitMembershipRepository) Create(ctx context.Context, membership *entity.UnitMembership) error {
 	query := `
-		INSERT INTO unit_membership (id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at)
+		INSERT INTO memberships (id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
@@ -161,7 +161,7 @@ func (r *postgresUnitMembershipRepository) Update(ctx context.Context, membershi
 }
 
 func (r *postgresUnitMembershipRepository) Delete(ctx context.Context, id valueobject.MembershipID) error {
-	query := `DELETE FROM unit_membership WHERE id = $1`
+	query := `DELETE FROM memberships WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, id.String())
 	return err
@@ -170,7 +170,7 @@ func (r *postgresUnitMembershipRepository) Delete(ctx context.Context, id valueo
 func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Context, unitID valueobject.UnitID, userID valueobject.UserID) (bool, error) {
 	query := `
 		SELECT EXISTS(
-			SELECT 1 FROM unit_membership 
+			SELECT 1 FROM memberships 
 			WHERE unit_id = $1 AND user_id = $2 
 			  AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)
 		)
@@ -182,7 +182,7 @@ func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Conte
 }
 
 func (r *postgresUnitMembershipRepository) CountByUnit(ctx context.Context, unitID valueobject.UnitID, activeOnly bool) (int, error) {
-	query := `SELECT COUNT(*) FROM unit_membership WHERE unit_id = $1`
+	query := `SELECT COUNT(*) FROM memberships WHERE unit_id = $1`
 
 	if activeOnly {
 		query += " AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)"
@@ -195,7 +195,7 @@ func (r *postgresUnitMembershipRepository) CountByUnit(ctx context.Context, unit
 
 func (r *postgresUnitMembershipRepository) CountByRole(ctx context.Context, unitID valueobject.UnitID, role valueobject.MembershipRole) (int, error) {
 	query := `
-		SELECT COUNT(*) FROM unit_membership 
+		SELECT COUNT(*) FROM memberships 
 		WHERE unit_id = $1 AND role = $2
 		  AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)
 	`
