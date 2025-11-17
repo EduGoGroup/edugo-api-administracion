@@ -159,6 +159,11 @@ func (au *AcademicUnit) Children() []*AcademicUnit {
 
 // SetParent establece la unidad padre en la jerarquía
 func (au *AcademicUnit) SetParent(parentID valueobject.UnitID, parentType valueobject.UnitType) error {
+	// No puede ser su propio padre (validar primero)
+	if au.id.Equals(parentID) {
+		return errors.NewBusinessRuleError("unit cannot be its own parent")
+	}
+
 	// Validar que el tipo padre puede tener hijos
 	if !parentType.CanHaveChildren() {
 		return errors.NewBusinessRuleError("parent unit type cannot have children: " + parentType.String())
@@ -178,11 +183,6 @@ func (au *AcademicUnit) SetParent(parentID valueobject.UnitID, parentType valueo
 		return errors.NewBusinessRuleError(
 			"unit type " + au.unitType.String() + " cannot be child of " + parentType.String(),
 		)
-	}
-
-	// No puede ser su propio padre
-	if au.id.Equals(parentID) {
-		return errors.NewBusinessRuleError("unit cannot be its own parent")
 	}
 
 	au.parentUnitID = &parentID
@@ -296,16 +296,7 @@ func (au *AcademicUnit) AddChild(child *AcademicUnit) error {
 		return errors.NewBusinessRuleError("unit cannot be its own child")
 	}
 
-	// Validar que el hijo apunta a esta unidad como padre
-	if child.parentUnitID == nil {
-		return errors.NewBusinessRuleError("child must have a parent_id")
-	}
-
-	if !child.parentUnitID.Equals(au.id) {
-		return errors.NewBusinessRuleError("child's parent_id does not match this unit's id")
-	}
-
-	// Validar que el tipo de hijo está permitido
+	// Validar que el tipo de hijo está permitido (antes de validar parent_id)
 	allowedTypes := au.unitType.AllowedChildTypes()
 	isAllowed := false
 	for _, allowed := range allowedTypes {
@@ -319,6 +310,15 @@ func (au *AcademicUnit) AddChild(child *AcademicUnit) error {
 		return errors.NewBusinessRuleError(
 			"unit type " + child.unitType.String() + " cannot be child of " + au.unitType.String(),
 		)
+	}
+
+	// Validar que el hijo apunta a esta unidad como padre
+	if child.parentUnitID == nil {
+		return errors.NewBusinessRuleError("child must have a parent_id")
+	}
+
+	if !child.parentUnitID.Equals(au.id) {
+		return errors.NewBusinessRuleError("child's parent_id does not match this unit's id")
 	}
 
 	// Validar que el hijo no está ya agregado
