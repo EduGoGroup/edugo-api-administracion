@@ -5,6 +5,8 @@ package integration
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"go/build"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -16,23 +18,31 @@ import (
 )
 
 // getMigrationScripts retorna paths a migraciones de infrastructure
-func getMigrationScripts() []string {
-	// Obtener path al directorio raíz del proyecto
+// Retorna error si no encuentra las migraciones para facilitar debugging
+func getMigrationScripts(t *testing.T) ([]string, error) {
+	// Obtener path al directorio raíz del proyecto (solo para vendor fallback)
 	_, filename, _, _ := runtime.Caller(0)
 	projectRoot := filepath.Dir(filepath.Dir(filepath.Dir(filename)))
 
-	// Intentar primero desde GOPATH (módulos descargados)
+	// Usar go/build para obtener GOPATH de forma cross-platform (Windows compatible)
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
-		gopath = filepath.Join(os.Getenv("HOME"), "go")
+		gopath = build.Default.GOPATH
 	}
 
-	// Path a migraciones en pkg/mod (go modules cache)
-	modPath := filepath.Join(gopath, "pkg", "mod", "github.com", "!edu!go!group", "edugo-infrastructure", "postgres@v0.7.1", "migrations")
+	// IMPORTANTE: Versión hardcodeada v0.7.1
+	// Si actualizas edugo-infrastructure en go.mod, actualiza esta versión aquí también
+	const infrastructureVersion = "v0.7.1"
 
-	// Si no existe en mod, intentar desde vendor
+	// Path a migraciones en pkg/mod (go modules cache)
+	modPath := filepath.Join(gopath, "pkg", "mod", "github.com", "!edu!go!group", "edugo-infrastructure", "postgres@"+infrastructureVersion, "migrations")
+
+	// Si no existe en mod, intentar desde vendor (fallback)
 	if _, err := os.Stat(modPath); os.IsNotExist(err) {
+		t.Logf("Migraciones no encontradas en pkg/mod, intentando vendor...")
 		modPath = filepath.Join(projectRoot, "vendor", "github.com", "EduGoGroup", "edugo-infrastructure", "postgres", "migrations")
+	} else {
+		t.Logf("Usando migraciones desde: %s", modPath)
 	}
 
 	// Migraciones necesarias para api-administracion (001-004 son las básicas)
@@ -45,21 +55,36 @@ func getMigrationScripts() []string {
 
 	var fullPaths []string
 	for _, migration := range migrations {
-		fullPaths = append(fullPaths, filepath.Join(modPath, migration))
+		fullPath := filepath.Join(modPath, migration)
+
+		// Validar que cada archivo existe antes de agregarlo
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			return nil, fmt.Errorf("migración no encontrada: %s (buscado en: %s)", migration, modPath)
+		}
+
+		fullPaths = append(fullPaths, fullPath)
 	}
 
-	return fullPaths
+	// Verificar que se encontraron todas las migraciones
+	if len(fullPaths) == 0 {
+		return nil, fmt.Errorf("no se encontraron migraciones en %s", modPath)
+	}
+
+	return fullPaths, nil
 }
 
 // setupTestDB crea una instancia de PostgreSQL para tests usando shared/testing
 func setupTestDB(t *testing.T) (*sql.DB, func()) {
 	ctx := context.Background()
 
-	// Obtener migraciones de infrastructure
-	migrationScripts := getMigrationScripts()
+	// Obtener migraciones de infrastructure con validación
+	migrationScripts, err := getMigrationScripts(t)
+	if err != nil {
+		t.Fatalf("Error obteniendo migraciones de infrastructure: %v", err)
+	}
 
 	// Log para debug
-	t.Logf("Usando %d migraciones desde infrastructure v0.7.1", len(migrationScripts))
+	t.Logf("✅ Usando %d migraciones desde infrastructure v0.7.1", len(migrationScripts))
 	for i, script := range migrationScripts {
 		t.Logf("  [%d] %s", i+1, filepath.Base(script))
 	}
