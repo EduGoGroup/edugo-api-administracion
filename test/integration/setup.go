@@ -16,13 +16,13 @@ import (
 func setupTestDB(t *testing.T) (*sql.DB, func()) {
 	ctx := context.Background()
 
-	// Configurar PostgreSQL con scripts de inicialización
+	// Configurar PostgreSQL sin scripts de inicialización
+	// Las migraciones ahora vienen de infrastructure v0.7.1
 	cfg := containers.NewConfig().
 		WithPostgreSQL(&containers.PostgresConfig{
-			Database:    "edugo_test",
-			Username:    "edugo_user",
-			Password:    "edugo_pass",
-			InitScripts: []string{"../../scripts/postgresql/01_academic_hierarchy.sql"},
+			Database: "edugo_test",
+			Username: "edugo_user",
+			Password: "edugo_pass",
 		}).
 		Build()
 

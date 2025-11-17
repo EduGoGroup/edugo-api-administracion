@@ -53,7 +53,7 @@ func (r *postgresUnitMembershipRepository) Create(ctx context.Context, membershi
 func (r *postgresUnitMembershipRepository) FindByID(ctx context.Context, id valueobject.MembershipID) (*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE id = $1
 	`
 
@@ -63,7 +63,7 @@ func (r *postgresUnitMembershipRepository) FindByID(ctx context.Context, id valu
 func (r *postgresUnitMembershipRepository) FindByUnitID(ctx context.Context, unitID valueobject.UnitID, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1
 	`
 
@@ -79,7 +79,7 @@ func (r *postgresUnitMembershipRepository) FindByUnitID(ctx context.Context, uni
 func (r *postgresUnitMembershipRepository) FindByUserID(ctx context.Context, userID valueobject.UserID, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE user_id = $1
 	`
 
@@ -95,7 +95,7 @@ func (r *postgresUnitMembershipRepository) FindByUserID(ctx context.Context, use
 func (r *postgresUnitMembershipRepository) FindByUnitAndUser(ctx context.Context, unitID valueobject.UnitID, userID valueobject.UserID) (*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1 AND user_id = $2
 		ORDER BY valid_from DESC
 		LIMIT 1
@@ -107,7 +107,7 @@ func (r *postgresUnitMembershipRepository) FindByUnitAndUser(ctx context.Context
 func (r *postgresUnitMembershipRepository) FindByRole(ctx context.Context, unitID valueobject.UnitID, role valueobject.MembershipRole, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1 AND role = $2
 	`
 
@@ -123,7 +123,7 @@ func (r *postgresUnitMembershipRepository) FindByRole(ctx context.Context, unitI
 func (r *postgresUnitMembershipRepository) FindActiveAt(ctx context.Context, unitID valueobject.UnitID, at time.Time) ([]*entity.UnitMembership, error) {
 	query := `
 		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
-		FROM unit_membership
+		FROM memberships
 		WHERE unit_id = $1
 		  AND valid_from <= $2
 		  AND (valid_until IS NULL OR valid_until >= $2)
@@ -135,7 +135,7 @@ func (r *postgresUnitMembershipRepository) FindActiveAt(ctx context.Context, uni
 
 func (r *postgresUnitMembershipRepository) Update(ctx context.Context, membership *entity.UnitMembership) error {
 	query := `
-		UPDATE unit_membership
+		UPDATE memberships
 		SET role = $1, valid_until = $2, metadata = $3, updated_at = $4
 		WHERE id = $5
 	`

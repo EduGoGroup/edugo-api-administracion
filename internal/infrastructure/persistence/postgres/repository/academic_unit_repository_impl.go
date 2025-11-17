@@ -60,7 +60,7 @@ func (r *postgresAcademicUnitRepository) Create(ctx context.Context, unit *entit
 func (r *postgresAcademicUnitRepository) FindByID(ctx context.Context, id valueobject.UnitID, includeDeleted bool) (*entity.AcademicUnit, error) {
 	query := `
 		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
-		FROM academic_unit
+		FROM academic_units
 		WHERE id = $1
 	`
 
@@ -74,7 +74,7 @@ func (r *postgresAcademicUnitRepository) FindByID(ctx context.Context, id valueo
 func (r *postgresAcademicUnitRepository) FindBySchoolIDAndCode(ctx context.Context, schoolID valueobject.SchoolID, code string) (*entity.AcademicUnit, error) {
 	query := `
 		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
-		FROM academic_unit
+		FROM academic_units
 		WHERE school_id = $1 AND code = $2 AND deleted_at IS NULL
 	`
 
@@ -84,7 +84,7 @@ func (r *postgresAcademicUnitRepository) FindBySchoolIDAndCode(ctx context.Conte
 func (r *postgresAcademicUnitRepository) FindBySchoolID(ctx context.Context, schoolID valueobject.SchoolID, includeDeleted bool) ([]*entity.AcademicUnit, error) {
 	query := `
 		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
-		FROM academic_unit
+		FROM academic_units
 		WHERE school_id = $1
 	`
 
@@ -100,7 +100,7 @@ func (r *postgresAcademicUnitRepository) FindBySchoolID(ctx context.Context, sch
 func (r *postgresAcademicUnitRepository) FindByParentID(ctx context.Context, parentID valueobject.UnitID, includeDeleted bool) ([]*entity.AcademicUnit, error) {
 	query := `
 		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
-		FROM academic_unit
+		FROM academic_units
 		WHERE parent_unit_id = $1
 	`
 
@@ -116,7 +116,7 @@ func (r *postgresAcademicUnitRepository) FindByParentID(ctx context.Context, par
 func (r *postgresAcademicUnitRepository) FindRootUnits(ctx context.Context, schoolID valueobject.SchoolID) ([]*entity.AcademicUnit, error) {
 	query := `
 		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
-		FROM academic_unit
+		FROM academic_units
 		WHERE school_id = $1 AND parent_unit_id IS NULL AND deleted_at IS NULL
 		ORDER BY unit_type, display_name
 	`
@@ -127,7 +127,7 @@ func (r *postgresAcademicUnitRepository) FindRootUnits(ctx context.Context, scho
 func (r *postgresAcademicUnitRepository) FindByType(ctx context.Context, schoolID valueobject.SchoolID, unitType valueobject.UnitType, includeDeleted bool) ([]*entity.AcademicUnit, error) {
 	query := `
 		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
-		FROM academic_unit
+		FROM academic_units
 		WHERE school_id = $1 AND unit_type = $2
 	`
 
@@ -142,7 +142,7 @@ func (r *postgresAcademicUnitRepository) FindByType(ctx context.Context, schoolI
 
 func (r *postgresAcademicUnitRepository) Update(ctx context.Context, unit *entity.AcademicUnit) error {
 	query := `
-		UPDATE academic_unit
+		UPDATE academic_units
 		SET parent_unit_id = $1, display_name = $2, description = $3, metadata = $4, updated_at = $5
 		WHERE id = $6
 	`
@@ -200,7 +200,7 @@ func (r *postgresAcademicUnitRepository) GetHierarchyPath(ctx context.Context, i
 	query := `
 		WITH RECURSIVE path AS (
 			SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at, 1 as depth
-			FROM academic_unit
+			FROM academic_units
 			WHERE id = $1
 			
 			UNION ALL

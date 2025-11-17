@@ -58,7 +58,7 @@ func (r *postgresSchoolRepository) Create(ctx context.Context, school *entity.Sc
 func (r *postgresSchoolRepository) FindByID(ctx context.Context, id valueobject.SchoolID) (*entity.School, error) {
 	query := `
 		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
-		FROM school
+		FROM schools
 		WHERE id = $1
 	`
 
@@ -91,7 +91,7 @@ func (r *postgresSchoolRepository) FindByID(ctx context.Context, id valueobject.
 func (r *postgresSchoolRepository) FindByCode(ctx context.Context, code string) (*entity.School, error) {
 	query := `
 		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
-		FROM school
+		FROM schools
 		WHERE code = $1
 	`
 
@@ -124,7 +124,7 @@ func (r *postgresSchoolRepository) FindByCode(ctx context.Context, code string) 
 func (r *postgresSchoolRepository) FindByName(ctx context.Context, name string) (*entity.School, error) {
 	query := `
 		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
-		FROM school
+		FROM schools
 		WHERE name = $1
 	`
 
@@ -156,7 +156,7 @@ func (r *postgresSchoolRepository) FindByName(ctx context.Context, name string) 
 
 func (r *postgresSchoolRepository) Update(ctx context.Context, school *entity.School) error {
 	query := `
-		UPDATE school
+		UPDATE schools
 		SET name = $1, address = $2, email = $3, phone = $4, metadata = $5, updated_at = $6
 		WHERE id = $7
 	`
@@ -198,7 +198,7 @@ func (r *postgresSchoolRepository) Delete(ctx context.Context, id valueobject.Sc
 func (r *postgresSchoolRepository) List(ctx context.Context, filters repository.ListFilters) ([]*entity.School, error) {
 	query := `
 		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
-		FROM school
+		FROM schools
 		ORDER BY name
 	`
 
