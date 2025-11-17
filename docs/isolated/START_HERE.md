@@ -1,15 +1,19 @@
 # 🚀 START HERE - API Admin (Jerarquía Académica)
 
-## ⭐ PROYECTO COMPLETADO ✅
+## ⚠️ PROYECTO EN MIGRACIÓN A INFRASTRUCTURE
 
-**Estado:** ✅ COMPLETADO (v0.2.0)  
-**Fecha finalización:** 12 de Noviembre, 2025
+**Estado Funcional:** ✅ COMPLETADO (v0.2.0) - Código funcionando  
+**Estado Técnico:** ⚠️ REQUIERE MIGRACIÓN a infrastructure v0.7.0  
+**Fecha última actualización:** 17 de Noviembre, 2025
 
-**Bienvenido a la documentación COMPLETA y AUTÓNOMA de edugo-api-administracion.**
+**Bienvenido a la documentación de edugo-api-administracion.**
 
-Esta carpeta contiene la documentación del proyecto YA IMPLEMENTADO de jerarquía académica.
+Esta carpeta contiene la documentación del proyecto de jerarquía académica.  
+El código está **funcionalmente completo** pero necesita **migración técnica** a infrastructure.
 
 **📍 Documentación oficial:** `/Users/jhoanmedina/source/EduGo/Analisys/docs/specs/api-admin-jerarquia/`
+
+**⚠️ ACCIÓN REQUERIDA:** Ejecutar Sprint-00 antes de continuar desarrollo
 
 ---
 
@@ -155,26 +159,28 @@ cat TASKS.md
 
 Este proyecto **NECESITA** de otros componentes del ecosistema:
 
-### 1. edugo-infrastructure v0.1.1
-**Versión usada:** v0.1.1  
-**Qué se usó:**
-- `database/migrations/001_create_users.up.sql`
-- `database/migrations/002_create_schools.up.sql`
-- `database/migrations/005_create_academic_hierarchy.up.sql`
-- `database/TABLE_OWNERSHIP.md` - Documenta ownership de tablas
+### 1. edugo-infrastructure (PENDIENTE DE MIGRACIÓN)
+**Versión actual:** NO INTEGRADO (usa migraciones locales)  
+**Versión requerida:** v0.7.0  
+**Qué se necesita:**
+- `postgres/migrations/002_create_schools.up.sql`
+- `postgres/migrations/003_create_academic_units.up.sql`
+- `postgres/migrations/004_create_memberships.up.sql`
+- `postgres/migrations/012_extend_for_admin_api.up.sql` (NUEVA - agregar jerarquía)
 
-**Estado:** ✅ Implementado y funcionando
+**Estado:** ⚠️ REQUIERE MIGRACIÓN (ver Sprint-00)
 
-### 2. edugo-shared v0.7.0
-**Versión usada:** v0.7.0 (FROZEN)  
+### 2. edugo-shared v0.5.0 (DESACTUALIZADO)
+**Versión actual:** v0.5.0  
+**Versión requerida:** v0.7.0  
 **Módulos usados:**
 - `config` - Configuración multi-ambiente
-- `database/postgres` - Conexiones PostgreSQL
-- `auth` - JWT y autenticación
 - `logger` - Logging estructurado
-- `bootstrap` - Dependency injection (creado en FASE 0.1 de este proyecto)
+- `bootstrap` - Dependency injection
+- `lifecycle` - Lifecycle management
+- `testing` - Testing utilities (v0.6.2)
 
-**Estado:** ✅ Funcionando perfectamente
+**Estado:** ⚠️ REQUIERE ACTUALIZACIÓN (ver Sprint-00)
 
 ### 3. PostgreSQL 15+
 **Uso:** Base de datos principal (jerarquía académica)  
