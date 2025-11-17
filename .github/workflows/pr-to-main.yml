@@ -42,7 +42,6 @@ jobs:
       - name: 📊 Generar reporte de cobertura
         run: make coverage-report
         continue-on-error: true
-        continue-on-error: true
         timeout-minutes: 5
 
       - name: ✅ Verificar umbral de cobertura

@@ -6,16 +6,16 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: "Environment to deploy"
         required: true
-        default: 'development'
+        default: "development"
         type: choice
         options:
           - development
           - staging
           - production
       push_latest:
-        description: 'Tag as latest?'
+        description: "Tag as latest?"
         required: false
         default: false
         type: boolean
@@ -23,7 +23,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  GO_VERSION: '1.25.3'
+  GO_VERSION: "1.24"
 
 jobs:
   test:
