@@ -22,7 +22,7 @@ func NewPostgresAcademicUnitRepository(db *sql.DB) repository.AcademicUnitReposi
 
 func (r *postgresAcademicUnitRepository) Create(ctx context.Context, unit *entity.AcademicUnit) error {
 	query := `
-		INSERT INTO academic_units (id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at)
+		INSERT INTO academic_units (id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`
 
@@ -32,16 +32,17 @@ func (r *postgresAcademicUnitRepository) Create(ctx context.Context, unit *entit
 		parentID = &id
 	}
 
-	var metadataJSON []byte
-	if len(unit.Metadata()) > 0 {
-		var err error
-		metadataJSON, err = json.Marshal(unit.Metadata())
-		if err != nil {
-			return errors.NewDatabaseError("marshal metadata", err)
-		}
+	// Serializar metadata (siempre enviar al menos {} para JSONB)
+	metadata := unit.Metadata()
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return errors.NewDatabaseError("marshal metadata", err)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err = r.db.ExecContext(ctx, query,
 		unit.ID().String(),
 		parentID,
 		unit.SchoolID().String(),
@@ -59,7 +60,7 @@ func (r *postgresAcademicUnitRepository) Create(ctx context.Context, unit *entit
 
 func (r *postgresAcademicUnitRepository) FindByID(ctx context.Context, id valueobject.UnitID, includeDeleted bool) (*entity.AcademicUnit, error) {
 	query := `
-		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
 		FROM academic_units
 		WHERE id = $1
 	`
@@ -73,7 +74,7 @@ func (r *postgresAcademicUnitRepository) FindByID(ctx context.Context, id valueo
 
 func (r *postgresAcademicUnitRepository) FindBySchoolIDAndCode(ctx context.Context, schoolID valueobject.SchoolID, code string) (*entity.AcademicUnit, error) {
 	query := `
-		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
 		FROM academic_units
 		WHERE school_id = $1 AND code = $2 AND deleted_at IS NULL
 	`
@@ -83,7 +84,7 @@ func (r *postgresAcademicUnitRepository) FindBySchoolIDAndCode(ctx context.Conte
 
 func (r *postgresAcademicUnitRepository) FindBySchoolID(ctx context.Context, schoolID valueobject.SchoolID, includeDeleted bool) ([]*entity.AcademicUnit, error) {
 	query := `
-		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
 		FROM academic_units
 		WHERE school_id = $1
 	`
@@ -92,14 +93,14 @@ func (r *postgresAcademicUnitRepository) FindBySchoolID(ctx context.Context, sch
 		query += " AND deleted_at IS NULL"
 	}
 
-	query += " ORDER BY unit_type, display_name"
+	query += " ORDER BY type, name"
 
 	return r.scanUnits(ctx, query, schoolID.String())
 }
 
 func (r *postgresAcademicUnitRepository) FindByParentID(ctx context.Context, parentID valueobject.UnitID, includeDeleted bool) ([]*entity.AcademicUnit, error) {
 	query := `
-		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
 		FROM academic_units
 		WHERE parent_unit_id = $1
 	`
@@ -115,10 +116,10 @@ func (r *postgresAcademicUnitRepository) FindByParentID(ctx context.Context, par
 
 func (r *postgresAcademicUnitRepository) FindRootUnits(ctx context.Context, schoolID valueobject.SchoolID) ([]*entity.AcademicUnit, error) {
 	query := `
-		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
 		FROM academic_units
 		WHERE school_id = $1 AND parent_unit_id IS NULL AND deleted_at IS NULL
-		ORDER BY unit_type, display_name
+		ORDER BY type, name
 	`
 
 	return r.scanUnits(ctx, query, schoolID.String())
@@ -126,9 +127,9 @@ func (r *postgresAcademicUnitRepository) FindRootUnits(ctx context.Context, scho
 
 func (r *postgresAcademicUnitRepository) FindByType(ctx context.Context, schoolID valueobject.SchoolID, unitType valueobject.UnitType, includeDeleted bool) ([]*entity.AcademicUnit, error) {
 	query := `
-		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
 		FROM academic_units
-		WHERE school_id = $1 AND unit_type = $2
+		WHERE school_id = $1 AND type = $2
 	`
 
 	if !includeDeleted {
@@ -153,16 +154,17 @@ func (r *postgresAcademicUnitRepository) Update(ctx context.Context, unit *entit
 		parentID = &id
 	}
 
-	var metadataJSON []byte
-	if len(unit.Metadata()) > 0 {
-		var err error
-		metadataJSON, err = json.Marshal(unit.Metadata())
-		if err != nil {
-			return errors.NewDatabaseError("marshal metadata", err)
-		}
+	// Serializar metadata (siempre enviar al menos {} para JSONB)
+	metadata := unit.Metadata()
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return errors.NewDatabaseError("marshal metadata", err)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err = r.db.ExecContext(ctx, query,
 		parentID,
 		unit.DisplayName(),
 		unit.Description(),
@@ -199,17 +201,17 @@ func (r *postgresAcademicUnitRepository) HardDelete(ctx context.Context, id valu
 func (r *postgresAcademicUnitRepository) GetHierarchyPath(ctx context.Context, id valueobject.UnitID) ([]*entity.AcademicUnit, error) {
 	query := `
 		WITH RECURSIVE path AS (
-			SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at, 1 as depth
+			SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at, 1 as depth
 			FROM academic_units
 			WHERE id = $1
-			
+
 			UNION ALL
-			
-			SELECT au.id, au.parent_unit_id, au.school_id, au.unit_type, au.display_name, au.code, au.description, au.metadata, au.created_at, au.updated_at, au.deleted_at, p.depth + 1
+
+			SELECT au.id, au.parent_unit_id, au.school_id, au.type, au.name, au.code, au.description, au.metadata, au.created_at, au.updated_at, au.deleted_at, p.depth + 1
 			FROM academic_units au
 			INNER JOIN path p ON au.id = p.parent_unit_id
 		)
-		SELECT id, parent_unit_id, school_id, unit_type, display_name, code, description, metadata, created_at, updated_at, deleted_at
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
 		FROM path
 		ORDER BY depth DESC
 	`

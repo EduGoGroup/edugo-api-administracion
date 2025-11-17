@@ -21,24 +21,33 @@ func NewPostgresUnitMembershipRepository(db *sql.DB) repository.UnitMembershipRe
 }
 
 func (r *postgresUnitMembershipRepository) Create(ctx context.Context, membership *entity.UnitMembership) error {
-	query := `
-		INSERT INTO memberships (id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-	`
-
-	var metadataJSON []byte
-	if len(membership.Metadata()) > 0 {
-		var err error
-		metadataJSON, err = json.Marshal(membership.Metadata())
-		if err != nil {
-			return errors.NewDatabaseError("marshal metadata", err)
-		}
+	// Obtener school_id de la academic_unit
+	var schoolID string
+	err := r.db.QueryRowContext(ctx, "SELECT school_id FROM academic_units WHERE id = $1", membership.UnitID().String()).Scan(&schoolID)
+	if err != nil {
+		return errors.NewDatabaseError("obtener school_id de academic_unit", err)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	query := `
+		INSERT INTO memberships (id, academic_unit_id, user_id, school_id, role, enrolled_at, withdrawn_at, metadata, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+	`
+
+	// Serializar metadata (siempre enviar al menos {} para JSONB)
+	metadata := membership.Metadata()
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return errors.NewDatabaseError("marshal metadata", err)
+	}
+
+	_, err = r.db.ExecContext(ctx, query,
 		membership.ID().String(),
 		membership.UnitID().String(),
 		membership.UserID().String(),
+		schoolID,
 		membership.Role().String(),
 		membership.ValidFrom(),
 		membership.ValidUntil(),
@@ -52,7 +61,7 @@ func (r *postgresUnitMembershipRepository) Create(ctx context.Context, membershi
 
 func (r *postgresUnitMembershipRepository) FindByID(ctx context.Context, id valueobject.MembershipID) (*entity.UnitMembership, error) {
 	query := `
-		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
+		SELECT id, academic_unit_id, school_id, user_id, role, enrolled_at, withdrawn_at, metadata, created_at, updated_at
 		FROM memberships
 		WHERE id = $1
 	`
@@ -62,42 +71,42 @@ func (r *postgresUnitMembershipRepository) FindByID(ctx context.Context, id valu
 
 func (r *postgresUnitMembershipRepository) FindByUnitID(ctx context.Context, unitID valueobject.UnitID, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
-		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
+		SELECT id, academic_unit_id, school_id, user_id, role, enrolled_at, withdrawn_at, metadata, created_at, updated_at
 		FROM memberships
-		WHERE unit_id = $1
+		WHERE academic_unit_id = $1
 	`
 
 	if activeOnly {
-		query += " AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)"
+		query += " AND is_active = true AND (withdrawn_at IS NULL OR withdrawn_at > CURRENT_TIMESTAMP)"
 	}
 
-	query += " ORDER BY role, valid_from DESC"
+	query += " ORDER BY role, enrolled_at DESC"
 
 	return r.scanMemberships(ctx, query, unitID.String())
 }
 
 func (r *postgresUnitMembershipRepository) FindByUserID(ctx context.Context, userID valueobject.UserID, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
-		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
+		SELECT id, academic_unit_id, school_id, user_id, role, enrolled_at, withdrawn_at, metadata, created_at, updated_at
 		FROM memberships
 		WHERE user_id = $1
 	`
 
 	if activeOnly {
-		query += " AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)"
+		query += " AND is_active = true AND (withdrawn_at IS NULL OR withdrawn_at > CURRENT_TIMESTAMP)"
 	}
 
-	query += " ORDER BY valid_from DESC"
+	query += " ORDER BY enrolled_at DESC"
 
 	return r.scanMemberships(ctx, query, userID.String())
 }
 
 func (r *postgresUnitMembershipRepository) FindByUnitAndUser(ctx context.Context, unitID valueobject.UnitID, userID valueobject.UserID) (*entity.UnitMembership, error) {
 	query := `
-		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
+		SELECT id, academic_unit_id, school_id, user_id, role, enrolled_at, withdrawn_at, metadata, created_at, updated_at
 		FROM memberships
-		WHERE unit_id = $1 AND user_id = $2
-		ORDER BY valid_from DESC
+		WHERE academic_unit_id = $1 AND user_id = $2
+		ORDER BY enrolled_at DESC
 		LIMIT 1
 	`
 
@@ -106,28 +115,28 @@ func (r *postgresUnitMembershipRepository) FindByUnitAndUser(ctx context.Context
 
 func (r *postgresUnitMembershipRepository) FindByRole(ctx context.Context, unitID valueobject.UnitID, role valueobject.MembershipRole, activeOnly bool) ([]*entity.UnitMembership, error) {
 	query := `
-		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
+		SELECT id, academic_unit_id, school_id, user_id, role, enrolled_at, withdrawn_at, metadata, created_at, updated_at
 		FROM memberships
-		WHERE unit_id = $1 AND role = $2
+		WHERE academic_unit_id = $1 AND role = $2
 	`
 
 	if activeOnly {
-		query += " AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)"
+		query += " AND is_active = true AND (withdrawn_at IS NULL OR withdrawn_at > CURRENT_TIMESTAMP)"
 	}
 
-	query += " ORDER BY valid_from DESC"
+	query += " ORDER BY enrolled_at DESC"
 
 	return r.scanMemberships(ctx, query, unitID.String(), role.String())
 }
 
 func (r *postgresUnitMembershipRepository) FindActiveAt(ctx context.Context, unitID valueobject.UnitID, at time.Time) ([]*entity.UnitMembership, error) {
 	query := `
-		SELECT id, unit_id, user_id, role, valid_from, valid_until, metadata, created_at, updated_at
+		SELECT id, academic_unit_id, school_id, user_id, role, enrolled_at, withdrawn_at, metadata, created_at, updated_at
 		FROM memberships
-		WHERE unit_id = $1
-		  AND valid_from <= $2
-		  AND (valid_until IS NULL OR valid_until >= $2)
-		ORDER BY role, valid_from DESC
+		WHERE academic_unit_id = $1
+		  AND enrolled_at <= $2
+		  AND (withdrawn_at IS NULL OR withdrawn_at >= $2)
+		ORDER BY role, enrolled_at DESC
 	`
 
 	return r.scanMemberships(ctx, query, unitID.String(), at)
@@ -140,16 +149,17 @@ func (r *postgresUnitMembershipRepository) Update(ctx context.Context, membershi
 		WHERE id = $5
 	`
 
-	var metadataJSON []byte
-	if len(membership.Metadata()) > 0 {
-		var err error
-		metadataJSON, err = json.Marshal(membership.Metadata())
-		if err != nil {
-			return errors.NewDatabaseError("marshal metadata", err)
-		}
+	// Serializar metadata (siempre enviar al menos {} para JSONB)
+	metadata := membership.Metadata()
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return errors.NewDatabaseError("marshal metadata", err)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err = r.db.ExecContext(ctx, query,
 		membership.Role().String(),
 		membership.ValidUntil(),
 		metadataJSON,
@@ -170,9 +180,9 @@ func (r *postgresUnitMembershipRepository) Delete(ctx context.Context, id valueo
 func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Context, unitID valueobject.UnitID, userID valueobject.UserID) (bool, error) {
 	query := `
 		SELECT EXISTS(
-			SELECT 1 FROM memberships 
-			WHERE unit_id = $1 AND user_id = $2 
-			  AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)
+			SELECT 1 FROM memberships
+			WHERE academic_unit_id = $1 AND user_id = $2
+			  AND is_active = true AND (withdrawn_at IS NULL OR withdrawn_at > CURRENT_TIMESTAMP)
 		)
 	`
 
@@ -182,10 +192,10 @@ func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Conte
 }
 
 func (r *postgresUnitMembershipRepository) CountByUnit(ctx context.Context, unitID valueobject.UnitID, activeOnly bool) (int, error) {
-	query := `SELECT COUNT(*) FROM memberships WHERE unit_id = $1`
+	query := `SELECT COUNT(*) FROM memberships WHERE academic_unit_id = $1`
 
 	if activeOnly {
-		query += " AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)"
+		query += " AND is_active = true AND (withdrawn_at IS NULL OR withdrawn_at > CURRENT_TIMESTAMP)"
 	}
 
 	var count int
@@ -195,9 +205,9 @@ func (r *postgresUnitMembershipRepository) CountByUnit(ctx context.Context, unit
 
 func (r *postgresUnitMembershipRepository) CountByRole(ctx context.Context, unitID valueobject.UnitID, role valueobject.MembershipRole) (int, error) {
 	query := `
-		SELECT COUNT(*) FROM memberships 
-		WHERE unit_id = $1 AND role = $2
-		  AND (valid_until IS NULL OR valid_until > CURRENT_TIMESTAMP)
+		SELECT COUNT(*) FROM memberships
+		WHERE academic_unit_id = $1 AND role = $2
+		  AND is_active = true AND (withdrawn_at IS NULL OR withdrawn_at > CURRENT_TIMESTAMP)
 	`
 
 	var count int
@@ -210,17 +220,18 @@ func (r *postgresUnitMembershipRepository) scanOneMembership(ctx context.Context
 	var (
 		idStr        string
 		unitIDStr    string
+		schoolIDStr  string
 		userIDStr    string
 		role         string
-		validFrom    sql.NullTime
-		validUntil   sql.NullTime
+		enrolledAt   sql.NullTime
+		withdrawnAt  sql.NullTime
 		metadataJSON []byte
 		createdAt    sql.NullTime
 		updatedAt    sql.NullTime
 	)
 
 	err := r.db.QueryRowContext(ctx, query, args...).Scan(
-		&idStr, &unitIDStr, &userIDStr, &role, &validFrom, &validUntil,
+		&idStr, &unitIDStr, &schoolIDStr, &userIDStr, &role, &enrolledAt, &withdrawnAt,
 		&metadataJSON, &createdAt, &updatedAt,
 	)
 
@@ -231,7 +242,7 @@ func (r *postgresUnitMembershipRepository) scanOneMembership(ctx context.Context
 		return nil, err
 	}
 
-	return r.buildMembership(idStr, unitIDStr, userIDStr, role, validFrom, validUntil, metadataJSON, createdAt, updatedAt)
+	return r.buildMembership(idStr, unitIDStr, userIDStr, role, enrolledAt, withdrawnAt, metadataJSON, createdAt, updatedAt)
 }
 
 // Helper: escanear múltiples membresías
@@ -247,20 +258,21 @@ func (r *postgresUnitMembershipRepository) scanMemberships(ctx context.Context, 
 		var (
 			idStr        string
 			unitIDStr    string
+			schoolIDStr  string
 			userIDStr    string
 			role         string
-			validFrom    sql.NullTime
-			validUntil   sql.NullTime
+			enrolledAt   sql.NullTime
+			withdrawnAt  sql.NullTime
 			metadataJSON []byte
 			createdAt    sql.NullTime
 			updatedAt    sql.NullTime
 		)
 
-		if err := rows.Scan(&idStr, &unitIDStr, &userIDStr, &role, &validFrom, &validUntil, &metadataJSON, &createdAt, &updatedAt); err != nil {
+		if err := rows.Scan(&idStr, &unitIDStr, &schoolIDStr, &userIDStr, &role, &enrolledAt, &withdrawnAt, &metadataJSON, &createdAt, &updatedAt); err != nil {
 			return nil, err
 		}
 
-		membership, err := r.buildMembership(idStr, unitIDStr, userIDStr, role, validFrom, validUntil, metadataJSON, createdAt, updatedAt)
+		membership, err := r.buildMembership(idStr, unitIDStr, userIDStr, role, enrolledAt, withdrawnAt, metadataJSON, createdAt, updatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -274,7 +286,7 @@ func (r *postgresUnitMembershipRepository) scanMemberships(ctx context.Context, 
 // Helper: construir entidad de membresía
 func (r *postgresUnitMembershipRepository) buildMembership(
 	idStr, unitIDStr, userIDStr, role string,
-	validFrom, validUntil sql.NullTime,
+	enrolledAt, withdrawnAt sql.NullTime,
 	metadataJSON []byte,
 	createdAt, updatedAt sql.NullTime,
 ) (*entity.UnitMembership, error) {
@@ -305,9 +317,9 @@ func (r *postgresUnitMembershipRepository) buildMembership(
 		}
 	}
 
-	var validUntilPtr *time.Time
-	if validUntil.Valid {
-		validUntilPtr = &validUntil.Time
+	var withdrawnAtPtr *time.Time
+	if withdrawnAt.Valid {
+		withdrawnAtPtr = &withdrawnAt.Time
 	}
 
 	return entity.ReconstructUnitMembership(
@@ -315,8 +327,8 @@ func (r *postgresUnitMembershipRepository) buildMembership(
 		unitID,
 		userID,
 		roleVO,
-		validFrom.Time,
-		validUntilPtr,
+		enrolledAt.Time,
+		withdrawnAtPtr,
 		metadata,
 		createdAt.Time,
 		updatedAt.Time,
