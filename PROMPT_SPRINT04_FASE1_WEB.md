@@ -4,7 +4,8 @@
 **Sprint:** Sprint-04 - Services/API  
 **Ejecutor:** Claude Code Web  
 **Duración estimada:** 2-3 horas  
-**Branch:** `feature/sprint-04-services-api`
+**Branch:** `feature/sprint-04-services-api`  
+**Base branch:** `dev` ⚠️ IMPORTANTE: Crear desde dev, NO desde main
 
 ---
 
@@ -43,9 +44,9 @@ Antes de empezar, verifica:
 ### TASK-01: Setup Inicial (15min)
 
 ```bash
-# 1. Crear branch desde main actualizada
-git checkout main
-git pull origin main
+# 1. Crear branch desde dev actualizada (IMPORTANTE: usar dev, no main)
+git checkout dev
+git pull origin dev
 git checkout -b feature/sprint-04-services-api
 
 # 2. Verificar/agregar dependencias

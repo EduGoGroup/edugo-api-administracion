@@ -475,6 +475,8 @@ make lint
 
 ### TASK-08: Crear PR a dev (10min)
 
+**IMPORTANTE**: El PR debe ir hacia `dev`, NO hacia `main`. Workflow: feature → dev → main
+
 **Título:** `feat(api): Sprint-04 - HTTP REST API with ltree support`
 
 **Descripción:**
