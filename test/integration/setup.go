@@ -6,110 +6,166 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"go/build"
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/EduGoGroup/edugo-shared/testing/containers"
-	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var (
-	// Containers compartidos para todos los tests
-	// Se inicializan en TestMain (main_test.go)
-	sharedDB      *sql.DB
-	sharedMongoDB *mongo.Database
-	sharedManager *containers.Manager
-)
+// getMigrationScripts retorna paths a migraciones de infrastructure
+// Retorna error si no encuentra las migraciones para facilitar debugging
+func getMigrationScripts(t *testing.T) ([]string, error) {
+	// Obtener path al directorio raíz del proyecto (solo para vendor fallback)
+	_, filename, _, _ := runtime.Caller(0)
+	projectRoot := filepath.Dir(filepath.Dir(filepath.Dir(filename)))
 
-// setupTestDB retorna la conexión compartida de PostgreSQL
-// y una función de cleanup que limpia los DATOS (no el container)
+	// Usar go/build para obtener GOPATH de forma cross-platform (Windows compatible)
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		gopath = build.Default.GOPATH
+	}
+
+	// IMPORTANTE: Versión hardcodeada v0.7.1
+	// Si actualizas edugo-infrastructure en go.mod, actualiza esta versión aquí también
+	const infrastructureVersion = "v0.7.1"
+
+	// Path a migraciones en pkg/mod (go modules cache)
+	modPath := filepath.Join(gopath, "pkg", "mod", "github.com", "!edu!go!group", "edugo-infrastructure", "postgres@"+infrastructureVersion, "migrations")
+
+	// Si no existe en mod, intentar desde vendor (fallback)
+	if _, err := os.Stat(modPath); os.IsNotExist(err) {
+		t.Logf("Migraciones no encontradas en pkg/mod, intentando vendor...")
+		modPath = filepath.Join(projectRoot, "vendor", "github.com", "EduGoGroup", "edugo-infrastructure", "postgres", "migrations")
+	} else {
+		t.Logf("Usando migraciones desde: %s", modPath)
+	}
+
+	// Migraciones necesarias para api-administracion (001-004 son las básicas)
+	migrations := []string{
+		"001_create_users.up.sql",
+		"002_create_schools.up.sql",
+		"003_create_academic_units.up.sql",
+		"004_create_memberships.up.sql",
+	}
+
+	var fullPaths []string
+	for _, migration := range migrations {
+		fullPath := filepath.Join(modPath, migration)
+
+		// Validar que cada archivo existe antes de agregarlo
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			return nil, fmt.Errorf("migración no encontrada: %s (buscado en: %s)", migration, modPath)
+		}
+
+		fullPaths = append(fullPaths, fullPath)
+	}
+
+	// Verificar que se encontraron todas las migraciones
+	if len(fullPaths) == 0 {
+		return nil, fmt.Errorf("no se encontraron migraciones en %s", modPath)
+	}
+
+	return fullPaths, nil
+}
+
+// setupTestDB crea una instancia de PostgreSQL para tests usando shared/testing
 func setupTestDB(t *testing.T) (*sql.DB, func()) {
-	t.Helper()
+	ctx := context.Background()
 
-	if sharedDB == nil {
-		t.Fatal("Shared DB not initialized. TestMain should have set it up.")
+	// Obtener migraciones de infrastructure con validación
+	migrationScripts, err := getMigrationScripts(t)
+	if err != nil {
+		t.Fatalf("Error obteniendo migraciones de infrastructure: %v", err)
+	}
+
+	// Log para debug
+	t.Logf("✅ Usando %d migraciones desde infrastructure v0.7.1", len(migrationScripts))
+	for i, script := range migrationScripts {
+		t.Logf("  [%d] %s", i+1, filepath.Base(script))
+	}
+
+	// Configurar PostgreSQL CON migraciones de infrastructure
+	cfg := containers.NewConfig().
+		WithPostgreSQL(&containers.PostgresConfig{
+			Database:    "edugo_test",
+			Username:    "edugo_user",
+			Password:    "edugo_pass",
+			InitScripts: migrationScripts,
+		}).
+		Build()
+
+	manager, err := containers.GetManager(t, cfg)
+	if err != nil {
+		t.Fatalf("Failed to get manager: %v", err)
+	}
+
+	pg := manager.PostgreSQL()
+	if pg == nil {
+		t.Fatal("Failed to get PostgreSQL container")
+	}
+
+	connString, err := pg.ConnectionString(ctx)
+	if err != nil {
+		t.Fatalf("Failed to get Postgres connection string: %v", err)
+	}
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		t.Fatalf("Failed to connect to Postgres: %v", err)
+	}
+
+	if err := db.Ping(); err != nil {
+		db.Close()
+		t.Fatalf("Failed to ping Postgres: %v", err)
 	}
 
 	cleanup := func() {
-		cleanupTestData(t)
+		db.Close()
 	}
 
-	return sharedDB, cleanup
+	return db, cleanup
 }
 
-// setupTestMongoDB retorna la conexión compartida de MongoDB
-// y una función de cleanup que limpia los DATOS (no el container)
+// setupTestMongoDB crea una instancia de MongoDB para tests usando shared/testing
 func setupTestMongoDB(t *testing.T) (*mongo.Database, func()) {
-	t.Helper()
+	ctx := context.Background()
 
-	if sharedMongoDB == nil {
-		t.Fatal("Shared MongoDB not initialized. TestMain should have set it up.")
+	// Configurar MongoDB
+	cfg := containers.NewConfig().
+		WithMongoDB(&containers.MongoConfig{
+			Database: "edugo_test",
+			Username: "edugo_admin",
+			Password: "edugo_pass",
+		}).
+		Build()
+
+	manager, err := containers.GetManager(t, cfg)
+	if err != nil {
+		t.Fatalf("Failed to get manager: %v", err)
 	}
+
+	mongoDB := manager.MongoDB()
+	if mongoDB == nil {
+		t.Fatal("Failed to get MongoDB container")
+	}
+
+	db := mongoDB.Database()
 
 	cleanup := func() {
-		cleanupMongoData(t)
+		// Limpiar colecciones al terminar
+		mongoDB.DropAllCollections(ctx)
 	}
 
-	return sharedMongoDB, cleanup
+	return db, cleanup
 }
 
-// setupTestDBWithMigrations retorna la BD compartida con migraciones ya aplicadas
+// setupTestDBWithMigrations crea una BD con las migraciones aplicadas
+// Ahora usa migraciones centralizadas de infrastructure v0.7.1
 func setupTestDBWithMigrations(t *testing.T) (*sql.DB, func()) {
 	return setupTestDB(t)
-}
-
-// cleanupTestData limpia todas las tablas de PostgreSQL
-// Esto es MUCHO más rápido que destruir y recrear el container
-func cleanupTestData(t *testing.T) {
-	t.Helper()
-
-	ctx := context.Background()
-
-	// Orden correcto para evitar violaciones de foreign key
-	tables := []string{
-		"unit_memberships",
-		"academic_units",
-		"schools",
-		"users",
-		"guardians",
-		"materials",
-		"subjects",
-	}
-
-	for _, table := range tables {
-		// TRUNCATE CASCADE es más rápido que DELETE
-		// Usar QuoteIdentifier para prevenir SQL injection
-		query := fmt.Sprintf("TRUNCATE TABLE %s CASCADE", pq.QuoteIdentifier(table))
-		_, err := sharedDB.ExecContext(ctx, query)
-		if err != nil {
-			// Si la tabla no existe, ignorar el error
-			t.Logf("Warning: Failed to truncate table %s: %v", table, err)
-		}
-	}
-}
-
-// cleanupMongoData limpia todas las colecciones de MongoDB
-func cleanupMongoData(t *testing.T) {
-	t.Helper()
-
-	if sharedMongoDB == nil {
-		return
-	}
-
-	ctx := context.Background()
-
-	// Listar y limpiar todas las colecciones
-	collections, err := sharedMongoDB.ListCollectionNames(ctx, map[string]interface{}{})
-	if err != nil {
-		t.Logf("Warning: Failed to list MongoDB collections: %v", err)
-		return
-	}
-
-	for _, collection := range collections {
-		err := sharedMongoDB.Collection(collection).Drop(ctx)
-		if err != nil {
-			t.Logf("Warning: Failed to drop collection %s: %v", collection, err)
-		}
-	}
 }
