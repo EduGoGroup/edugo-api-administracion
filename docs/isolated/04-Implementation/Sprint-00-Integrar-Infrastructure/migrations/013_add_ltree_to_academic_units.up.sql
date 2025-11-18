@@ -42,12 +42,12 @@ COMMENT ON INDEX academic_units_path_btree_idx IS 'BTREE index for exact path lo
 CREATE OR REPLACE FUNCTION update_academic_unit_path()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- If root unit (no parent), path is just the unit ID
+  -- If root unit (no parent), path is just the unit ID (replace hyphens with underscores for ltree compatibility)
   IF NEW.parent_unit_id IS NULL THEN
-    NEW.path = NEW.id::text::ltree;
+    NEW.path = REPLACE(NEW.id::text, '-', '_')::ltree;
   ELSE
-    -- If has parent, concatenate parent's path + unit ID
-    SELECT path || NEW.id::text::ltree INTO NEW.path
+    -- If has parent, concatenate parent's path + unit ID (replace hyphens with underscores)
+    SELECT path || REPLACE(NEW.id::text, '-', '_')::ltree INTO NEW.path
     FROM academic_units
     WHERE id = NEW.parent_unit_id;
 
@@ -131,7 +131,7 @@ BEGIN
       SELECT
         id,
         parent_unit_id,
-        id::text::ltree AS computed_path
+        REPLACE(id::text, '-', '_')::ltree AS computed_path
       FROM academic_units
       WHERE parent_unit_id IS NULL
 
@@ -141,7 +141,7 @@ BEGIN
       SELECT
         au.id,
         au.parent_unit_id,
-        (up.computed_path || au.id::text)::ltree AS computed_path
+        (up.computed_path || REPLACE(au.id::text, '-', '_'))::ltree AS computed_path
       FROM academic_units au
       INNER JOIN unit_paths up ON au.parent_unit_id = up.id
     )
