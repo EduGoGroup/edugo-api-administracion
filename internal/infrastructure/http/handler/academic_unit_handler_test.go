@@ -117,7 +117,7 @@ func TestAcademicUnitHandler_CreateUnit_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("POST", "/v1/schools/school-123/units", bytes.NewReader(bodyBytes))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Params = gin.Params{{Key: "schoolId", Value: "school-123"}}
+	c.Params = gin.Params{{Key: "id", Value: "school-123"}} // Cambio: schoolId → id
 
 	handler.CreateUnit(c)
 
@@ -163,7 +163,7 @@ func TestAcademicUnitHandler_GetUnitTree_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/v1/schools/school-123/units/tree", nil)
-	c.Params = gin.Params{{Key: "schoolId", Value: "school-123"}}
+	c.Params = gin.Params{{Key: "id", Value: "school-123"}} // Cambio: schoolId → id
 
 	handler.GetUnitTree(c)
 
@@ -184,7 +184,7 @@ func TestAcademicUnitHandler_ListUnitsBySchool_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/v1/schools/school-123/units", nil)
-	c.Params = gin.Params{{Key: "schoolId", Value: "school-123"}}
+	c.Params = gin.Params{{Key: "id", Value: "school-123"}} // Cambio: schoolId → id
 
 	handler.ListUnitsBySchool(c)
 
@@ -204,7 +204,7 @@ func TestAcademicUnitHandler_ListUnitsByType_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/v1/schools/school-123/units/by-type?type=grade", nil)
-	c.Params = gin.Params{{Key: "schoolId", Value: "school-123"}}
+	c.Params = gin.Params{{Key: "id", Value: "school-123"}} // Cambio: schoolId → id
 
 	handler.ListUnitsByType(c)
 
