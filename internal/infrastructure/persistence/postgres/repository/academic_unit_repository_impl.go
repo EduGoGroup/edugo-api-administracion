@@ -416,9 +416,7 @@ func (r *postgresAcademicUnitRepository) MoveSubtree(
 	}
 
 	// Actualizar el parent_unit_id
-	// El trigger update_academic_unit_path() actualizará automáticamente:
-	// 1. El path de esta unidad
-	// 2. Los paths de todos los descendientes (via cascada)
+	// El trigger update_academic_unit_path() actualizará el path de esta unidad
 	query := `
 		UPDATE academic_units
 		SET parent_unit_id = $1, updated_at = NOW()
@@ -438,6 +436,34 @@ func (r *postgresAcademicUnitRepository) MoveSubtree(
 
 	if rowsAffected == 0 {
 		return errors.NewNotFoundError("academic unit not found")
+	}
+
+	// Actualizar los paths de todos los descendientes usando CTE recursivo
+	// Esto es necesario porque el trigger solo actualiza el path de la unidad actual
+	updateDescendantsQuery := `
+		WITH RECURSIVE descendants AS (
+			-- Obtener la unidad que acabamos de mover (con su nuevo path)
+			SELECT id, path
+			FROM academic_units
+			WHERE id = $1
+
+			UNION ALL
+
+			-- Obtener todos los descendientes
+			SELECT au.id, (d.path || REPLACE(au.id::text, '-', '_'))::ltree AS path
+			FROM academic_units au
+			INNER JOIN descendants d ON au.parent_unit_id = d.id
+			WHERE au.id != $1  -- Excluir la unidad raíz
+		)
+		UPDATE academic_units au
+		SET path = d.path
+		FROM descendants d
+		WHERE au.id = d.id AND au.id != $1
+	`
+
+	_, err = tx.ExecContext(ctx, updateDescendantsQuery, unitID.String())
+	if err != nil {
+		return errors.NewDatabaseError("update descendants paths", err)
 	}
 
 	// Commit de la transacción
