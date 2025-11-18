@@ -129,6 +129,28 @@ func (um *UnitMembership) UpdatedAt() time.Time {
 	return um.updatedAt
 }
 
+// Setters - Para uso exclusivo de Domain Services
+// ⚠️ NO usar directamente - pueden romper invariantes
+
+func (um *UnitMembership) SetRole(role valueobject.MembershipRole) {
+	um.role = role
+}
+
+func (um *UnitMembership) SetValidUntilValue(validUntil *time.Time) {
+	um.validUntil = validUntil
+}
+
+func (um *UnitMembership) SetUpdatedAt(t time.Time) {
+	um.updatedAt = t
+}
+
+func (um *UnitMembership) SetMetadataValue(key string, value interface{}) {
+	if um.metadata == nil {
+		um.metadata = make(map[string]interface{})
+	}
+	um.metadata[key] = value
+}
+
 // Business Logic Methods
 
 // IsActive verifica si la membresía está activa en el momento actual

@@ -155,6 +155,46 @@ func (au *AcademicUnit) Children() []*AcademicUnit {
 	return copy
 }
 
+// Setters - Para uso exclusivo de Domain Services
+// ⚠️ NO usar directamente - pueden romper invariantes
+
+func (au *AcademicUnit) SetParentID(parentID valueobject.UnitID) {
+	au.parentUnitID = &parentID
+}
+
+func (au *AcademicUnit) RemoveParentID() {
+	au.parentUnitID = nil
+}
+
+func (au *AcademicUnit) SetDisplayName(displayName string) {
+	au.displayName = displayName
+}
+
+func (au *AcademicUnit) SetDescription(description string) {
+	au.description = description
+}
+
+func (au *AcademicUnit) SetUpdatedAt(t time.Time) {
+	au.updatedAt = t
+}
+
+func (au *AcademicUnit) SetDeletedAt(t *time.Time) {
+	au.deletedAt = t
+}
+
+func (au *AcademicUnit) AddChildToSlice(child *AcademicUnit) {
+	au.children = append(au.children, child)
+}
+
+func (au *AcademicUnit) RemoveChildFromSlice(childID valueobject.UnitID) {
+	for i, child := range au.children {
+		if child.id.Equals(childID) {
+			au.children = append(au.children[:i], au.children[i+1:]...)
+			break
+		}
+	}
+}
+
 // Business Logic Methods
 
 // SetParent establece la unidad padre en la jerarquía
