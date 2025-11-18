@@ -5,94 +5,111 @@ package integration
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"testing"
 
 	"github.com/EduGoGroup/edugo-shared/testing/containers"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// setupTestDB crea una instancia de PostgreSQL para tests usando shared/testing
+var (
+	// Containers compartidos para todos los tests
+	// Se inicializan en TestMain (main_test.go)
+	sharedDB      *sql.DB
+	sharedMongoDB *mongo.Database
+	sharedManager *containers.Manager
+)
+
+// setupTestDB retorna la conexión compartida de PostgreSQL
+// y una función de cleanup que limpia los DATOS (no el container)
 func setupTestDB(t *testing.T) (*sql.DB, func()) {
-	ctx := context.Background()
+	t.Helper()
 
-	// Configurar PostgreSQL sin scripts de inicialización
-	// Las migraciones ahora vienen de infrastructure v0.7.1
-	cfg := containers.NewConfig().
-		WithPostgreSQL(&containers.PostgresConfig{
-			Database: "edugo_test",
-			Username: "edugo_user",
-			Password: "edugo_pass",
-		}).
-		Build()
-
-	manager, err := containers.GetManager(t, cfg)
-	if err != nil {
-		t.Fatalf("Failed to get manager: %v", err)
-	}
-
-	pg := manager.PostgreSQL()
-	if pg == nil {
-		t.Fatal("Failed to get PostgreSQL container")
-	}
-
-	connString, err := pg.ConnectionString(ctx)
-	if err != nil {
-		t.Fatalf("Failed to get Postgres connection string: %v", err)
-	}
-
-	db, err := sql.Open("postgres", connString)
-	if err != nil {
-		t.Fatalf("Failed to connect to Postgres: %v", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		db.Close()
-		t.Fatalf("Failed to ping Postgres: %v", err)
+	if sharedDB == nil {
+		t.Fatal("Shared DB not initialized. TestMain should have set it up.")
 	}
 
 	cleanup := func() {
-		db.Close()
+		cleanupTestData(t)
 	}
 
-	return db, cleanup
+	return sharedDB, cleanup
 }
 
-// setupTestMongoDB crea una instancia de MongoDB para tests usando shared/testing
+// setupTestMongoDB retorna la conexión compartida de MongoDB
+// y una función de cleanup que limpia los DATOS (no el container)
 func setupTestMongoDB(t *testing.T) (*mongo.Database, func()) {
-	ctx := context.Background()
+	t.Helper()
 
-	// Configurar MongoDB
-	cfg := containers.NewConfig().
-		WithMongoDB(&containers.MongoConfig{
-			Database: "edugo_test",
-			Username: "edugo_admin",
-			Password: "edugo_pass",
-		}).
-		Build()
-
-	manager, err := containers.GetManager(t, cfg)
-	if err != nil {
-		t.Fatalf("Failed to get manager: %v", err)
+	if sharedMongoDB == nil {
+		t.Fatal("Shared MongoDB not initialized. TestMain should have set it up.")
 	}
-
-	mongoDB := manager.MongoDB()
-	if mongoDB == nil {
-		t.Fatal("Failed to get MongoDB container")
-	}
-
-	db := mongoDB.Database()
 
 	cleanup := func() {
-		// Limpiar colecciones al terminar
-		mongoDB.DropAllCollections(ctx)
+		cleanupMongoData(t)
 	}
 
-	return db, cleanup
+	return sharedMongoDB, cleanup
 }
 
-// setupTestDBWithMigrations crea una BD con las migraciones aplicadas
-// Alias para setupTestDB ya que InitScripts aplica las migraciones automáticamente
+// setupTestDBWithMigrations retorna la BD compartida con migraciones ya aplicadas
 func setupTestDBWithMigrations(t *testing.T) (*sql.DB, func()) {
 	return setupTestDB(t)
+}
+
+// cleanupTestData limpia todas las tablas de PostgreSQL
+// Esto es MUCHO más rápido que destruir y recrear el container
+func cleanupTestData(t *testing.T) {
+	t.Helper()
+
+	ctx := context.Background()
+
+	// Orden correcto para evitar violaciones de foreign key
+	tables := []string{
+		"unit_memberships",
+		"academic_units",
+		"schools",
+		"users",
+		"guardians",
+		"materials",
+		"subjects",
+	}
+
+	for _, table := range tables {
+		// TRUNCATE CASCADE es más rápido que DELETE
+		// Usar QuoteIdentifier para prevenir SQL injection
+		query := fmt.Sprintf("TRUNCATE TABLE %s CASCADE", pq.QuoteIdentifier(table))
+		_, err := sharedDB.ExecContext(ctx, query)
+		if err != nil {
+			// Si la tabla no existe, ignorar el error
+			t.Logf("Warning: Failed to truncate table %s: %v", table, err)
+		}
+	}
+}
+
+// cleanupMongoData limpia todas las colecciones de MongoDB
+func cleanupMongoData(t *testing.T) {
+	t.Helper()
+
+	if sharedMongoDB == nil {
+		return
+	}
+
+	ctx := context.Background()
+
+	// Listar y limpiar todas las colecciones
+	collections, err := sharedMongoDB.ListCollectionNames(ctx, map[string]interface{}{})
+	if err != nil {
+		t.Logf("Warning: Failed to list MongoDB collections: %v", err)
+		return
+	}
+
+	for _, collection := range collections {
+		err := sharedMongoDB.Collection(collection).Drop(ctx)
+		if err != nil {
+			t.Logf("Warning: Failed to drop collection %s: %v", collection, err)
+		}
+	}
 }
