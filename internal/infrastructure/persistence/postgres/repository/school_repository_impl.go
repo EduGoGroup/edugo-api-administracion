@@ -31,16 +31,17 @@ func (r *postgresSchoolRepository) Create(ctx context.Context, school *entity.Sc
 		contactEmail = &email
 	}
 
-	var metadataJSON []byte
-	if len(school.Metadata()) > 0 {
-		var err error
-		metadataJSON, err = json.Marshal(school.Metadata())
-		if err != nil {
-			return errors.NewDatabaseError("marshal metadata", err)
-		}
+	// Serializar metadata (siempre enviar al menos {} para JSONB)
+	metadata := school.Metadata()
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return errors.NewDatabaseError("marshal metadata", err)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err = r.db.ExecContext(ctx, query,
 		school.ID().String(),
 		school.Name(),
 		school.Code(),
@@ -59,7 +60,7 @@ func (r *postgresSchoolRepository) FindByID(ctx context.Context, id valueobject.
 	query := `
 		SELECT id, name, code, address, email, phone, metadata, created_at, updated_at
 		FROM schools
-		WHERE id = $1
+		WHERE id = $1 AND deleted_at IS NULL
 	`
 
 	var (
@@ -79,7 +80,7 @@ func (r *postgresSchoolRepository) FindByID(ctx context.Context, id valueobject.
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, errors.NewNotFoundError("school")
 	}
 	if err != nil {
 		return nil, err
@@ -167,16 +168,17 @@ func (r *postgresSchoolRepository) Update(ctx context.Context, school *entity.Sc
 		contactEmail = &email
 	}
 
-	var metadataJSON []byte
-	if len(school.Metadata()) > 0 {
-		var err error
-		metadataJSON, err = json.Marshal(school.Metadata())
-		if err != nil {
-			return errors.NewDatabaseError("marshal metadata", err)
-		}
+	// Asegurar que metadata nunca sea nil para JSONB
+	metadata := school.Metadata()
+	if metadata == nil {
+		metadata = make(map[string]interface{})
+	}
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return errors.NewDatabaseError("marshal metadata", err)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err = r.db.ExecContext(ctx, query,
 		school.Name(),
 		school.Address(),
 		contactEmail,
