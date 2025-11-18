@@ -5,6 +5,22 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-11-18
+
+### Tipo de Release: patch
+
+- release: Sprint-04 - HTTP REST API with ltree support (#34)
+- docs: clarify Sprint-04 must branch from dev (not main)
+- docs: add Sprint-04 workflow prompts (Phase 1 Web + Phase 2 Local)
+- chore: Sync dev to main - Sprint-03 Repositorios ltree (#32)
+- docs: add phase 1 (web) and phase 2 (local) workflow prompts
+- feat(domain): Sprint-02 - Tree traversal, domain services, and test optimization (#29)
+- Revert "feat(domain): Sprint-02 - Tree traversal, domain services, and test optimization (#28)"
+- feat(domain): Sprint-02 - Tree traversal, domain services, and test optimization (#28)
+- feat: Migración a Infrastructure Centralizado v0.7.1 (#27)
+
+---
+
 ## [0.3.1] - 2025-11-17
 
 ### Tipo de Release: patch
