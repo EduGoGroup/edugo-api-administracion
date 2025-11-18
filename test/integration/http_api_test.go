@@ -368,9 +368,24 @@ func TestSchoolAPI_ListAll(t *testing.T) {
 	err := json.Unmarshal(body, &schools)
 	require.NoError(t, err, "should unmarshal schools list")
 
-	// Verificar que al menos tiene las 3 escuelas que creamos
-	// Nota: En ambiente de test puede haber datos residuales de otros tests
-	assert.GreaterOrEqual(t, len(schools), 3, "should have at least the 3 schools we created")
+	// Verificar que las 3 escuelas que creamos están en la lista
+	// (verificando por códigos específicos en lugar de solo contar)
+	expectedCodes := map[string]bool{
+		"LIST001": false,
+		"LIST002": false,
+		"LIST003": false,
+	}
+
+	for _, school := range schools {
+		if _, exists := expectedCodes[school.Code]; exists {
+			expectedCodes[school.Code] = true
+		}
+	}
+
+	// Verificar que encontramos todas las escuelas que creamos
+	for code, found := range expectedCodes {
+		assert.True(t, found, "should find school with code %s", code)
+	}
 }
 
 // TestSchoolAPI_UpdateAndDelete verifica actualización y eliminación
