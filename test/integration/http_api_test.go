@@ -33,7 +33,9 @@ func setupTestServer(t *testing.T) (*httptest.Server, func()) {
 	testLogger := getTestLogger()
 
 	// Crear container con la BD de test
-	c := container.NewContainer(db, testLogger)
+	// JWT secret para tests (no importa el valor en tests)
+	testJWTSecret := "test-jwt-secret-minimum-32-characters-required-for-security"
+	c := container.NewContainer(db, testLogger, testJWTSecret)
 
 	// Configurar Gin en modo test
 	gin.SetMode(gin.TestMode)

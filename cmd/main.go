@@ -14,6 +14,7 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/bootstrap"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/container"
+	ginmiddleware "github.com/EduGoGroup/edugo-shared/middleware/gin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -51,7 +52,11 @@ func main() {
 	}()
 
 	// 3. Crear container de dependencias
-	c := container.NewContainer(resources.PostgreSQL, resources.Logger)
+	jwtSecret := cfg.Auth.JWT.Secret
+	if jwtSecret == "" {
+		log.Fatalf("❌ JWT_SECRET no está configurado")
+	}
+	c := container.NewContainer(resources.PostgreSQL, resources.Logger, jwtSecret)
 	defer c.Close()
 
 	resources.Logger.Info("✅ API Administración iniciada", "port", cfg.Server.Port)
@@ -69,7 +74,8 @@ func main() {
 
 	// Rutas v1
 	v1 := r.Group("/v1")
-	v1.Use(AuthNotRequired())
+	// Middleware de autenticación JWT (todas las rutas requieren token válido)
+	v1.Use(ginmiddleware.JWTAuthMiddleware(c.JWTManager))
 	{
 		// ==================== SCHOOLS ====================
 		schools := v1.Group("/schools")
@@ -160,17 +166,4 @@ func main() {
 	}
 
 	resources.Logger.Info("✅ Servidor detenido correctamente")
-}
-
-// AuthNotRequired es un middleware placeholder que no valida autenticación
-//
-// NOTA: Este proyecto NO implementa autenticación todavía.
-// Todos los endpoints son públicos por ahora. En el futuro, este middleware
-// será reemplazado por una validación JWT real cuando se integre el módulo
-// de autenticación de edugo-shared/auth.
-func AuthNotRequired() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// No-op: permitir todas las peticiones sin validación
-		c.Next()
-	}
 }
