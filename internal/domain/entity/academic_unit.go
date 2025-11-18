@@ -197,9 +197,17 @@ func (au *AcademicUnit) RemoveChildFromSlice(childID valueobject.UnitID) {
 
 // Business Logic Methods
 //
-// ⚠️ DEPRECATED: Los métodos siguientes están deprecated y serán removidos en v0.4.0
-// Use AcademicUnitDomainService en su lugar para todas las operaciones de lógica de negocio
-// Estos métodos ahora delegan al service para mantener compatibilidad temporal
+// ⚠️ DEPRECATED: Los métodos siguientes están deprecated y serán removidos en v0.6.0
+//
+// Razón: Estos métodos violan Clean Architecture al tener lógica de negocio en entities.
+// La lógica debe estar en domain services para mejor testabilidad y mantenibilidad.
+//
+// Migración recomendada:
+//   - En lugar de: unit.SetParent(parentID, parentType)
+//   - Usar: academicUnitDomainService.SetParent(unit, parentID, parentType)
+//
+// Nota: Estos métodos se mantienen temporalmente para compatibilidad con código existente
+// en application services. Serán removidos en v0.6.0 una vez completada la migración.
 
 // SetParent establece la unidad padre en la jerarquía
 //
