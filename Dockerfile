@@ -41,6 +41,9 @@ WORKDIR /root/
 # Copiar binario compilado desde builder
 COPY --from=builder /app/main .
 
+# Copiar archivos de configuración
+COPY --from=builder /app/config /root/config
+
 # Exponer puerto
 EXPOSE 8081
 
