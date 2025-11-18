@@ -305,6 +305,153 @@ func (r *postgresAcademicUnitRepository) scanUnits(ctx context.Context, query st
 	return units, rows.Err()
 }
 
+// =====================================================
+// Ltree-based hierarchical query methods (Sprint-03)
+// =====================================================
+
+// FindByPath busca una unidad académica por su path ltree
+func (r *postgresAcademicUnitRepository) FindByPath(ctx context.Context, path string) (*entity.AcademicUnit, error) {
+	query := `
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
+		FROM academic_units
+		WHERE path = $1 AND deleted_at IS NULL
+	`
+
+	return r.scanOneUnit(ctx, query, path)
+}
+
+// FindChildren retorna los hijos directos de una unidad académica
+func (r *postgresAcademicUnitRepository) FindChildren(ctx context.Context, parentID valueobject.UnitID) ([]*entity.AcademicUnit, error) {
+	query := `
+		SELECT id, parent_unit_id, school_id, type, name, code, description, metadata, created_at, updated_at, deleted_at
+		FROM academic_units
+		WHERE parent_unit_id = $1 AND deleted_at IS NULL
+		ORDER BY name
+	`
+
+	return r.scanUnits(ctx, query, parentID.String())
+}
+
+// FindDescendants retorna TODOS los descendientes de una unidad usando ltree
+// Incluye hijos, nietos, bisnietos, etc. (toda la jerarquía debajo)
+// Usa el operador <@ (is descendant of) de ltree para eficiencia
+func (r *postgresAcademicUnitRepository) FindDescendants(ctx context.Context, unitID valueobject.UnitID) ([]*entity.AcademicUnit, error) {
+	query := `
+		SELECT u.id, u.parent_unit_id, u.school_id, u.type, u.name, u.code, u.description, u.metadata,
+		       u.created_at, u.updated_at, u.deleted_at
+		FROM academic_units u
+		WHERE u.path <@ (
+			SELECT path FROM academic_units WHERE id = $1
+		)
+		AND u.id != $1
+		AND u.deleted_at IS NULL
+		ORDER BY u.path
+	`
+
+	return r.scanUnits(ctx, query, unitID.String())
+}
+
+// FindAncestors retorna TODOS los ancestros de una unidad usando ltree
+// Incluye padre, abuelo, bisabuelo, etc. (toda la jerarquía arriba)
+// Usa el operador @> (is ancestor of) de ltree para eficiencia
+func (r *postgresAcademicUnitRepository) FindAncestors(ctx context.Context, unitID valueobject.UnitID) ([]*entity.AcademicUnit, error) {
+	query := `
+		SELECT u.id, u.parent_unit_id, u.school_id, u.type, u.name, u.code, u.description, u.metadata,
+		       u.created_at, u.updated_at, u.deleted_at
+		FROM academic_units u
+		WHERE u.path @> (
+			SELECT path FROM academic_units WHERE id = $1
+		)
+		AND u.id != $1
+		AND u.deleted_at IS NULL
+		ORDER BY u.path
+	`
+
+	return r.scanUnits(ctx, query, unitID.String())
+}
+
+// FindBySchoolIDAndDepth retorna unidades de una escuela a una profundidad específica
+// depth=1: unidades raíz, depth=2: hijos directos de raíz, etc.
+// Usa la función nlevel() de ltree para calcular profundidad
+func (r *postgresAcademicUnitRepository) FindBySchoolIDAndDepth(
+	ctx context.Context,
+	schoolID valueobject.SchoolID,
+	depth int,
+) ([]*entity.AcademicUnit, error) {
+	query := `
+		SELECT u.id, u.parent_unit_id, u.school_id, u.type, u.name, u.code, u.description, u.metadata,
+		       u.created_at, u.updated_at, u.deleted_at
+		FROM academic_units u
+		WHERE u.school_id = $1
+		AND nlevel(u.path) = $2
+		AND u.deleted_at IS NULL
+		ORDER BY u.path
+	`
+
+	return r.scanUnits(ctx, query, schoolID.String(), depth)
+}
+
+// MoveSubtree mueve un subárbol completo a un nuevo padre
+// Si newParentID es nil, convierte la unidad en raíz
+// El trigger update_academic_unit_path() actualizará automáticamente todos los paths
+func (r *postgresAcademicUnitRepository) MoveSubtree(
+	ctx context.Context,
+	unitID valueobject.UnitID,
+	newParentID *valueobject.UnitID,
+) error {
+	// Esta operación requiere una transacción para garantizar atomicidad
+	// El trigger de PostgreSQL se encargará de actualizar el path automáticamente
+	// y propagará el cambio a todos los descendientes
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return errors.NewDatabaseError("begin transaction", err)
+	}
+	defer tx.Rollback()
+
+	// Preparar el nuevo parent_unit_id (NULL si es raíz)
+	var newParentIDStr *string
+	if newParentID != nil {
+		idStr := newParentID.String()
+		newParentIDStr = &idStr
+	}
+
+	// Actualizar el parent_unit_id
+	// El trigger update_academic_unit_path() actualizará automáticamente:
+	// 1. El path de esta unidad
+	// 2. Los paths de todos los descendientes (via cascada)
+	query := `
+		UPDATE academic_units
+		SET parent_unit_id = $1, updated_at = NOW()
+		WHERE id = $2
+	`
+
+	result, err := tx.ExecContext(ctx, query, newParentIDStr, unitID.String())
+	if err != nil {
+		return errors.NewDatabaseError("update parent_unit_id", err)
+	}
+
+	// Verificar que se actualizó exactamente una fila
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errors.NewDatabaseError("get rows affected", err)
+	}
+
+	if rowsAffected == 0 {
+		return errors.NewNotFoundError("academic unit not found")
+	}
+
+	// Commit de la transacción
+	if err := tx.Commit(); err != nil {
+		return errors.NewDatabaseError("commit transaction", err)
+	}
+
+	return nil
+}
+
+// =====================================================
+// Helper methods
+// =====================================================
+
 // Helper: construir entidad desde campos escaneados
 func (r *postgresAcademicUnitRepository) buildUnit(
 	idStr string,
