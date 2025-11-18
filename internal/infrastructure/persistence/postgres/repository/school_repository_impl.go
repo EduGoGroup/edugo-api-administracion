@@ -69,7 +69,7 @@ func (r *postgresSchoolRepository) FindByID(ctx context.Context, id valueobject.
 		code         string
 		address      string
 		contactEmail sql.NullString
-		contactPhone string
+		contactPhone sql.NullString
 		metadataJSON []byte
 		createdAt    sql.NullTime
 		updatedAt    sql.NullTime
@@ -102,7 +102,7 @@ func (r *postgresSchoolRepository) FindByCode(ctx context.Context, code string) 
 		codeStr      string
 		address      string
 		contactEmail sql.NullString
-		contactPhone string
+		contactPhone sql.NullString
 		metadataJSON []byte
 		createdAt    sql.NullTime
 		updatedAt    sql.NullTime
@@ -135,7 +135,7 @@ func (r *postgresSchoolRepository) FindByName(ctx context.Context, name string) 
 		code         string
 		address      string
 		contactEmail sql.NullString
-		contactPhone string
+		contactPhone sql.NullString
 		metadataJSON []byte
 		createdAt    sql.NullTime
 		updatedAt    sql.NullTime
@@ -218,7 +218,7 @@ func (r *postgresSchoolRepository) List(ctx context.Context, filters repository.
 			code         string
 			address      string
 			contactEmail sql.NullString
-			contactPhone string
+			contactPhone sql.NullString
 			metadataJSON []byte
 			createdAt    sql.NullTime
 			updatedAt    sql.NullTime
@@ -259,7 +259,7 @@ func (r *postgresSchoolRepository) ExistsByCode(ctx context.Context, code string
 func (r *postgresSchoolRepository) scanSchool(
 	idStr, name, code, address string,
 	contactEmail sql.NullString,
-	contactPhone string,
+	contactPhone sql.NullString,
 	metadataJSON []byte,
 	createdAt, updatedAt sql.NullTime,
 ) (*entity.School, error) {
@@ -277,6 +277,12 @@ func (r *postgresSchoolRepository) scanSchool(
 		email = &e
 	}
 
+	// Convertir phone de sql.NullString a string
+	phone := ""
+	if contactPhone.Valid {
+		phone = contactPhone.String
+	}
+
 	var metadata map[string]interface{}
 	if len(metadataJSON) > 0 {
 		if err := json.Unmarshal(metadataJSON, &metadata); err != nil {
@@ -290,7 +296,7 @@ func (r *postgresSchoolRepository) scanSchool(
 		code,
 		address,
 		email,
-		contactPhone,
+		phone,
 		metadata,
 		createdAt.Time,
 		updatedAt.Time,

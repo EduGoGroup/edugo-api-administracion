@@ -144,7 +144,7 @@ func (r *postgresAcademicUnitRepository) FindByType(ctx context.Context, schoolI
 func (r *postgresAcademicUnitRepository) Update(ctx context.Context, unit *entity.AcademicUnit) error {
 	query := `
 		UPDATE academic_units
-		SET parent_unit_id = $1, display_name = $2, description = $3, metadata = $4, updated_at = $5
+		SET parent_unit_id = $1, name = $2, description = $3, metadata = $4, updated_at = $5
 		WHERE id = $6
 	`
 

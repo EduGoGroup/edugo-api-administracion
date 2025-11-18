@@ -39,7 +39,7 @@ func NewAcademicUnitHandler(unitService service.AcademicUnitService, logger logg
 // @Router /v1/schools/{schoolId}/units [post]
 // @Security BearerAuth
 func (h *AcademicUnitHandler) CreateUnit(c *gin.Context) {
-	schoolID := c.Param("schoolId")
+	schoolID := c.Param("id") // En la ruta es /:id/units
 
 	if schoolID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
@@ -117,7 +117,7 @@ func (h *AcademicUnitHandler) GetUnit(c *gin.Context) {
 // @Router /v1/schools/{schoolId}/units/tree [get]
 // @Security BearerAuth
 func (h *AcademicUnitHandler) GetUnitTree(c *gin.Context) {
-	schoolID := c.Param("schoolId")
+	schoolID := c.Param("id") // En la ruta es /:id/units/tree
 
 	if schoolID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
@@ -153,7 +153,7 @@ func (h *AcademicUnitHandler) GetUnitTree(c *gin.Context) {
 // @Router /v1/schools/{schoolId}/units [get]
 // @Security BearerAuth
 func (h *AcademicUnitHandler) ListUnitsBySchool(c *gin.Context) {
-	schoolID := c.Param("schoolId")
+	schoolID := c.Param("id") // En la ruta es /:id/units
 
 	if schoolID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
@@ -190,7 +190,7 @@ func (h *AcademicUnitHandler) ListUnitsBySchool(c *gin.Context) {
 // @Router /v1/schools/{schoolId}/units/by-type [get]
 // @Security BearerAuth
 func (h *AcademicUnitHandler) ListUnitsByType(c *gin.Context) {
-	schoolID := c.Param("schoolId")
+	schoolID := c.Param("id") // En la ruta es /:id/units/by-type
 	unitType := c.Query("type")
 
 	if schoolID == "" {
