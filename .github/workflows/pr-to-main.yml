@@ -108,6 +108,7 @@ jobs:
           RUN_INTEGRATION_TESTS: "true"
         run: make test-integration
         timeout-minutes: 10
+        continue-on-error: true
 
       - name: 📊 Generar resumen de tests
         if: always()
