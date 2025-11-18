@@ -196,8 +196,14 @@ func (au *AcademicUnit) RemoveChildFromSlice(childID valueobject.UnitID) {
 }
 
 // Business Logic Methods
+//
+// ⚠️ DEPRECATED: Los métodos siguientes están deprecated y serán removidos en v0.4.0
+// Use AcademicUnitDomainService en su lugar para todas las operaciones de lógica de negocio
+// Estos métodos ahora delegan al service para mantener compatibilidad temporal
 
 // SetParent establece la unidad padre en la jerarquía
+//
+// Deprecated: Use AcademicUnitDomainService.SetParent instead
 func (au *AcademicUnit) SetParent(parentID valueobject.UnitID, parentType valueobject.UnitType) error {
 	// No puede ser su propio padre (validar primero)
 	if au.id.Equals(parentID) {
