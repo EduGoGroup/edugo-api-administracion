@@ -65,6 +65,15 @@ func getMigrationScripts(t *testing.T) ([]string, error) {
 		fullPaths = append(fullPaths, fullPath)
 	}
 
+	// Agregar migración 013 ltree desde el proyecto local (Sprint-03)
+	localMigration := filepath.Join(projectRoot, "docs", "isolated", "04-Implementation", "Sprint-00-Integrar-Infrastructure", "migrations", "013_add_ltree_to_academic_units.up.sql")
+	if _, err := os.Stat(localMigration); err == nil {
+		fullPaths = append(fullPaths, localMigration)
+		t.Logf("✅ Agregada migración local ltree: 013_add_ltree_to_academic_units.up.sql")
+	} else {
+		t.Logf("⚠️  Migración ltree no encontrada en: %s", localMigration)
+	}
+
 	// Verificar que se encontraron todas las migraciones
 	if len(fullPaths) == 0 {
 		return nil, fmt.Errorf("no se encontraron migraciones en %s", modPath)
