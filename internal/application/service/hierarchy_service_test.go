@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/service"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 )
@@ -101,6 +102,59 @@ func (m *MockUnitRepository) GetHierarchyPath(ctx context.Context, id valueobjec
 	return args.Get(0).([]*entity.AcademicUnit), args.Error(1)
 }
 
+func (m *MockUnitRepository) FindAncestors(ctx context.Context, unitID valueobject.UnitID) ([]*entity.AcademicUnit, error) {
+	args := m.Called(ctx, unitID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.AcademicUnit), args.Error(1)
+}
+
+func (m *MockUnitRepository) FindByParentID(ctx context.Context, parentID valueobject.UnitID, includeDeleted bool) ([]*entity.AcademicUnit, error) {
+	args := m.Called(ctx, parentID, includeDeleted)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.AcademicUnit), args.Error(1)
+}
+
+func (m *MockUnitRepository) FindByPath(ctx context.Context, path string) (*entity.AcademicUnit, error) {
+	args := m.Called(ctx, path)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.AcademicUnit), args.Error(1)
+}
+
+func (m *MockUnitRepository) FindBySchoolIDAndCode(ctx context.Context, schoolID valueobject.SchoolID, code string) (*entity.AcademicUnit, error) {
+	args := m.Called(ctx, schoolID, code)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.AcademicUnit), args.Error(1)
+}
+
+func (m *MockUnitRepository) FindRootUnits(ctx context.Context, schoolID valueobject.SchoolID) ([]*entity.AcademicUnit, error) {
+	args := m.Called(ctx, schoolID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.AcademicUnit), args.Error(1)
+}
+
+func (m *MockUnitRepository) HardDelete(ctx context.Context, id valueobject.UnitID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockUnitRepository) FindChildren(ctx context.Context, parentID valueobject.UnitID) ([]*entity.AcademicUnit, error) {
+	args := m.Called(ctx, parentID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.AcademicUnit), args.Error(1)
+}
+
 // MockSchoolRepository mock del repositorio de escuelas
 type MockSchoolRepository struct {
 	mock.Mock
@@ -135,6 +189,40 @@ func (m *MockSchoolRepository) Update(ctx context.Context, school *entity.School
 func (m *MockSchoolRepository) Delete(ctx context.Context, id valueobject.SchoolID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
+}
+
+func (m *MockSchoolRepository) ExistsByCode(ctx context.Context, code string) (bool, error) {
+	args := m.Called(ctx, code)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockSchoolRepository) FindByCode(ctx context.Context, code string) (*entity.School, error) {
+	args := m.Called(ctx, code)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.School), args.Error(1)
+}
+
+func (m *MockSchoolRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
+	args := m.Called(ctx, name)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockSchoolRepository) FindByName(ctx context.Context, name string) (*entity.School, error) {
+	args := m.Called(ctx, name)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.School), args.Error(1)
+}
+
+func (m *MockSchoolRepository) List(ctx context.Context, filters repository.ListFilters) ([]*entity.School, error) {
+	args := m.Called(ctx, filters)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.School), args.Error(1)
 }
 
 // Tests

@@ -5,7 +5,6 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	domainService "github.com/EduGoGroup/edugo-api-administracion/internal/domain/service"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )

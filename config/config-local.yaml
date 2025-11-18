@@ -1,9 +1,23 @@
 # Local Development
+server:
+  port: 8081
+  host: "0.0.0.0"
+  read_timeout: 30s
+  write_timeout: 30s
+
 database:
   postgres:
-    password: "edugo_pass"
+    host: "localhost"
+    port: 5432
+    database: "edugo"
+    user: "edugo"
+    password: "edugo123"
+    max_connections: 25
+    ssl_mode: "disable"
   mongodb:
     uri: "mongodb://edugo_admin:edugo_pass@localhost:27017/edugo?authSource=admin"
+    database: "edugo"
+    timeout: 10s
 
 logging:
   level: "debug"
