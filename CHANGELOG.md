@@ -5,6 +5,14 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2025-11-18
+
+### Tipo de Release: patch
+
+- fix: copiar archivos de configuración en Dockerfile (#37)
+
+---
+
 ## [0.4.3] - 2025-11-18
 
 ### Tipo de Release: patch
