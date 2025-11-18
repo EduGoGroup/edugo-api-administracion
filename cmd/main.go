@@ -76,16 +76,18 @@ func main() {
 		{
 			schools.POST("", c.SchoolHandler.CreateSchool)
 			schools.GET("", c.SchoolHandler.ListSchools)
-			schools.GET("/:id", c.SchoolHandler.GetSchool)
 			schools.GET("/code/:code", c.SchoolHandler.GetSchoolByCode)
+
+			// Academic Units nested under school (usando :id como parámetro)
+			schools.POST("/:id/units", c.AcademicUnitHandler.CreateUnit)
+			schools.GET("/:id/units", c.AcademicUnitHandler.ListUnitsBySchool)
+			schools.GET("/:id/units/tree", c.AcademicUnitHandler.GetUnitTree)
+			schools.GET("/:id/units/by-type", c.AcademicUnitHandler.ListUnitsByType)
+
+			// School CRUD (mismo parámetro :id)
+			schools.GET("/:id", c.SchoolHandler.GetSchool)
 			schools.PUT("/:id", c.SchoolHandler.UpdateSchool)
 			schools.DELETE("/:id", c.SchoolHandler.DeleteSchool)
-
-			// Units nested under school
-			schools.POST("/:schoolId/units", c.AcademicUnitHandler.CreateUnit)
-			schools.GET("/:schoolId/units", c.AcademicUnitHandler.ListUnitsBySchool)
-			schools.GET("/:schoolId/units/tree", c.AcademicUnitHandler.GetUnitTree)
-			schools.GET("/:schoolId/units/by-type", c.AcademicUnitHandler.ListUnitsByType)
 		}
 
 		// ==================== ACADEMIC UNITS ====================
@@ -96,16 +98,14 @@ func main() {
 			units.DELETE("/:id", c.AcademicUnitHandler.DeleteUnit)
 			units.POST("/:id/restore", c.AcademicUnitHandler.RestoreUnit)
 			units.GET("/:id/hierarchy-path", c.AcademicUnitHandler.GetHierarchyPath)
-
-			// Memberships nested under unit
-			units.GET("/:unitId/memberships", c.UnitMembershipHandler.ListMembershipsByUnit)
-			units.GET("/:unitId/memberships/by-role", c.UnitMembershipHandler.ListMembershipsByRole)
 		}
 
 		// ==================== MEMBERSHIPS ====================
 		memberships := v1.Group("/memberships")
 		{
 			memberships.POST("", c.UnitMembershipHandler.CreateMembership)
+			memberships.GET("", c.UnitMembershipHandler.ListMembershipsByUnit) // Usa query param unit_id
+			memberships.GET("/by-role", c.UnitMembershipHandler.ListMembershipsByRole) // Usa query params
 			memberships.GET("/:id", c.UnitMembershipHandler.GetMembership)
 			memberships.PUT("/:id", c.UnitMembershipHandler.UpdateMembership)
 			memberships.DELETE("/:id", c.UnitMembershipHandler.DeleteMembership)

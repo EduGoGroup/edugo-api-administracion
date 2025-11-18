@@ -3,7 +3,6 @@ module github.com/EduGoGroup/edugo-api-administracion
 go 1.24.10
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.7.1
 	github.com/EduGoGroup/edugo-shared/bootstrap v0.9.0
 	github.com/EduGoGroup/edugo-shared/common v0.7.0
 	github.com/EduGoGroup/edugo-shared/lifecycle v0.7.0
