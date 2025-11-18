@@ -20,19 +20,12 @@ docs/swagger.yaml
 # DTOs de aplicación (solo estructuras de transferencia)
 internal/application/dto/
 
-# Entities de dominio - AHORA CON LÓGICA DE NEGOCIO (Sprint-02)
-# REMOVIDO de exclusión porque entities tienen métodos de árbol y validaciones
-# La lógica también está duplicada en domain/service para Clean Architecture
-# internal/domain/entity/  ← Ya no se excluye
+# Entities de dominio (solo structs, sin lógica)
+# NOTA: Si se agrega lógica de negocio a entities, remover esta exclusión
+internal/domain/entity/
 
 # Value Objects (mayormente validación simple)
 internal/domain/valueobject/
-
-# Repository implementations (se testean con integration tests)
-internal/infrastructure/persistence/postgres/repository/
-
-# Application services (se refactorizarán en Sprint-04)
-internal/application/service/
 
 # ============================================
 # Mocks y Helpers de Testing

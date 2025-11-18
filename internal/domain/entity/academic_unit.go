@@ -17,7 +17,6 @@ type AcademicUnit struct {
 	code         string
 	description  string
 	metadata     map[string]interface{}
-	children     []*AcademicUnit // Para árbol en memoria
 	createdAt    time.Time
 	updatedAt    time.Time
 	deletedAt    *time.Time
@@ -56,7 +55,6 @@ func NewAcademicUnit(
 		displayName: displayName,
 		code:        code,
 		metadata:    make(map[string]interface{}),
-		children:    make([]*AcademicUnit, 0),
 		createdAt:   now,
 		updatedAt:   now,
 	}, nil
@@ -89,7 +87,6 @@ func ReconstructAcademicUnit(
 		code:         code,
 		description:  description,
 		metadata:     metadata,
-		children:     make([]*AcademicUnit, 0),
 		createdAt:    createdAt,
 		updatedAt:    updatedAt,
 		deletedAt:    deletedAt,
@@ -146,70 +143,10 @@ func (au *AcademicUnit) DeletedAt() *time.Time {
 	return au.deletedAt
 }
 
-func (au *AcademicUnit) Children() []*AcademicUnit {
-	// Retornar una copia para evitar modificaciones externas
-	copy := make([]*AcademicUnit, len(au.children))
-	for i, child := range au.children {
-		copy[i] = child
-	}
-	return copy
-}
-
-// Setters - Para uso exclusivo de Domain Services
-// ⚠️ NO usar directamente - pueden romper invariantes
-
-func (au *AcademicUnit) SetParentID(parentID valueobject.UnitID) {
-	au.parentUnitID = &parentID
-}
-
-func (au *AcademicUnit) RemoveParentID() {
-	au.parentUnitID = nil
-}
-
-func (au *AcademicUnit) SetDisplayName(displayName string) {
-	au.displayName = displayName
-}
-
-func (au *AcademicUnit) SetDescription(description string) {
-	au.description = description
-}
-
-func (au *AcademicUnit) SetUpdatedAt(t time.Time) {
-	au.updatedAt = t
-}
-
-func (au *AcademicUnit) SetDeletedAt(t *time.Time) {
-	au.deletedAt = t
-}
-
-func (au *AcademicUnit) AddChildToSlice(child *AcademicUnit) {
-	au.children = append(au.children, child)
-}
-
-func (au *AcademicUnit) RemoveChildFromSlice(childID valueobject.UnitID) {
-	for i, child := range au.children {
-		if child.id.Equals(childID) {
-			au.children = append(au.children[:i], au.children[i+1:]...)
-			break
-		}
-	}
-}
-
 // Business Logic Methods
-//
-// ⚠️ DEPRECATED: Los métodos siguientes están deprecated y serán removidos en v0.4.0
-// Use AcademicUnitDomainService en su lugar para todas las operaciones de lógica de negocio
-// Estos métodos ahora delegan al service para mantener compatibilidad temporal
 
 // SetParent establece la unidad padre en la jerarquía
-//
-// Deprecated: Use AcademicUnitDomainService.SetParent instead
 func (au *AcademicUnit) SetParent(parentID valueobject.UnitID, parentType valueobject.UnitType) error {
-	// No puede ser su propio padre (validar primero)
-	if au.id.Equals(parentID) {
-		return errors.NewBusinessRuleError("unit cannot be its own parent")
-	}
-
 	// Validar que el tipo padre puede tener hijos
 	if !parentType.CanHaveChildren() {
 		return errors.NewBusinessRuleError("parent unit type cannot have children: " + parentType.String())
@@ -229,6 +166,11 @@ func (au *AcademicUnit) SetParent(parentID valueobject.UnitID, parentType valueo
 		return errors.NewBusinessRuleError(
 			"unit type " + au.unitType.String() + " cannot be child of " + parentType.String(),
 		)
+	}
+
+	// No puede ser su propio padre
+	if au.id.Equals(parentID) {
+		return errors.NewBusinessRuleError("unit cannot be its own parent")
 	}
 
 	au.parentUnitID = &parentID
@@ -317,140 +259,6 @@ func (au *AcademicUnit) GetMetadata(key string) (interface{}, bool) {
 	}
 	val, exists := au.metadata[key]
 	return val, exists
-}
-
-// Tree Navigation Methods
-
-// HasChildren verifica si esta unidad tiene hijos
-func (au *AcademicUnit) HasChildren() bool {
-	return len(au.children) > 0
-}
-
-// AddChild agrega un hijo a esta unidad
-func (au *AcademicUnit) AddChild(child *AcademicUnit) error {
-	if child == nil {
-		return errors.NewValidationError("child cannot be nil")
-	}
-
-	// Validar que esta unidad puede tener hijos
-	if !au.CanHaveChildren() {
-		return errors.NewBusinessRuleError("this unit type cannot have children: " + au.unitType.String())
-	}
-
-	// Validar que el hijo no es esta misma unidad
-	if au.id.Equals(child.id) {
-		return errors.NewBusinessRuleError("unit cannot be its own child")
-	}
-
-	// Validar que el tipo de hijo está permitido (antes de validar parent_id)
-	allowedTypes := au.unitType.AllowedChildTypes()
-	isAllowed := false
-	for _, allowed := range allowedTypes {
-		if child.unitType == allowed {
-			isAllowed = true
-			break
-		}
-	}
-
-	if !isAllowed {
-		return errors.NewBusinessRuleError(
-			"unit type " + child.unitType.String() + " cannot be child of " + au.unitType.String(),
-		)
-	}
-
-	// Validar que el hijo apunta a esta unidad como padre
-	if child.parentUnitID == nil {
-		return errors.NewBusinessRuleError("child must have a parent_id")
-	}
-
-	if !child.parentUnitID.Equals(au.id) {
-		return errors.NewBusinessRuleError("child's parent_id does not match this unit's id")
-	}
-
-	// Validar que el hijo no está ya agregado
-	for _, existingChild := range au.children {
-		if existingChild.id.Equals(child.id) {
-			return errors.NewBusinessRuleError("child is already added")
-		}
-	}
-
-	// Agregar el hijo
-	au.children = append(au.children, child)
-	au.updatedAt = time.Now()
-	return nil
-}
-
-// RemoveChild remueve un hijo de esta unidad
-func (au *AcademicUnit) RemoveChild(childID valueobject.UnitID) error {
-	if childID.IsZero() {
-		return errors.NewValidationError("child_id is required")
-	}
-
-	// Buscar el hijo
-	indexToRemove := -1
-	for i, child := range au.children {
-		if child.id.Equals(childID) {
-			indexToRemove = i
-			break
-		}
-	}
-
-	if indexToRemove == -1 {
-		return errors.NewBusinessRuleError("child not found")
-	}
-
-	// Remover el hijo
-	au.children = append(au.children[:indexToRemove], au.children[indexToRemove+1:]...)
-	au.updatedAt = time.Now()
-	return nil
-}
-
-// GetAllDescendants retorna todos los descendientes de esta unidad de forma recursiva
-func (au *AcademicUnit) GetAllDescendants() []*AcademicUnit {
-	descendants := make([]*AcademicUnit, 0)
-
-	// Agregar hijos directos
-	for _, child := range au.children {
-		descendants = append(descendants, child)
-
-		// Agregar descendientes de cada hijo (recursivo)
-		childDescendants := child.GetAllDescendants()
-		descendants = append(descendants, childDescendants...)
-	}
-
-	return descendants
-}
-
-// GetDepth retorna la profundidad máxima del árbol desde este nodo
-func (au *AcademicUnit) GetDepth() int {
-	if !au.HasChildren() {
-		return 0
-	}
-
-	maxChildDepth := 0
-	for _, child := range au.children {
-		childDepth := child.GetDepth()
-		if childDepth > maxChildDepth {
-			maxChildDepth = childDepth
-		}
-	}
-
-	return maxChildDepth + 1
-}
-
-// UpdateDisplayName actualiza el nombre de visualización
-func (au *AcademicUnit) UpdateDisplayName(displayName string) error {
-	if displayName == "" {
-		return errors.NewValidationError("display_name is required")
-	}
-
-	if len(displayName) < 3 {
-		return errors.NewValidationError("display_name must be at least 3 characters")
-	}
-
-	au.displayName = displayName
-	au.updatedAt = time.Now()
-	return nil
 }
 
 // Validate valida el estado completo de la entidad
