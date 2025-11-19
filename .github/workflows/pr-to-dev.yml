@@ -45,7 +45,6 @@ jobs:
         timeout-minutes: 5
 
       - name: ✅ Verificar umbral de cobertura
-        continue-on-error: true
         if: |
           !contains(github.event.pull_request.labels.*.name, 'skip-coverage')
         run: |
