@@ -30,9 +30,9 @@ func getMigrationScripts(t *testing.T) ([]string, error) {
 		gopath = build.Default.GOPATH
 	}
 
-	// IMPORTANTE: Versión hardcodeada v0.7.1
+	// IMPORTANTE: Versión hardcodeada v0.9.0
 	// Si actualizas edugo-infrastructure en go.mod, actualiza esta versión aquí también
-	const infrastructureVersion = "v0.7.1"
+	const infrastructureVersion = "v0.9.0"
 
 	// Path a migraciones en pkg/mod (go modules cache)
 	modPath := filepath.Join(gopath, "pkg", "mod", "github.com", "!edu!go!group", "edugo-infrastructure", "postgres@"+infrastructureVersion, "migrations")
@@ -93,7 +93,7 @@ func setupTestDB(t *testing.T) (*sql.DB, func()) {
 	}
 
 	// Log para debug
-	t.Logf("✅ Usando %d migraciones desde infrastructure v0.7.1", len(migrationScripts))
+	t.Logf("✅ Usando %d migraciones desde infrastructure v%s", len(migrationScripts), infrastructureVersion)
 	for i, script := range migrationScripts {
 		t.Logf("  [%d] %s", i+1, filepath.Base(script))
 	}
