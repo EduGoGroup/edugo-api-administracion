@@ -7,6 +7,7 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
 	postgresRepo "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/postgres/repository"
+	"github.com/EduGoGroup/edugo-shared/auth"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -14,8 +15,9 @@ import (
 // Implementa el patrón Dependency Injection
 type Container struct {
 	// Infrastructure
-	DB     *sql.DB
-	Logger logger.Logger
+	DB         *sql.DB
+	Logger     logger.Logger
+	JWTManager *auth.JWTManager
 
 	// Repositories
 	UserRepository           repository.UserRepository
@@ -52,10 +54,11 @@ type Container struct {
 }
 
 // NewContainer crea un nuevo contenedor e inicializa todas las dependencias
-func NewContainer(db *sql.DB, logger logger.Logger) *Container {
+func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string) *Container {
 	c := &Container{
-		DB:     db,
-		Logger: logger,
+		DB:         db,
+		Logger:     logger,
+		JWTManager: auth.NewJWTManager(jwtSecret, "edugo-admin"),
 	}
 
 	// Inicializar repositories (capa de infraestructura)

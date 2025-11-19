@@ -2,6 +2,24 @@
 
 API REST para operaciones administrativas y CRUD en la plataforma EduGo.
 
+## 🔐 Autenticación
+
+**⚠️ IMPORTANTE:** Todos los endpoints `/v1/*` requieren autenticación JWT.
+
+📖 **[Ver Guía Completa de Autenticación](docs/AUTH_GUIDE.md)** - Ejemplos en JavaScript, Kotlin, Swift, Python, Go, Java
+
+**Quick Start:**
+```bash
+# Incluir header en todas las requests
+curl -H "Authorization: Bearer {tu-token-jwt}" \
+  https://api-admin.edugo.com/v1/schools
+```
+
+**Ecosistema Unificado:** Esta API usa el **mismo mecanismo de autenticación** que `edugo-api-mobile`.  
+Un token funciona en ambas APIs. [Ver más](docs/AUTH_GUIDE.md#ecosistema-unificado)
+
+---
+
 ## Descripción
 
 Esta API maneja:
@@ -91,10 +109,16 @@ POSTGRES_SSL_MODE=disable
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DATABASE=edugo
 
+# Autenticación JWT
+AUTH_JWT_SECRET=local-development-secret-change-in-production-min-32-chars
+
 # Logging
 LOGGING_LEVEL=info
 LOGGING_FORMAT=json
 ```
+
+**Nota:** Para local, el secret ya está configurado en `config/config-local.yaml`.  
+Para dev/qa/prod, la variable `AUTH_JWT_SECRET` es **OBLIGATORIA**.
 
 ## Comandos Disponibles
 
@@ -123,19 +147,31 @@ make swagger
 
 ## Endpoints
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| POST | `/v1/users` | Crear usuario |
-| PATCH | `/v1/users/:id` | Actualizar usuario |
-| DELETE | `/v1/users/:id` | Eliminar usuario |
-| POST | `/v1/schools` | Crear escuela |
-| POST | `/v1/units` | Crear unidad académica |
-| PATCH | `/v1/units/:id` | Actualizar unidad |
-| POST | `/v1/units/:id/members` | Asignar membresía |
-| POST | `/v1/subjects` | Crear materia |
-| DELETE | `/v1/materials/:id` | Eliminar material |
-| GET | `/v1/stats/global` | Estadísticas globales |
-| GET | `/health` | Health check |
+🔐 **Todos los endpoints `/v1/*` requieren autenticación JWT.** [Ver guía](docs/AUTH_GUIDE.md)
+
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| POST | `/v1/schools` | Crear escuela | 🔐 JWT |
+| GET | `/v1/schools` | Listar escuelas | 🔐 JWT |
+| GET | `/v1/schools/:id` | Obtener escuela | 🔐 JWT |
+| PUT | `/v1/schools/:id` | Actualizar escuela | 🔐 JWT |
+| DELETE | `/v1/schools/:id` | Eliminar escuela | 🔐 JWT |
+| POST | `/v1/schools/:id/units` | Crear unidad académica | 🔐 JWT |
+| GET | `/v1/units/:id` | Obtener unidad | 🔐 JWT |
+| PUT | `/v1/units/:id` | Actualizar unidad | 🔐 JWT |
+| DELETE | `/v1/units/:id` | Eliminar unidad | 🔐 JWT |
+| POST | `/v1/memberships` | Crear membresía | 🔐 JWT |
+| GET | `/v1/memberships` | Listar membresías | 🔐 JWT |
+| GET | `/health` | Health check | ❌ Público |
+| GET | `/swagger/*` | Documentación | ❌ Público |
+
+**Ejemplo con autenticación:**
+```bash
+curl -H "Authorization: Bearer {token}" \
+  https://api-admin.edugo.com/v1/schools
+```
+
+📖 **[Ver ejemplos completos en todos los lenguajes](docs/AUTH_GUIDE.md#ejemplos-por-lenguaje)**
 
 ## Swagger
 

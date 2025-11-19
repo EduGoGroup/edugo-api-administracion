@@ -5,7 +5,7 @@ database:
   postgres:
     host: "qa-postgres.edugo.internal"
     max_connections: 50
-  
+
   mongodb:
     # URI desde ENV: MONGODB_URI
 
@@ -16,3 +16,7 @@ messaging:
 logging:
   level: "info"
   format: "json"
+
+auth:
+  jwt:
+    secret: "${AUTH_JWT_SECRET}" # Variable de entorno requerida

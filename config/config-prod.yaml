@@ -11,7 +11,7 @@ database:
     max_connections: 100
     ssl_mode: "require"
     # Password desde ENV: POSTGRES_PASSWORD (obligatorio)
-  
+
   mongodb:
     # URI desde ENV: MONGODB_URI (obligatorio)
 
@@ -23,3 +23,7 @@ messaging:
 logging:
   level: "warn"
   format: "json"
+
+auth:
+  jwt:
+    secret: "${AUTH_JWT_SECRET}" # Variable de entorno OBLIGATORIA (min 32 chars)

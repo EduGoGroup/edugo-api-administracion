@@ -10,6 +10,7 @@ type Config struct {
 	Server      ServerConfig   `mapstructure:"server"`
 	Database    DatabaseConfig `mapstructure:"database"`
 	Logging     LoggingConfig  `mapstructure:"logging"`
+	Auth        AuthConfig     `mapstructure:"auth"`
 }
 
 type ServerConfig struct {
@@ -43,6 +44,14 @@ type MongoDBConfig struct {
 type LoggingConfig struct {
 	Level  string `mapstructure:"level"`
 	Format string `mapstructure:"format"`
+}
+
+type AuthConfig struct {
+	JWT JWTConfig `mapstructure:"jwt"`
+}
+
+type JWTConfig struct {
+	Secret string `mapstructure:"secret"` // ENV: AUTH_JWT_SECRET
 }
 
 func (c *PostgresConfig) GetConnectionString() string {
