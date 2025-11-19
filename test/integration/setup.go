@@ -93,7 +93,7 @@ func setupTestDB(t *testing.T) (*sql.DB, func()) {
 	}
 
 	// Log para debug
-	t.Logf("✅ Usando %d migraciones desde infrastructure v%s", len(migrationScripts), infrastructureVersion)
+	t.Logf("✅ Usando %d migraciones desde infrastructure", len(migrationScripts))
 	for i, script := range migrationScripts {
 		t.Logf("  [%d] %s", i+1, filepath.Base(script))
 	}
