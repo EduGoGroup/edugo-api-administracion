@@ -1,8 +1,15 @@
 # Reglas de Ejecución de Sprints
 
-**Proyecto:** edugo-shared  
+**Proyecto:** edugo-api-administracion  
 **Fecha:** 20 de Noviembre, 2025  
 **Propósito:** Reglas y procedimientos para ejecutar sprints de manera consistente y controlada
+
+⚠️ **UBICACIÓN DE ESTE ARCHIVO:**
+```
+📍 Ruta: docs/cicd/tracking/REGLAS.md
+📍 Carpeta base: docs/cicd/
+📍 Todas las rutas son relativas a: docs/cicd/
+```
 
 ---
 
@@ -34,6 +41,20 @@
 - ✅ Cada error que toma >10 min resolver se documenta en `errors/ERROR-YYYY-MM-DD-HH-MM.md`
 - ✅ Incluir: síntoma, causa raíz, intentos de solución, solución final
 
+### 6. Sistema de Migajas (Breadcrumbs)
+- ✅ **Actualizar migajas después de CADA tarea completada**
+- ✅ Actualizar `SPRINT-STATUS.md` en tiempo real
+- ✅ Actualizar indicadores de fase cuando cambies de fase
+- ✅ "No sirve decir que debes seguir si te comes el pan en el camino"
+
+**Migajas a mantener:**
+- Sprint activo
+- Fase actual (1, 2, o 3)
+- Progreso de la fase (X/Y tareas)
+- Próxima tarea pendiente
+- Tareas con stub (para Fase 2)
+- Timestamp de última actualización
+
 ---
 
 ## 📋 Estructura de 3 Fases
@@ -44,12 +65,12 @@
 #### Paso 1.1: Análisis Pre-Sprint
 ```bash
 # Leer y entender el sprint
-cat docs/cicd/SPRINT-X-TASKS.md
+cat ../sprints/SPRINT-X-TASKS.md
 
 # Leer documentación del proyecto
 cat README.md
-cat docs/cicd/README.md
-cat docs/cicd/INDEX.md
+cat ../docs/README.md
+cat INDEX.md
 ```
 
 #### Paso 1.2: Preparación de Rama
@@ -62,13 +83,13 @@ git pull origin dev
 git checkout -b sprint-X-$(date +%Y-%m-%d)
 
 # Registrar inicio
-echo "Sprint X iniciado: $(date)" >> .sprint-tracking/logs/SPRINT-X-LOG.md
+echo "Sprint X iniciado: $(date)" >> logs/SPRINT-X-LOG.md
 ```
 
 #### Paso 1.3: Ejecución Tarea por Tarea
 **Por cada tarea:**
 
-1. Leer la tarea en `docs/cicd/SPRINT-X-TASKS.md`
+1. Leer la tarea en `../sprints/SPRINT-X-TASKS.md`
 2. Marcar como "🔄 En progreso" en `SPRINT-STATUS.md`
 3. Ejecutar la tarea
 4. **SI** requiere dependencia externa (Docker, BD, etc.):
@@ -104,7 +125,7 @@ echo "Sprint X iniciado: $(date)" >> .sprint-tracking/logs/SPRINT-X-LOG.md
 
 #### Paso 1.5: Cierre de Fase 1
 ```markdown
-# Crear archivo .sprint-tracking/FASE-1-COMPLETE.md
+# Crear archivo FASE-1-COMPLETE.md
 - Lista de tareas completadas
 - Lista de tareas con stubs (para Fase 2)
 - Comentarios para Fase 2
@@ -120,13 +141,13 @@ echo "Sprint X iniciado: $(date)" >> .sprint-tracking/logs/SPRINT-X-LOG.md
 #### Paso 2.1: Análisis de Stubs
 ```bash
 # Leer documentación de Fase 1
-cat .sprint-tracking/FASE-1-COMPLETE.md
+cat FASE-1-COMPLETE.md
 
 # Listar todos los stubs
-grep -r "✅ (stub)" .sprint-tracking/SPRINT-STATUS.md
+grep -r "✅ (stub)" SPRINT-STATUS.md
 
 # Leer cada decisión de bloqueo
-ls .sprint-tracking/decisions/TASK-*-BLOCKED.md
+ls decisions/TASK-*-BLOCKED.md
 ```
 
 #### Paso 2.2: Verificar Disponibilidad de Recursos
@@ -206,7 +227,7 @@ docker-compose ps rabbitmq
 
 #### Paso 2.6: Cierre de Fase 2
 ```markdown
-# Crear archivo .sprint-tracking/FASE-2-COMPLETE.md
+# Crear archivo FASE-2-COMPLETE.md
 - Stubs resueltos: [X/Y]
 - Stubs permanentes: [lista con razón]
 - Errores encontrados: [X]
@@ -225,24 +246,24 @@ docker-compose ps rabbitmq
 ```bash
 # Compilación
 go build ./...
-echo "Build status: $?" >> .sprint-tracking/FASE-3-VALIDATION.md
+echo "Build status: $?" >> FASE-3-VALIDATION.md
 
 # Tests unitarios
 go test ./... -v
-echo "Unit tests status: $?" >> .sprint-tracking/FASE-3-VALIDATION.md
+echo "Unit tests status: $?" >> FASE-3-VALIDATION.md
 
 # Tests de integración (si existen)
 go test ./... -tags=integration -v
-echo "Integration tests status: $?" >> .sprint-tracking/FASE-3-VALIDATION.md
+echo "Integration tests status: $?" >> FASE-3-VALIDATION.md
 
 # Linter
 golangci-lint run ./...
-echo "Lint status: $?" >> .sprint-tracking/FASE-3-VALIDATION.md
+echo "Lint status: $?" >> FASE-3-VALIDATION.md
 
 # Coverage
 go test ./... -coverprofile=coverage.out
 go tool cover -func=coverage.out
-echo "Coverage: $(go tool cover -func=coverage.out | grep total | awk '{print $3}')" >> .sprint-tracking/FASE-3-VALIDATION.md
+echo "Coverage: $(go tool cover -func=coverage.out | grep total | awk '{print $3}')" >> FASE-3-VALIDATION.md
 ```
 
 **SI algo falla:**
@@ -260,7 +281,7 @@ gh pr create \
   --base dev \
   --head sprint-X-$(date +%Y-%m-%d) \
   --title "Sprint X: [Título del sprint]" \
-  --body "$(cat .sprint-tracking/PR-DESCRIPTION.md)"
+  --body "$(cat PR-DESCRIPTION.md)"
 ```
 
 #### Paso 3.3: Monitorear CI/CD (Máximo 5 minutos)
@@ -295,7 +316,7 @@ done
 #### Paso 3.4: Revisar Comentarios de Copilot
 ```bash
 # Obtener comentarios del PR
-gh pr view --comments > .sprint-tracking/reviews/COPILOT-COMMENTS.md
+gh pr view --comments > reviews/COPILOT-COMMENTS.md
 
 # Analizar comentarios
 # Clasificar en:
@@ -314,13 +335,13 @@ gh pr view --comments > .sprint-tracking/reviews/COPILOT-COMMENTS.md
 
 2. **TRADUCCIONES (español → inglés):**
    - ❌ **DESCARTAR** (no resolver)
-   - Documentar en `.sprint-tracking/reviews/DISCARDED-COMMENTS.md`
+   - Documentar en `reviews/DISCARDED-COMMENTS.md`
 
 3. **MEJORAS:**
    - Estimar puntos Fibonacci (1, 2, 3, 5, 8, 13...)
    - **SI** <= 3 puntos: Resolver inmediatamente
    - **SI** > 3 puntos:
-     - Documentar en `.sprint-tracking/decisions/MEJORA-FUTURA.md`
+     - Documentar en `decisions/MEJORA-FUTURA.md`
      - **DETENER**
      - Informar al usuario con opciones:
        - a) Resolver ahora (ampliar sprint)
@@ -328,7 +349,7 @@ gh pr view --comments > .sprint-tracking/reviews/COPILOT-COMMENTS.md
        - c) Ignorar
 
 4. **NO PROCEDE:**
-   - Documentar en `.sprint-tracking/reviews/DISCARDED-COMMENTS.md`
+   - Documentar en `reviews/DISCARDED-COMMENTS.md`
    - **SI** consideras relevante: Informar al usuario y DETENER
    - **SI** NO es relevante: Informar al usuario pero CONTINUAR
 
@@ -390,7 +411,7 @@ gh pr create \
   --base main \
   --head dev \
   --title "Release: Sprint X - [Título]" \
-  --body "$(cat .sprint-tracking/RELEASE-NOTES.md)"
+  --body "$(cat RELEASE-NOTES.md)"
 
 # Repetir proceso de monitoreo (Paso 3.3)
 # Repetir revisión de comentarios (Paso 3.4)
@@ -417,7 +438,7 @@ git push origin $NEW_VERSION
 # Crear release en GitHub
 gh release create $NEW_VERSION \
   --title "Release $NEW_VERSION" \
-  --notes "$(cat .sprint-tracking/RELEASE-NOTES.md)"
+  --notes "$(cat RELEASE-NOTES.md)"
 ```
 
 #### Paso 3.9: Sincronización Final
@@ -452,7 +473,7 @@ echo "✅ Sprint X completado exitosamente"
 
 #### Paso 3.10: Cierre de Sprint
 ```markdown
-# Crear archivo .sprint-tracking/SPRINT-X-COMPLETE.md
+# Crear archivo SPRINT-X-COMPLETE.md
 - Fecha inicio: [YYYY-MM-DD]
 - Fecha fin: [YYYY-MM-DD]
 - Duración: [X horas/días]
@@ -471,7 +492,238 @@ echo "✅ Sprint X completado exitosamente"
 ## 📁 Estructura de Archivos de Seguimiento
 
 ```
-.sprint-tracking/
+
+├── REGLAS.md                         ← Este archivo
+├── SPRINT-STATUS.md                  ← Estado actual de tareas
+├── FASE-1-COMPLETE.md               ← Cierre de Fase 1
+├── FASE-2-COMPLETE.md               ← Cierre de Fase 2
+├── FASE-3-VALIDATION.md             ← Validaciones de Fase 3
+├── SPRINT-X-COMPLETE.md             ← Cierre completo del sprint
+├── PR-DESCRIPTION.md                 ← Template de PR
+├── RELEASE-NOTES.md                  ← Notas de release
+│
+├── logs/
+│   └── SPRINT-X-LOG.md              ← Log detallado del sprint
+│
+├── errors/
+│   └── ERROR-YYYY-MM-DD-HH-MM.md    ← Documentación de errores
+│
+├── decisions/
+│   ├── TASK-XX-BLOCKED.md           ← Decisiones de stubs
+│   └── MEJORA-FUTURA.md             ← Mejoras pospuestas
+│
+└── reviews/
+    ├── FASE-1-REVIEW.md             ← Revisión de código Fase 1
+    ├── FASE-2-REVIEW.md             ← Revisión de código Fase 2
+    ├── COPILOT-COMMENTS.md          ← Comentarios de Copilot
+    └── DISCARDED-COMMENTS.md        ← Comentarios descartados
+```
+
+---
+
+## 🚨 Casos de Error y DETENER
+
+### Cuándo DETENER e informar al usuario:
+
+1. ❌ Compilación falla después de intentar resolver 3 veces
+2. ❌ Tests fallan después de intentar resolver 3 veces
+3. ❌ CI/CD toma más de 5 minutos
+4. ❌ CI/CD falla en PR
+5. ❌ CI/CD falla post-merge
+6. ❌ Copilot sugiere mejora >3 puntos Fibonacci
+7. ❌ Error toma >30 minutos resolver
+8. ❌ No se puede acceder a recurso externo en Fase 2 y no hay alternativa
+
+### Qué incluir al DETENER:
+
+```markdown
+# Reporte de Detención
+
+**Fecha:** [YYYY-MM-DD HH:MM]
+**Fase:** [1/2/3]
+**Tarea:** [XX]
+**Razón:** [Descripción]
+
+## Estado Actual
+- Tareas completadas: [X/Y]
+- Última tarea exitosa: [XX]
+- Tarea problemática: [XX]
+
+## Problema Detectado
+[Descripción detallada]
+
+## Intentos de Solución
+1. [Intento 1]
+2. [Intento 2]
+3. [Intento 3]
+
+## Opciones para el Usuario
+a) [Opción 1]
+b) [Opción 2]
+c) [Opción 3]
+
+## Archivos Relevantes
+- Error log: [ruta]
+- Decisiones: [ruta]
+- Código problemático: [ruta]
+```
+
+---
+
+## 🍞 Sistema de Migajas: Actualización en Tiempo Real
+
+### Concepto
+"No sirve decir que debes seguir si te comes el pan en el camino"
+
+Las migajas son marcadores que Claude/programador deja después de CADA acción para saber exactamente dónde está.
+
+### Migajas Obligatorias
+
+#### 1. Al Completar una Tarea
+**Archivo:** `SPRINT-STATUS.md`
+
+```markdown
+- Tarea X.Y: ✅ [Nombre de tarea] (20 Nov 18:30)
+```
+
+Si usó stub:
+```markdown
+- Tarea X.Y: ✅ (stub) [Nombre] (20 Nov 18:30) → MongoDB no disponible
+```
+
+#### 2. Al Cambiar de Fase
+**Archivo:** `SPRINT-STATUS.md`
+
+Agregar al final de cada fase:
+```markdown
+### Fase 1: Implementación
+Estado: ✅ COMPLETADA (20 Nov 19:00)
+- Tareas: 15/15
+- Con stub: 2
+- Tiempo total: 8 horas
+```
+
+Actualizar fase nueva:
+```markdown
+### Fase 2: Resolución de Stubs
+Estado: 🔄 EN PROGRESO (20 Nov 19:05)
+- Tareas: 0/2
+- Iniciada: 20 Nov 19:05
+```
+
+#### 3. Al Terminar Sesión
+**Archivo:** `logs/SESSION-YYYYMMDD-HHMM.md`
+
+```markdown
+# Sesión: 20 Nov 2025, 15:00-18:30
+
+## Sprint Activo
+- Sprint: SPRINT-1
+- Fase: Fase 1 - Implementación
+
+## Tareas Completadas Esta Sesión
+- Tarea 2.3: Validar coverage (45 min)
+- Tarea 2.4: Documentar workflows (30 min)
+- Tarea 2.5: Revisar documentación (20 min)
+
+## Migajas Dejadas
+- Próxima tarea: 3.1 - Pre-commit hooks
+- Fase actual: Fase 1 (progreso: 53%)
+- Branch: feature/sprint-1-20251120
+- Último commit: feat(sprint-1): completar tarea 2.5
+
+## Decisiones
+- Ninguna
+
+## Errores
+- Ninguno
+
+## Notas para Próxima Sesión
+- Continuar con Tarea 3.1
+- Pre-commit hooks requiere ~60-90 min
+- No hay bloqueadores conocidos
+```
+
+#### 4. Al Encontrar Bloqueo
+**Archivo:** `decisions/TASK-X.Y-BLOCKED.md`
+
+```markdown
+# Decisión: Tarea X.Y Bloqueada
+
+**Fecha:** 20 Nov 2025, 18:45  
+**Tarea:** X.Y - [Nombre]  
+**Razón:** MongoDB no está corriendo
+
+## Contexto
+[Explicar por qué se necesita MongoDB]
+
+## Decisión
+Usar stub con mgo-mock para continuar.
+
+## Implementación del Stub
+\`\`\`go
+// Código del stub
+\`\`\`
+
+## Para Fase 2
+- Verificar MongoDB corriendo
+- Reemplazar stub con conexión real
+- Tests de integración
+
+## Migaja
+- Marcada como: ✅ (stub)
+- Pendiente para Fase 2
+```
+
+### Validación de Migajas
+
+#### Al Iniciar Sesión, Claude DEBE verificar:
+
+```bash
+# 1. ¿Cuál es el sprint activo?
+grep "Sprint activo" SPRINT-STATUS.md
+
+# 2. ¿En qué fase estoy?
+grep "Fase.*EN PROGRESO\|EN CURSO" SPRINT-STATUS.md
+
+# 3. ¿Cuál es la próxima tarea?
+grep "⏳\|🔄" SPRINT-STATUS.md | head -1
+
+# 4. ¿Hay logs de sesión anterior?
+ls -lt logs/ | head -1
+
+# 5. ¿Hay bloqueadores?
+ls -1 decisions/TASK-*-BLOCKED.md 2>/dev/null
+```
+
+#### Si las migajas están desactualizadas o confusas:
+
+1. **Revisar último commit:**
+   ```bash
+   git log -1 --oneline
+   ```
+
+2. **Revisar última sesión:**
+   ```bash
+   cat logs/SESSION-*.md | tail -50
+   ```
+
+3. **Reconstruir estado:**
+   - Contar tareas ✅ en SPRINT-STATUS.md
+   - Verificar branch activo
+   - Preguntar al usuario si hay dudas
+
+4. **Actualizar migajas:**
+   - Marcar estado actual en SPRINT-STATUS.md
+   - Crear log de reconstrucción
+   - Continuar
+
+---
+
+## 📁 Estructura de Archivos de Seguimiento
+
+```
+./
 ├── REGLAS.md                         ← Este archivo
 ├── SPRINT-STATUS.md                  ← Estado actual de tareas
 ├── FASE-1-COMPLETE.md               ← Cierre de Fase 1

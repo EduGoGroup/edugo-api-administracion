@@ -1,5 +1,16 @@
 # Plan de Implementación: edugo-api-administracion
 
+⚠️ **UBICACIÓN Y CONTEXTO DE TRABAJO:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📍 Estás en: docs/cicd/ (dentro del repo edugo-api-administracion) │
+│ 📂 Ruta local: implementation-plans/04-api-administracion/ │
+│ ⚠️ NO uses archivos de otras carpetas sin confirmar       │
+│ ✅ SOLO usa archivos dentro de esta carpeta               │
+└─────────────────────────────────────────────────────────────┘
+```
+
 **Proyecto:** API Administrativa EduGo  
 **Tipo:** A (Aplicación Desplegable)  
 **Puerto:** 8081  
@@ -661,10 +672,10 @@ act -s GITHUB_TOKEN=ghp_xxx
 
 ```
 ../03-api-mobile/
-├── SPRINT-2-TASKS.md    ← Cómo implementar pr-to-main.yml
-├── README.md            ← Arquitectura similar
-└── workflows/
-    └── pr-to-main.yml   ← Copiar y adaptar
+├── sprints/SPRINT-2-TASKS.md    ← Cómo implementar pr-to-main.yml
+├── README.md                     ← Arquitectura similar
+└── assets/workflows/
+    └── pr-to-main.yml           ← Copiar y adaptar
 ```
 
 ### Análisis Previo
@@ -720,7 +731,7 @@ gh run list --limit 10
 git log --oneline -5
 
 # 4. Abrir plan de tareas
-open ../Analisys/00-Projects-Isolated/cicd-analysis/implementation-plans/04-api-administracion/SPRINT-2-TASKS.md
+open ../Analisys/00-Projects-Isolated/cicd-analysis/implementation-plans/04-api-administracion/sprints/SPRINT-2-TASKS.md
 
 # 5. Comenzar con Tarea 1.1
 ```

@@ -1,5 +1,16 @@
 # Índice - Plan de Implementación edugo-api-administracion
 
+⚠️ **UBICACIÓN Y CONTEXTO DE TRABAJO:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📍 Estás en: docs/cicd/ (dentro del repo edugo-api-administracion) │
+│ 📂 Ruta local: implementation-plans/04-api-administracion/ │
+│ ⚠️ NO uses archivos de otras carpetas sin confirmar       │
+│ ✅ SOLO usa archivos dentro de esta carpeta               │
+└─────────────────────────────────────────────────────────────┘
+```
+
 **🎯 Punto de Entrada Principal**
 
 ---
@@ -11,8 +22,8 @@
 2. **[README.md](./README.md)** ⭐⭐ - Contexto completo del proyecto (15-20 min)
 
 ### Para Implementar
-3. **[SPRINT-2-TASKS.md](./SPRINT-2-TASKS.md)** ⭐⭐⭐ - Plan detallado Sprint 2 (P0 + P1)
-4. **[SPRINT-4-TASKS.md](./SPRINT-4-TASKS.md)** - Plan detallado Sprint 4 (P2)
+3. **[sprints/SPRINT-2-TASKS.md](./sprints/SPRINT-2-TASKS.md)** ⭐⭐⭐ - Plan detallado Sprint 2 (P0 + P1)
+4. **[sprints/SPRINT-4-TASKS.md](./sprints/SPRINT-4-TASKS.md)** - Plan detallado Sprint 4 (P2)
 
 ---
 
@@ -73,6 +84,24 @@ Fecha: 2025-11-19T00:38:48Z
 
 ## 🎯 Quick Actions
 
+### 🚀 Primera Vez Aquí
+```bash
+# Lee PRIMERO este archivo
+open START-HERE.md
+```
+
+### 📋 Usar Prompts para Ejecutar Sprints
+```bash
+# Sistema de prompts estandarizados
+open PROMPTS.md
+
+# Ver estado actual del sprint
+open tracking/SPRINT-STATUS.md
+
+# Continuar desde donde quedó
+# Usa el prompt "Continúa el trabajo de CI/CD..." de PROMPTS.md
+```
+
 ### Acción 1: Ver Estado Actual
 ```bash
 cd ~/source/EduGo/repos-separados/edugo-api-administracion
@@ -83,7 +112,7 @@ gh run list --limit 10
 
 ### Acción 2: Comenzar Sprint 2 AHORA
 ```bash
-open SPRINT-2-TASKS.md
+open sprints/SPRINT-2-TASKS.md
 # Ir a Tarea 1.1: Investigar fallos en release.yml
 # Seguir paso a paso
 ```
@@ -102,10 +131,14 @@ open README.md
 
 ```
 04-api-administracion/
-├── INDEX.md                    ← Estás aquí
-├── README.md                   ← Contexto del proyecto (~400 líneas)
-├── SPRINT-2-TASKS.md          ← ⭐ Sprint 2 completo (~2,500 líneas)
-└── SPRINT-4-TASKS.md          ← Sprint 4 parcial (~800 líneas)
+├── INDEX.md                         ← Estás aquí
+├── README.md                        ← Contexto del proyecto (~400 líneas)
+├── docs/                            ← Documentación y análisis
+├── sprints/
+│   ├── SPRINT-2-TASKS.md           ← ⭐ Sprint 2 completo (~2,500 líneas)
+│   └── SPRINT-4-TASKS.md           ← Sprint 4 parcial (~800 líneas)
+├── tracking/                        ← Seguimiento de ejecución
+└── assets/                          ← Recursos auxiliares
 
 Total: ~3,700+ líneas de documentación
 ```
@@ -115,7 +148,7 @@ Total: ~3,700+ líneas de documentación
 ## 🎯 Por Rol
 
 ### Soy el Implementador
-→ Lee: **README.md** → **SPRINT-2-TASKS.md**  
+→ Lee: **README.md** → **sprints/SPRINT-2-TASKS.md**  
 → Ejecuta: Tareas P0 primero, luego P1  
 → Tiempo: 18-22 horas Sprint 2
 
@@ -473,7 +506,7 @@ Antes de comenzar:
 
 ```bash
 # Opción A: Comenzar implementación inmediata
-open SPRINT-2-TASKS.md
+open sprints/SPRINT-2-TASKS.md
 
 # Opción B: Entender contexto primero
 open README.md
@@ -515,7 +548,7 @@ Has llegado al final del índice. Tienes una visión completa del proyecto.
 open README.md
 
 # Para empezar a trabajar
-open SPRINT-2-TASKS.md
+open sprints/SPRINT-2-TASKS.md
 ```
 
 ---
@@ -533,9 +566,9 @@ open SPRINT-2-TASKS.md
 **Nuevo:** Sistema completo de tracking y control de ejecución de sprints.
 
 ### Documentación:
-- **[SPRINT-TRACKING.md](SPRINT-TRACKING.md)** - Punto de entrada, guía de uso
-- **[.sprint-tracking/REGLAS.md](.sprint-tracking/REGLAS.md)** - Reglas completas de ejecución
-- **[.sprint-tracking/SPRINT-STATUS.md](.sprint-tracking/SPRINT-STATUS.md)** - Estado en tiempo real
+- **[docs/SPRINT-TRACKING.md](docs/SPRINT-TRACKING.md)** - Punto de entrada, guía de uso
+- **[tracking/REGLAS.md](tracking/REGLAS.md)** - Reglas completas de ejecución
+- **[tracking/SPRINT-STATUS.md](tracking/SPRINT-STATUS.md)** - Estado en tiempo real
 
 ### Características:
 - 🎯 **3 Fases:** Implementación → Resolución Stubs → Validación/CI/CD
@@ -544,5 +577,5 @@ open SPRINT-2-TASKS.md
 - ⏱️ **Control CI/CD:** Timeout de 5 minutos con polling
 - 🤖 **Clasificación Copilot:** Manejo inteligente de comentarios
 
-**Ver:** [SPRINT-TRACKING.md](SPRINT-TRACKING.md) para comenzar.
+**Ver:** [docs/SPRINT-TRACKING.md](docs/SPRINT-TRACKING.md) para comenzar.
 

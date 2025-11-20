@@ -1,9 +1,39 @@
 # Estado del Sprint Actual
 
-**Proyecto:** edugo-shared  
+⚠️ **UBICACIÓN DE ESTE ARCHIVO:**
+```
+📍 Ruta: docs/cicd/tracking/SPRINT-STATUS.md
+📍 Carpeta base: docs/cicd/
+📍 Todas las rutas son relativas a: docs/cicd/
+```
+
+**Proyecto:** edugo-api-administracion  
 **Sprint:** Pendiente  
 **Fase Actual:** Ninguna  
 **Última Actualización:** Pendiente
+
+---
+
+## 🚀 INDICADORES RÁPIDOS
+
+```
+Sprint Activo: N/A
+Fase Actual:   N/A
+Progreso:      0%
+Próxima Tarea: N/A
+Bloqueadores:  0
+Última Sesión: N/A
+```
+
+### 🎯 PRÓXIMA ACCIÓN
+
+```
+⏩ ACCIÓN: No hay sprint activo
+📍 DÓNDE: N/A
+⏱️ TIEMPO ESTIMADO: N/A
+```
+
+**Para iniciar:** Usa el prompt "Iniciar SPRINT-X" de [PROMPTS.md](../PROMPTS.md)
 
 ---
 
