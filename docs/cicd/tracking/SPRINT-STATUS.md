@@ -19,8 +19,8 @@
 ```
 Sprint Activo: SPRINT-2
 Fase Actual:   FASE 1 - Implementación con Stubs
-Progreso:      12% (2/17 tareas)
-Próxima Tarea: Tarea 2.2 - Eliminar workflow Docker duplicado
+Progreso:      18% (3/17 tareas)
+Próxima Tarea: Tarea 2.3 - Testing y validación (SKIP)
 Bloqueadores:  0
 Última Sesión: 2025-11-21
 ```
@@ -28,9 +28,9 @@ Bloqueadores:  0
 ### 🎯 PRÓXIMA ACCIÓN
 
 ```
-⏩ ACCIÓN: Tarea 2.2 - Eliminar workflow Docker duplicado
-📍 DÓNDE: .github/workflows/build-and-push.yml
-⏱️ TIEMPO ESTIMADO: 1 hora
+⏩ ACCIÓN: Tarea 3.1 - Verificar pr-to-main.yml
+📍 DÓNDE: .github/workflows/pr-to-main.yml
+⏱️ TIEMPO ESTIMADO: Verificación rápida
 ```
 
 ---
@@ -49,10 +49,10 @@ Bloqueadores:  0
 |---------|-------|
 | **Fase actual** | FASE 1 - Implementación |
 | **Tareas totales** | 17 |
-| **Tareas completadas** | 2 |
+| **Tareas completadas** | 3 |
 | **Tareas en progreso** | 0 |
-| **Tareas pendientes** | 15 |
-| **Progreso** | 12% |
+| **Tareas pendientes** | 14 |
+| **Progreso** | 18% |
 
 ---
 
@@ -65,8 +65,8 @@ Bloqueadores:  0
 | 1.1 | Investigar fallos en release.yml | ✅ (stub) | Análisis estático completado. Ver TASK-1.1-BLOCKED.md |
 | 1.2 | Analizar logs y reproducir localmente | ⏭️ SKIP | Bloqueado por falta de conectividad |
 | 2.1 | Aplicar fix a release.yml | ✅ | 5 fixes aplicados (variables build, tests, docker, binarios) |
-| 2.2 | Eliminar workflow Docker duplicado | ⏳ Pendiente | 1h estimada |
-| 2.3 | Testing y validación | ⏳ Pendiente | 1h estimada |
+| 2.2 | Eliminar workflow Docker duplicado | ✅ | build-and-push.yml eliminado, WORKFLOWS.md creado |
+| 2.3 | Testing y validación | ⏭️ SKIP | Requiere conectividad externa |
 | 3.1 | Crear pr-to-main.yml | ⏳ Pendiente | 1.5h estimadas |
 | 3.2 | Configurar tests integración placeholder | ⏳ Pendiente | 1h estimada |
 | 3.3 | Testing workflow pr-to-main | ⏳ Pendiente | 1h estimada |
@@ -80,7 +80,7 @@ Bloqueadores:  0
 | 5.3 | Configurar GitHub App token | ⏳ Pendiente | 30min estimados |
 | 5.4 | Documentación final y revisión | ⏳ Pendiente | 1h estimada |
 
-**Progreso Fase 1:** 2/17 (12%)
+**Progreso Fase 1:** 3/17 (18%)
 
 ---
 
