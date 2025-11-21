@@ -19,18 +19,18 @@
 ```
 Sprint Activo: SPRINT-2
 Fase Actual:   FASE 1 - Implementación con Stubs
-Progreso:      0% (0/17 tareas)
-Próxima Tarea: Tarea 1.1 - Investigar fallos en release.yml
-Bloqueadores:  0
+Progreso:      6% (1/17 tareas)
+Próxima Tarea: Tarea 2.1 - Aplicar fix a release.yml
+Bloqueadores:  1 (parcial - sin acceso a logs de GitHub)
 Última Sesión: 2025-11-21
 ```
 
 ### 🎯 PRÓXIMA ACCIÓN
 
 ```
-⏩ ACCIÓN: Tarea 1.1 - Investigar fallos en release.yml
-📍 DÓNDE: .github/workflows/release.yml
-⏱️ TIEMPO ESTIMADO: 2-4 horas
+⏩ ACCIÓN: Tarea 2.1 - Aplicar fix a release.yml
+📍 DÓNDE: .github/workflows/release.yml, cmd/main.go
+⏱️ TIEMPO ESTIMADO: 2-3 horas
 ```
 
 ---
@@ -49,10 +49,10 @@ Bloqueadores:  0
 |---------|-------|
 | **Fase actual** | FASE 1 - Implementación |
 | **Tareas totales** | 17 |
-| **Tareas completadas** | 0 |
+| **Tareas completadas** | 1 |
 | **Tareas en progreso** | 0 |
-| **Tareas pendientes** | 17 |
-| **Progreso** | 0% |
+| **Tareas pendientes** | 16 |
+| **Progreso** | 6% |
 
 ---
 
@@ -62,8 +62,8 @@ Bloqueadores:  0
 
 | # | Tarea | Estado | Notas |
 |---|-------|--------|-------|
-| 1.1 | Investigar fallos en release.yml | ⏳ Pendiente | 2-4h estimadas |
-| 1.2 | Analizar logs y reproducir localmente | ⏳ Pendiente | 1-2h estimadas |
+| 1.1 | Investigar fallos en release.yml | ✅ (stub) | Análisis estático completado. Ver TASK-1.1-BLOCKED.md |
+| 1.2 | Analizar logs y reproducir localmente | ⏭️ SKIP | Bloqueado por falta de conectividad |
 | 2.1 | Aplicar fix a release.yml | ⏳ Pendiente | 2-3h estimadas |
 | 2.2 | Eliminar workflow Docker duplicado | ⏳ Pendiente | 1h estimada |
 | 2.3 | Testing y validación | ⏳ Pendiente | 1h estimada |
@@ -80,7 +80,7 @@ Bloqueadores:  0
 | 5.3 | Configurar GitHub App token | ⏳ Pendiente | 30min estimados |
 | 5.4 | Documentación final y revisión | ⏳ Pendiente | 1h estimada |
 
-**Progreso Fase 1:** 0/17 (0%)
+**Progreso Fase 1:** 1/17 (6%)
 
 ---
 
