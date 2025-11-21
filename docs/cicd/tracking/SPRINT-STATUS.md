@@ -19,8 +19,8 @@
 ```
 Sprint Activo: SPRINT-2
 Fase Actual:   FASE 1 - Implementación con Stubs
-Progreso:      18% (3/17 tareas)
-Próxima Tarea: Tarea 2.3 - Testing y validación (SKIP)
+Progreso:      41% (7/17 tareas)
+Próxima Tarea: Tarea 4.1 - Migrar a Go 1.25
 Bloqueadores:  0
 Última Sesión: 2025-11-21
 ```
@@ -28,9 +28,9 @@ Bloqueadores:  0
 ### 🎯 PRÓXIMA ACCIÓN
 
 ```
-⏩ ACCIÓN: Tarea 3.1 - Verificar pr-to-main.yml
-📍 DÓNDE: .github/workflows/pr-to-main.yml
-⏱️ TIEMPO ESTIMADO: Verificación rápida
+⏩ ACCIÓN: Tarea 4.1 - Migrar a Go 1.25
+📍 DÓNDE: go.mod, .github/workflows/*.yml
+⏱️ TIEMPO ESTIMADO: 45 minutos
 ```
 
 ---
@@ -49,10 +49,10 @@ Bloqueadores:  0
 |---------|-------|
 | **Fase actual** | FASE 1 - Implementación |
 | **Tareas totales** | 17 |
-| **Tareas completadas** | 3 |
+| **Tareas completadas** | 7 |
 | **Tareas en progreso** | 0 |
-| **Tareas pendientes** | 14 |
-| **Progreso** | 18% |
+| **Tareas pendientes** | 10 |
+| **Progreso** | 41% |
 
 ---
 
@@ -67,10 +67,10 @@ Bloqueadores:  0
 | 2.1 | Aplicar fix a release.yml | ✅ | 5 fixes aplicados (variables build, tests, docker, binarios) |
 | 2.2 | Eliminar workflow Docker duplicado | ✅ | build-and-push.yml eliminado, WORKFLOWS.md creado |
 | 2.3 | Testing y validación | ⏭️ SKIP | Requiere conectividad externa |
-| 3.1 | Crear pr-to-main.yml | ⏳ Pendiente | 1.5h estimadas |
-| 3.2 | Configurar tests integración placeholder | ⏳ Pendiente | 1h estimada |
-| 3.3 | Testing workflow pr-to-main | ⏳ Pendiente | 1h estimada |
-| 3.4 | Documentar workflow | ⏳ Pendiente | 30min estimados |
+| 3.1 | Crear pr-to-main.yml | ✅ | Ya existe y está correctamente configurado |
+| 3.2 | Configurar tests integración placeholder | ✅ | Ya incluidos en pr-to-main.yml |
+| 3.3 | Testing workflow pr-to-main | ⏭️ SKIP | Requiere conectividad |
+| 3.4 | Documentar workflow | ✅ | Documentado en WORKFLOWS.md |
 | 4.1 | Migrar a Go 1.25 | ⏳ Pendiente | 45min estimados |
 | 4.2 | Tests completos con Go 1.25 | ⏳ Pendiente | 1h estimada |
 | 4.3 | Actualizar documentación | ⏳ Pendiente | 30min estimados |
@@ -80,7 +80,7 @@ Bloqueadores:  0
 | 5.3 | Configurar GitHub App token | ⏳ Pendiente | 30min estimados |
 | 5.4 | Documentación final y revisión | ⏳ Pendiente | 1h estimada |
 
-**Progreso Fase 1:** 3/17 (18%)
+**Progreso Fase 1:** 7/17 (41%)
 
 ---
 
