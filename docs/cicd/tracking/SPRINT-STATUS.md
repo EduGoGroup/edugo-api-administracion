@@ -7,41 +7,39 @@
 📍 Todas las rutas son relativas a: docs/cicd/
 ```
 
-**Proyecto:** edugo-api-administracion  
-**Sprint:** Pendiente  
-**Fase Actual:** Ninguna  
-**Última Actualización:** Pendiente
+**Proyecto:** edugo-api-administracion
+**Sprint:** SPRINT-2
+**Fase Actual:** FASE 1 - Implementación con Stubs
+**Última Actualización:** 2025-11-21
 
 ---
 
 ## 🚀 INDICADORES RÁPIDOS
 
 ```
-Sprint Activo: N/A
-Fase Actual:   N/A
-Progreso:      0%
-Próxima Tarea: N/A
+Sprint Activo: SPRINT-2
+Fase Actual:   FASE 1 - Implementación con Stubs
+Progreso:      0% (0/17 tareas)
+Próxima Tarea: Tarea 1.1 - Investigar fallos en release.yml
 Bloqueadores:  0
-Última Sesión: N/A
+Última Sesión: 2025-11-21
 ```
 
 ### 🎯 PRÓXIMA ACCIÓN
 
 ```
-⏩ ACCIÓN: No hay sprint activo
-📍 DÓNDE: N/A
-⏱️ TIEMPO ESTIMADO: N/A
+⏩ ACCIÓN: Tarea 1.1 - Investigar fallos en release.yml
+📍 DÓNDE: .github/workflows/release.yml
+⏱️ TIEMPO ESTIMADO: 2-4 horas
 ```
-
-**Para iniciar:** Usa el prompt "Iniciar SPRINT-X" de [PROMPTS.md](../PROMPTS.md)
 
 ---
 
 ## 🎯 Sprint Activo
 
-**Sprint:** N/A  
-**Inicio:** N/A  
-**Objetivo:** N/A
+**Sprint:** SPRINT-2
+**Inicio:** 2025-11-21
+**Objetivo:** Estabilizar CI/CD y resolver problemas críticos
 
 ---
 
@@ -49,11 +47,11 @@ Bloqueadores:  0
 
 | Métrica | Valor |
 |---------|-------|
-| **Fase actual** | - |
-| **Tareas totales** | 0 |
+| **Fase actual** | FASE 1 - Implementación |
+| **Tareas totales** | 17 |
 | **Tareas completadas** | 0 |
 | **Tareas en progreso** | 0 |
-| **Tareas pendientes** | 0 |
+| **Tareas pendientes** | 17 |
 | **Progreso** | 0% |
 
 ---
@@ -64,9 +62,25 @@ Bloqueadores:  0
 
 | # | Tarea | Estado | Notas |
 |---|-------|--------|-------|
-| - | No iniciado | - | - |
+| 1.1 | Investigar fallos en release.yml | ⏳ Pendiente | 2-4h estimadas |
+| 1.2 | Analizar logs y reproducir localmente | ⏳ Pendiente | 1-2h estimadas |
+| 2.1 | Aplicar fix a release.yml | ⏳ Pendiente | 2-3h estimadas |
+| 2.2 | Eliminar workflow Docker duplicado | ⏳ Pendiente | 1h estimada |
+| 2.3 | Testing y validación | ⏳ Pendiente | 1h estimada |
+| 3.1 | Crear pr-to-main.yml | ⏳ Pendiente | 1.5h estimadas |
+| 3.2 | Configurar tests integración placeholder | ⏳ Pendiente | 1h estimada |
+| 3.3 | Testing workflow pr-to-main | ⏳ Pendiente | 1h estimada |
+| 3.4 | Documentar workflow | ⏳ Pendiente | 30min estimados |
+| 4.1 | Migrar a Go 1.25 | ⏳ Pendiente | 45min estimados |
+| 4.2 | Tests completos con Go 1.25 | ⏳ Pendiente | 1h estimada |
+| 4.3 | Actualizar documentación | ⏳ Pendiente | 30min estimados |
+| 4.4 | Crear PR y merge | ⏳ Pendiente | 1h estimada |
+| 5.1 | Configurar pre-commit hooks | ⏳ Pendiente | 1h estimada |
+| 5.2 | Agregar label skip-coverage | ⏳ Pendiente | 30min estimados |
+| 5.3 | Configurar GitHub App token | ⏳ Pendiente | 30min estimados |
+| 5.4 | Documentación final y revisión | ⏳ Pendiente | 1h estimada |
 
-**Progreso Fase 1:** 0/0 (0%)
+**Progreso Fase 1:** 0/17 (0%)
 
 ---
 
