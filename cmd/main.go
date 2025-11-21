@@ -20,6 +20,13 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+var (
+	// Version is the application version, injected at build time via ldflags
+	Version = "dev"
+	// BuildTime is the build timestamp, injected at build time via ldflags
+	BuildTime = "unknown"
+)
+
 // @title EduGo API Administración
 // @version 1.0
 // @description API para operaciones CRUD y administrativas en EduGo
@@ -30,7 +37,7 @@ import (
 // @name Authorization
 
 func main() {
-	log.Println("🔄 EduGo API Administración iniciando...")
+	log.Printf("🔄 EduGo API Administración iniciando... (Version: %s, Build: %s)", Version, BuildTime)
 
 	ctx := context.Background()
 
