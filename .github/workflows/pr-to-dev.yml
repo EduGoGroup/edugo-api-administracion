@@ -34,6 +34,8 @@ jobs:
 
       - name: 📦 Descargar dependencias
         run: go mod download
+        env:
+          GOPRIVATE: github.com/EduGoGroup/*
 
       - name: 🧪 Ejecutar tests unitarios
         run: make test-unit
