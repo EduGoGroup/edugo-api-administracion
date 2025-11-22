@@ -20,17 +20,10 @@ jobs:
       - name: 📥 Checkout código
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Go
-        uses: actions/setup-go@v5
+      - name: Setup Go Environment
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: 🔐 Configurar acceso a repos privados
-        run: |
-          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-        env:
-          GOPRIVATE: github.com/EduGoGroup/*
 
       - name: 📦 Descargar dependencias
         run: go mod download
@@ -101,11 +94,10 @@ jobs:
       - name: 📥 Checkout código
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Go
-        uses: actions/setup-go@v5
+      - name: Setup Go Environment
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
 
       - name: 🔍 Run golangci-lint
         uses: golangci/golangci-lint-action@v7

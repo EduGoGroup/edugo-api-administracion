@@ -178,11 +178,10 @@ jobs:
         with:
           ref: v${{ inputs.version }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
+      - name: Setup Go Environment
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/setup-edugo-go@main
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
 
       - name: Descargar dependencias
         run: go mod download
