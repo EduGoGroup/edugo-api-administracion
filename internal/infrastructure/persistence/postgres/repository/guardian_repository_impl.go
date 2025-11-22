@@ -3,343 +3,116 @@ package repository
 import (
 	"context"
 	"database/sql"
-
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"time"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
-	"github.com/EduGoGroup/edugo-shared/common/types"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/google/uuid"
 )
 
-// postgresGuardianRepository implementa repository.GuardianRepository para PostgreSQL
 type postgresGuardianRepository struct {
 	db *sql.DB
 }
 
-// NewPostgresGuardianRepository crea un nuevo repository de PostgreSQL
 func NewPostgresGuardianRepository(db *sql.DB) repository.GuardianRepository {
 	return &postgresGuardianRepository{db: db}
 }
 
-// Create crea una nueva relación guardian-estudiante
-func (r *postgresGuardianRepository) Create(ctx context.Context, relation *entity.GuardianRelation) error {
-	query := `
-		INSERT INTO guardian_relations (
-			id, guardian_id, student_id, relationship_type,
-			is_active, created_at, updated_at, created_by
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-	`
-
+func (r *postgresGuardianRepository) CreateRelation(ctx context.Context, relation *entities.GuardianRelation) error {
+	query := `INSERT INTO guardian_relations (id, guardian_id, student_id, relationship_type, is_active, created_at, updated_at, created_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 	_, err := r.db.ExecContext(ctx, query,
-		relation.ID().String(),
-		relation.GuardianID().String(),
-		relation.StudentID().String(),
-		relation.RelationshipType().String(),
-		relation.IsActive(),
-		relation.CreatedAt(),
-		relation.UpdatedAt(),
-		relation.CreatedBy(),
+		relation.ID, relation.GuardianID, relation.StudentID, relation.RelationshipType,
+		relation.IsActive, relation.CreatedAt, relation.UpdatedAt, relation.CreatedBy,
 	)
-
 	return err
 }
 
-// FindByID busca una relación por ID
-func (r *postgresGuardianRepository) FindByID(ctx context.Context, id types.UUID) (*entity.GuardianRelation, error) {
-	query := `
-		SELECT id, guardian_id, student_id, relationship_type,
-		       is_active, created_at, updated_at, created_by
-		FROM guardian_relations
-		WHERE id = $1
-	`
-
-	var (
-		idStr               string
-		guardianIDStr       string
-		studentIDStr        string
-		relationshipTypeStr string
-		isActive            bool
-		createdAt           sql.NullTime
-		updatedAt           sql.NullTime
-		createdBy           string
+func (r *postgresGuardianRepository) FindRelationByID(ctx context.Context, id uuid.UUID) (*entities.GuardianRelation, error) {
+	query := `SELECT id, guardian_id, student_id, relationship_type, is_active, created_at, updated_at, created_by
+		FROM guardian_relations WHERE id = $1`
+	relation := &entities.GuardianRelation{}
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&relation.ID, &relation.GuardianID, &relation.StudentID, &relation.RelationshipType,
+		&relation.IsActive, &relation.CreatedAt, &relation.UpdatedAt, &relation.CreatedBy,
 	)
-
-	err := r.db.QueryRowContext(ctx, query, id.String()).Scan(
-		&idStr,
-		&guardianIDStr,
-		&studentIDStr,
-		&relationshipTypeStr,
-		&isActive,
-		&createdAt,
-		&updatedAt,
-		&createdBy,
-	)
-
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	return r.scanToEntity(
-		idStr,
-		guardianIDStr,
-		studentIDStr,
-		relationshipTypeStr,
-		isActive,
-		createdAt,
-		updatedAt,
-		createdBy,
-	)
+	return relation, err
 }
 
-// FindByGuardianAndStudent busca una relación por guardian y estudiante
-func (r *postgresGuardianRepository) FindByGuardianAndStudent(
-	ctx context.Context,
-	guardianID valueobject.GuardianID,
-	studentID valueobject.StudentID,
-) (*entity.GuardianRelation, error) {
-	query := `
-		SELECT id, guardian_id, student_id, relationship_type,
-		       is_active, created_at, updated_at, created_by
-		FROM guardian_relations
-		WHERE guardian_id = $1 AND student_id = $2
-		ORDER BY created_at DESC
-		LIMIT 1
-	`
-
-	var (
-		idStr               string
-		guardianIDStr       string
-		studentIDStr        string
-		relationshipTypeStr string
-		isActive            bool
-		createdAt           sql.NullTime
-		updatedAt           sql.NullTime
-		createdBy           string
-	)
-
-	err := r.db.QueryRowContext(ctx, query, guardianID.String(), studentID.String()).Scan(
-		&idStr,
-		&guardianIDStr,
-		&studentIDStr,
-		&relationshipTypeStr,
-		&isActive,
-		&createdAt,
-		&updatedAt,
-		&createdBy,
-	)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return r.scanToEntity(
-		idStr,
-		guardianIDStr,
-		studentIDStr,
-		relationshipTypeStr,
-		isActive,
-		createdAt,
-		updatedAt,
-		createdBy,
-	)
+func (r *postgresGuardianRepository) FindRelationsByGuardian(ctx context.Context, guardianID uuid.UUID) ([]*entities.GuardianRelation, error) {
+	query := `SELECT id, guardian_id, student_id, relationship_type, is_active, created_at, updated_at, created_by
+		FROM guardian_relations WHERE guardian_id = $1 AND is_active = true`
+	return r.scanRelations(ctx, query, guardianID)
 }
 
-// FindByGuardian busca todas las relaciones de un guardian
-func (r *postgresGuardianRepository) FindByGuardian(
-	ctx context.Context,
-	guardianID valueobject.GuardianID,
-) ([]*entity.GuardianRelation, error) {
-	query := `
-		SELECT id, guardian_id, student_id, relationship_type,
-		       is_active, created_at, updated_at, created_by
-		FROM guardian_relations
-		WHERE guardian_id = $1
-		ORDER BY created_at DESC
-	`
-
-	rows, err := r.db.QueryContext(ctx, query, guardianID.String())
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = rows.Close() }()
-
-	return r.scanRows(rows)
+func (r *postgresGuardianRepository) FindRelationsByStudent(ctx context.Context, studentID uuid.UUID) ([]*entities.GuardianRelation, error) {
+	query := `SELECT id, guardian_id, student_id, relationship_type, is_active, created_at, updated_at, created_by
+		FROM guardian_relations WHERE student_id = $1 AND is_active = true`
+	return r.scanRelations(ctx, query, studentID)
 }
 
-// FindByStudent busca todas las relaciones de un estudiante
-func (r *postgresGuardianRepository) FindByStudent(
-	ctx context.Context,
-	studentID valueobject.StudentID,
-) ([]*entity.GuardianRelation, error) {
-	query := `
-		SELECT id, guardian_id, student_id, relationship_type,
-		       is_active, created_at, updated_at, created_by
-		FROM guardian_relations
-		WHERE student_id = $1
-		ORDER BY created_at DESC
-	`
-
-	rows, err := r.db.QueryContext(ctx, query, studentID.String())
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = rows.Close() }()
-
-	return r.scanRows(rows)
-}
-
-// Update actualiza una relación existente
-func (r *postgresGuardianRepository) Update(ctx context.Context, relation *entity.GuardianRelation) error {
-	query := `
-		UPDATE guardian_relations
-		SET relationship_type = $1, is_active = $2, updated_at = $3
-		WHERE id = $4
-	`
-
-	_, err := r.db.ExecContext(ctx, query,
-		relation.RelationshipType().String(),
-		relation.IsActive(),
-		relation.UpdatedAt(),
-		relation.ID().String(),
-	)
-
+func (r *postgresGuardianRepository) UpdateRelation(ctx context.Context, relation *entities.GuardianRelation) error {
+	query := `UPDATE guardian_relations SET relationship_type = $1, is_active = $2, updated_at = $3 WHERE id = $4`
+	_, err := r.db.ExecContext(ctx, query, relation.RelationshipType, relation.IsActive, relation.UpdatedAt, relation.ID)
 	return err
 }
 
-// Delete elimina una relación (soft delete)
-func (r *postgresGuardianRepository) Delete(ctx context.Context, id types.UUID) error {
-	query := `
-		UPDATE guardian_relations
-		SET is_active = false, updated_at = NOW()
-		WHERE id = $1
-	`
-
-	_, err := r.db.ExecContext(ctx, query, id.String())
+func (r *postgresGuardianRepository) DeleteRelation(ctx context.Context, id uuid.UUID) error {
+	query := `UPDATE guardian_relations SET is_active = false, updated_at = $1 WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, time.Now(), id)
 	return err
 }
 
-// ExistsActiveRelation verifica si existe una relación activa
-func (r *postgresGuardianRepository) ExistsActiveRelation(
-	ctx context.Context,
-	guardianID valueobject.GuardianID,
-	studentID valueobject.StudentID,
-) (bool, error) {
-	query := `
-		SELECT EXISTS(
-			SELECT 1 FROM guardian_relations
-			WHERE guardian_id = $1 AND student_id = $2 AND is_active = true
-		)
-	`
-
-	var exists bool
-	err := r.db.QueryRowContext(ctx, query, guardianID.String(), studentID.String()).Scan(&exists)
+func (r *postgresGuardianRepository) scanRelations(ctx context.Context, query string, id uuid.UUID) ([]*entities.GuardianRelation, error) {
+	rows, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
+	defer rows.Close()
 
-	return exists, nil
-}
-
-// Helper methods
-
-func (r *postgresGuardianRepository) scanRows(rows *sql.Rows) ([]*entity.GuardianRelation, error) {
-	var relations []*entity.GuardianRelation
-
+	var relations []*entities.GuardianRelation
 	for rows.Next() {
-		var (
-			idStr               string
-			guardianIDStr       string
-			studentIDStr        string
-			relationshipTypeStr string
-			isActive            bool
-			createdAt           sql.NullTime
-			updatedAt           sql.NullTime
-			createdBy           string
-		)
-
-		err := rows.Scan(
-			&idStr,
-			&guardianIDStr,
-			&studentIDStr,
-			&relationshipTypeStr,
-			&isActive,
-			&createdAt,
-			&updatedAt,
-			&createdBy,
-		)
+		relation := &entities.GuardianRelation{}
+		err := rows.Scan(&relation.ID, &relation.GuardianID, &relation.StudentID, &relation.RelationshipType,
+			&relation.IsActive, &relation.CreatedAt, &relation.UpdatedAt, &relation.CreatedBy)
 		if err != nil {
 			return nil, err
 		}
-
-		relation, err := r.scanToEntity(
-			idStr,
-			guardianIDStr,
-			studentIDStr,
-			relationshipTypeStr,
-			isActive,
-			createdAt,
-			updatedAt,
-			createdBy,
-		)
-		if err != nil {
-			return nil, err
-		}
-
 		relations = append(relations, relation)
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return relations, nil
+	return relations, rows.Err()
 }
 
-func (r *postgresGuardianRepository) scanToEntity(
-	idStr string,
-	guardianIDStr string,
-	studentIDStr string,
-	relationshipTypeStr string,
-	isActive bool,
-	createdAt sql.NullTime,
-	updatedAt sql.NullTime,
-	createdBy string,
-) (*entity.GuardianRelation, error) {
-	// Parsear UUIDs
-	id, err := types.ParseUUID(idStr)
-	if err != nil {
-		return nil, err
-	}
+// Alias methods for compatibility with services
+func (r *postgresGuardianRepository) Create(ctx context.Context, relation *entities.GuardianRelation) error {
+	return r.CreateRelation(ctx, relation)
+}
 
-	guardianID, err := valueobject.GuardianIDFromString(guardianIDStr)
-	if err != nil {
-		return nil, err
-	}
+func (r *postgresGuardianRepository) FindByID(ctx context.Context, id uuid.UUID) (*entities.GuardianRelation, error) {
+	return r.FindRelationByID(ctx, id)
+}
 
-	studentID, err := valueobject.StudentIDFromString(studentIDStr)
-	if err != nil {
-		return nil, err
-	}
+func (r *postgresGuardianRepository) FindByGuardian(ctx context.Context, guardianID uuid.UUID) ([]*entities.GuardianRelation, error) {
+	return r.FindRelationsByGuardian(ctx, guardianID)
+}
 
-	relationshipType, err := valueobject.NewRelationshipType(relationshipTypeStr)
-	if err != nil {
-		return nil, err
-	}
+func (r *postgresGuardianRepository) FindByStudent(ctx context.Context, studentID uuid.UUID) ([]*entities.GuardianRelation, error) {
+	return r.FindRelationsByStudent(ctx, studentID)
+}
 
-	// Reconstruir entidad
-	return entity.ReconstructGuardianRelation(
-		id,
-		guardianID,
-		studentID,
-		relationshipType,
-		isActive,
-		createdAt.Time,
-		updatedAt.Time,
-		createdBy,
-	), nil
+func (r *postgresGuardianRepository) Update(ctx context.Context, relation *entities.GuardianRelation) error {
+	return r.UpdateRelation(ctx, relation)
+}
+
+func (r *postgresGuardianRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.DeleteRelation(ctx, id)
+}
+
+func (r *postgresGuardianRepository) ExistsActiveRelation(ctx context.Context, guardianID, studentID uuid.UUID) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM guardian_relations WHERE guardian_id = $1 AND student_id = $2 AND is_active = true)`
+	var exists bool
+	err := r.db.QueryRowContext(ctx, query, guardianID, studentID).Scan(&exists)
+	return exists, err
 }
