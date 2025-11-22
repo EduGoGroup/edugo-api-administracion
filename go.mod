@@ -3,6 +3,7 @@ module github.com/EduGoGroup/edugo-api-administracion
 go 1.25
 
 require (
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.10.0
 	github.com/EduGoGroup/edugo-shared/auth v0.7.0
 	github.com/EduGoGroup/edugo-shared/bootstrap v0.9.0
 	github.com/EduGoGroup/edugo-shared/common v0.7.0
@@ -165,3 +166,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/postgres v1.5.11 // indirect
 )
+
+replace github.com/EduGoGroup/edugo-infrastructure/postgres => ../edugo-infrastructure/postgres
