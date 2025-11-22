@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"time"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"time"
 )
 
 type CreateMembershipRequest struct {
@@ -19,15 +19,15 @@ type UpdateMembershipRequest struct {
 }
 
 type MembershipResponse struct {
-	ID         string     `json:"id"`
-	UnitID     string     `json:"unit_id"`
-	UserID     string     `json:"user_id"`
-	Role       string     `json:"role"`
-	EnrolledAt time.Time  `json:"enrolled_at"`
+	ID          string     `json:"id"`
+	UnitID      string     `json:"unit_id"`
+	UserID      string     `json:"user_id"`
+	Role        string     `json:"role"`
+	EnrolledAt  time.Time  `json:"enrolled_at"`
 	WithdrawnAt *time.Time `json:"withdrawn_at,omitempty"`
-	IsActive   bool       `json:"is_active"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
+	IsActive    bool       `json:"is_active"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
 func ToMembershipResponse(m *entities.Membership) MembershipResponse {

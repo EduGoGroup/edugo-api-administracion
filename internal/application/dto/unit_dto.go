@@ -1,15 +1,15 @@
 package dto
 
 import (
-	"time"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"time"
 )
 
 type CreateUnitRequest struct {
-	SchoolID    string  `json:"school_id" validate:"required,uuid"`
+	SchoolID     string  `json:"school_id" validate:"required,uuid"`
 	ParentUnitID *string `json:"parent_unit_id" validate:"omitempty,uuid"`
-	Name        string  `json:"name" validate:"required,min=2"`
-	Description string  `json:"description"`
+	Name         string  `json:"name" validate:"required,min=2"`
+	Description  string  `json:"description"`
 }
 
 type UpdateUnitRequest struct {
@@ -18,14 +18,14 @@ type UpdateUnitRequest struct {
 }
 
 type UnitResponse struct {
-	ID           string     `json:"id"`
-	SchoolID     string     `json:"school_id"`
-	ParentUnitID *string    `json:"parent_unit_id,omitempty"`
-	Name         string     `json:"name"`
-	Description  string     `json:"description,omitempty"`
-	IsActive     bool       `json:"is_active"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
+	ID           string    `json:"id"`
+	SchoolID     string    `json:"school_id"`
+	ParentUnitID *string   `json:"parent_unit_id,omitempty"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description,omitempty"`
+	IsActive     bool      `json:"is_active"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 func ToUnitResponse(unit *entities.Unit) UnitResponse {

@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"time"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"time"
 )
 
 type CreateSubjectRequest struct {
