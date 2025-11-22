@@ -5,6 +5,34 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-11-22
+
+### Tipo de Release: patch
+
+- fix(test): eliminar import no usado en academic_unit_service_test
+- feat: Migrar de DDD a Infrastructure Entities
+- test: agregar tests unitarios para services (cobertura +2.8%)
+- fix(cicd): agregar permisos para acceso a repos privados
+- fix(cicd): agregar GOPRIVATE en step de descarga de dependencias
+- fix(lint): corregir errores de errcheck en repositorios
+- fix(cicd): remover replace local para permitir descarga desde GitHub
+- feat(migration): eliminar DDD completamente y cleanup final (FASE 4)
+- feat(migration): migrar services restantes y DTOs a infrastructure (FASE 3)
+- feat(migration): migrar 6 entidades restantes a infrastructure (FASE 2)
+- feat(migration): migrar User de DDD a infrastructure entities (FASE 1)
+- feat(cicd): migrar workflows a reusables centralizados
+- docs(sprint-4): agregar sección PR a main (FASE 3 extendida)
+- docs(sprint-4): agregar sección FASE 3 a lecciones aprendidas
+- docs(sprint-4): agregar lecciones aprendidas de api-mobile
+- docs(sprint-2): completar SPRINT-2 - documentación final FASE 3
+- fix(lint): corregir todos los defer rows.Close() restantes
+- fix(lint): corregir 4 errcheck detectados por golangci-lint v2
+- fix(ci): actualizar golangci-lint-action v6 -> v7
+- fix(ci): usar golangci-lint v2.6.2 para soportar Go 1.25
+
+
+---
+
 ## [0.5.1] - 2025-11-19
 
 ### Tipo de Release: patch
