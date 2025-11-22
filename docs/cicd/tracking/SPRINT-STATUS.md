@@ -18,10 +18,10 @@
 
 ```
 Sprint Activo: SPRINT-4 - 🔄 EN PROGRESO
-Fase 1:        🔄 EN PROGRESO (1/10 tareas - 10%)
+Fase 1:        🔄 EN PROGRESO (2/10 tareas - 20%)
 Fase 2:        ⏳ Pendiente
 Fase 3:        ⏳ Pendiente
-Tareas SKIP:   0
+Tareas SKIP:   1
 Bloqueadores:  0
 Última Sesión: 2025-11-22
 ```
@@ -31,9 +31,9 @@ Bloqueadores:  0
 ```
 🔄 SPRINT-4 FASE 1 EN PROGRESO
 
-📋 Próxima tarea: 2 - Migrar a docker-build-edugo
-⏱️ Tiempo estimado: 2 horas
-📊 Progreso: 1/10 tareas (10%)
+📋 Próxima tarea: 3 - Migrar a coverage-check
+⏱️ Tiempo estimado: 1 hora
+📊 Progreso: 2/10 tareas (20%)
 ```
 
 ---
@@ -52,10 +52,10 @@ Bloqueadores:  0
 |---------|-------|
 | **Fase actual** | FASE 1 - 🔄 EN PROGRESO |
 | **Tareas totales** | 10 |
-| **Tareas completadas** | 1 |
-| **Tareas SKIP** | 0 |
-| **Tareas pendientes** | 9 |
-| **Progreso** | 10% |
+| **Tareas completadas** | 2 |
+| **Tareas SKIP** | 1 |
+| **Tareas pendientes** | 8 |
+| **Progreso** | 20% |
 
 ---
 
@@ -66,7 +66,7 @@ Bloqueadores:  0
 | # | Tarea | Estado | Notas |
 |---|-------|--------|-------|
 | 1 | Migrar a setup-edugo-go | ✅ (stub) | 10 ocurrencias migradas en 5 workflows. Ver TASK-1-BLOCKED.md |
-| 2 | Migrar a docker-build-edugo | ⏳ Pendiente | Verificar composite action, implementar con stub |
+| 2 | Migrar a docker-build-edugo | ⏭️ SKIP | Complejidad alta + Riesgo en releases. Ver TASK-2-BLOCKED.md |
 | 3 | Migrar a coverage-check | ⏳ Pendiente | Verificar composite action, implementar con stub |
 | 4 | Migrar sync-main-to-dev.yml | ⏳ Pendiente | Verificar workflow reusable, implementar con stub |
 | 5 | Migrar Release Logic (Opcional) | ⏳ Pendiente | Evaluar si procede, SKIP si no hay workflow reusable |
@@ -76,7 +76,7 @@ Bloqueadores:  0
 | 9 | Medir Mejoras | ⏳ Pendiente | Requiere conectividad, implementar con stub |
 | 10 | Crear FASE-1-COMPLETE.md | ⏳ Pendiente | Resumen y cierre de Fase 1 |
 
-**Progreso Fase 1:** 1/10 (10%) - 🔄 EN PROGRESO
+**Progreso Fase 1:** 2/10 (20%) - 🔄 EN PROGRESO (1 SKIP)
 
 ---
 
