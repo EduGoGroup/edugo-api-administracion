@@ -70,7 +70,7 @@ func (s *schoolService) CreateSchool(ctx context.Context, req dto.CreateSchoolRe
 		Name:             req.Name,
 		Code:             req.Code,
 		Address:          addr,
-		City:             nil, // TODO: agregar cuando se agregue al DTO
+		City:             nil,  // TODO: agregar cuando se agregue al DTO
 		Country:          "CO", // TODO: valor por defecto, agregar al DTO
 		Phone:            phone,
 		Email:            email,
