@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/google/uuid"
 )
@@ -14,4 +15,5 @@ type UnitMembershipRepository interface {
 	FindByUnit(ctx context.Context, unitID uuid.UUID) ([]*entities.Membership, error)
 	Update(ctx context.Context, membership *entities.Membership) error
 	Delete(ctx context.Context, id uuid.UUID) error
+	ExistsByUnitAndUser(ctx context.Context, unitID, userID uuid.UUID) (bool, error)
 }

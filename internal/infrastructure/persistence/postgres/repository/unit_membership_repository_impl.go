@@ -108,3 +108,10 @@ func (r *postgresUnitMembershipRepository) scanMemberships(ctx context.Context, 
 	}
 	return memberships, rows.Err()
 }
+
+func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Context, unitID, userID uuid.UUID) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM memberships WHERE academic_unit_id = $1 AND user_id = $2 AND is_active = true)`
+	var exists bool
+	err := r.db.QueryRowContext(ctx, query, unitID, userID).Scan(&exists)
+	return exists, err
+}
