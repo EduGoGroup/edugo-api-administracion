@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25"
   COVERAGE_THRESHOLD: 33
 
 jobs:
@@ -108,11 +108,10 @@ jobs:
           cache: true
 
       - name: 🔍 Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.64.7
+          version: v2.6.2
           args: --timeout=5m
-          install-mode: binary
 
   summary:
     name: PR Summary

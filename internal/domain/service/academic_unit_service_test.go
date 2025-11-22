@@ -110,10 +110,10 @@ func TestAcademicUnitService_GetAllDescendants(t *testing.T) {
 		section1, _ := entity.NewAcademicUnit(schoolID, valueobject.UnitTypeSection, "Section A", "G1-A")
 		section2, _ := entity.NewAcademicUnit(schoolID, valueobject.UnitTypeSection, "Section B", "G1-B")
 
-		service.SetParent(section1, grade.ID(), grade.UnitType())
-		service.SetParent(section2, grade.ID(), grade.UnitType())
-		service.AddChild(grade, section1)
-		service.AddChild(grade, section2)
+		_ = service.SetParent(section1, grade.ID(), grade.UnitType())
+		_ = service.SetParent(section2, grade.ID(), grade.UnitType())
+		_ = service.AddChild(grade, section1)
+		_ = service.AddChild(grade, section2)
 
 		descendants := service.GetAllDescendants(grade)
 
@@ -137,8 +137,8 @@ func TestAcademicUnitService_GetDepth(t *testing.T) {
 		grade, _ := entity.NewAcademicUnit(schoolID, valueobject.UnitTypeGrade, "Grade 1", "G1")
 		section, _ := entity.NewAcademicUnit(schoolID, valueobject.UnitTypeSection, "Section A", "G1-A")
 
-		service.SetParent(section, grade.ID(), grade.UnitType())
-		service.AddChild(grade, section)
+		_ = service.SetParent(section, grade.ID(), grade.UnitType())
+		_ = service.AddChild(grade, section)
 
 		depth := service.GetDepth(grade)
 
@@ -193,7 +193,7 @@ func TestAcademicUnitService_SoftDelete(t *testing.T) {
 
 	t.Run("should fail when already deleted", func(t *testing.T) {
 		unit, _ := entity.NewAcademicUnit(schoolID, valueobject.UnitTypeGrade, "Grade 1", "G1")
-		service.SoftDelete(unit)
+		_ = service.SoftDelete(unit)
 
 		err := service.SoftDelete(unit)
 
@@ -208,7 +208,7 @@ func TestAcademicUnitService_Restore(t *testing.T) {
 
 	t.Run("should restore deleted unit", func(t *testing.T) {
 		unit, _ := entity.NewAcademicUnit(schoolID, valueobject.UnitTypeGrade, "Grade 1", "G1")
-		service.SoftDelete(unit)
+		_ = service.SoftDelete(unit)
 
 		err := service.Restore(unit)
 

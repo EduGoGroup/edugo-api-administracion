@@ -5,7 +5,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ 📍 Estás en: docs/cicd/ (dentro del repo edugo-api-administracion) │
-│ 📂 Ruta local: implementation-plans/04-api-administracion/ │
+│ 📂 Ruta relativa: docs/cicd/                               │
 │ ⚠️ NO uses archivos de otras carpetas sin confirmar       │
 │ ✅ SOLO usa archivos dentro de esta carpeta               │
 └─────────────────────────────────────────────────────────────┘
@@ -480,13 +480,11 @@ git checkout backup/pre-sprint2-YYYYMMDD
 
 ### Repositorio
 - **URL:** https://github.com/EduGoGroup/edugo-api-administracion
-- **Ruta Local:** `/Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion`
 - **Puerto:** 8081
 - **Tipo:** A (Aplicación Desplegable)
 
-### Plan de api-mobile (Referencia)
-- **Ruta:** `../03-api-mobile/`
-- **Uso:** Como ejemplo de implementación exitosa
+### Documentación
+**NOTA:** Este proyecto fue creado basándose en el análisis CI/CD del ecosistema EduGo. Los planes ya están adaptados y listos para ejecutar en este proyecto específico.
 
 ---
 

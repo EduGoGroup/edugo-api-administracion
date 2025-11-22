@@ -208,7 +208,7 @@ func (r *postgresSchoolRepository) List(ctx context.Context, filters repository.
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var schools []*entity.School
 	for rows.Next() {

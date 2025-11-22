@@ -20,6 +20,13 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+var (
+	// Version is the application version, injected at build time via ldflags
+	Version = "dev"
+	// BuildTime is the build timestamp, injected at build time via ldflags
+	BuildTime = "unknown"
+)
+
 // @title EduGo API Administración
 // @version 1.0
 // @description API para operaciones CRUD y administrativas en EduGo
@@ -30,7 +37,7 @@ import (
 // @name Authorization
 
 func main() {
-	log.Println("🔄 EduGo API Administración iniciando...")
+	log.Printf("🔄 EduGo API Administración iniciando... (Version: %s, Build: %s)", Version, BuildTime)
 
 	ctx := context.Background()
 
@@ -57,7 +64,7 @@ func main() {
 		log.Fatalf("❌ JWT_SECRET no está configurado")
 	}
 	c := container.NewContainer(resources.PostgreSQL, resources.Logger, jwtSecret)
-	defer c.Close()
+	defer func() { _ = c.Close() }()
 
 	resources.Logger.Info("✅ API Administración iniciada", "port", cfg.Server.Port)
 
@@ -110,7 +117,7 @@ func main() {
 		memberships := v1.Group("/memberships")
 		{
 			memberships.POST("", c.UnitMembershipHandler.CreateMembership)
-			memberships.GET("", c.UnitMembershipHandler.ListMembershipsByUnit) // Usa query param unit_id
+			memberships.GET("", c.UnitMembershipHandler.ListMembershipsByUnit)         // Usa query param unit_id
 			memberships.GET("/by-role", c.UnitMembershipHandler.ListMembershipsByRole) // Usa query params
 			memberships.GET("/:id", c.UnitMembershipHandler.GetMembership)
 			memberships.PUT("/:id", c.UnitMembershipHandler.UpdateMembership)
@@ -126,12 +133,12 @@ func main() {
 
 		// ==================== LEGACY ROUTES (DEPRECATED - Remover en v0.6.0) ====================
 		// Estos endpoints retornan HTTP 410 Gone con información de deprecación
-		users.POST("", CreateUser)              // DEPRECATED
-		users.PATCH("/:id", UpdateUser)         // DEPRECATED
-		users.DELETE("/:id", DeleteUser)        // DEPRECATED
-		v1.POST("/subjects", CreateSubject)     // DEPRECATED
+		users.POST("", CreateUser)                  // DEPRECATED
+		users.PATCH("/:id", UpdateUser)             // DEPRECATED
+		users.DELETE("/:id", DeleteUser)            // DEPRECATED
+		v1.POST("/subjects", CreateSubject)         // DEPRECATED
 		v1.DELETE("/materials/:id", DeleteMaterial) // DEPRECATED
-		v1.GET("/stats/global", GetGlobalStats) // DEPRECATED
+		v1.GET("/stats/global", GetGlobalStats)     // DEPRECATED
 	}
 
 	// 5. Servidor HTTP con graceful shutdown

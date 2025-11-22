@@ -330,8 +330,9 @@ Este plan está **100% completo** y listo para implementación inmediata.
 
 **Próxima Acción:**
 ```bash
-cd ~/source/EduGo/Analisys/00-Projects-Isolated/cicd-analysis/implementation-plans/04-api-administracion
-open INDEX.md
+# Desde la raíz del repositorio edugo-api-administracion
+cd docs/cicd
+cat INDEX.md
 ```
 
 ---

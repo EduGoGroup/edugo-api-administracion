@@ -8,7 +8,7 @@ on:
       - "v*" # v1.0.0, v1.1.0, v2.0.0, etc.
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -64,12 +64,14 @@ jobs:
       - name: Tests con cobertura
         run: |
           mkdir -p coverage
-          go test -v -race -coverprofile=coverage/coverage.out -covermode=atomic ./... || true
-          if [ -f coverage/coverage.out ]; then
-            echo ""
-            echo "📊 Cobertura de código:"
-            go tool cover -func=coverage/coverage.out | tail -1
-          fi
+          go test -v -race -coverprofile=coverage/coverage.out -covermode=atomic ./...
+
+      - name: Mostrar cobertura
+        if: success()
+        run: |
+          echo ""
+          echo "📊 Cobertura de código:"
+          go tool cover -func=coverage/coverage.out | tail -1
 
       - name: Verificar build
         run: go build -v ./...
@@ -135,7 +137,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -195,6 +197,15 @@ jobs:
 
           # Guardar a archivo
           echo "$CHANGELOG" > /tmp/changelog.md
+
+      - name: Verificar binarios
+        run: |
+          if [ ! -f bin/api-admin-linux-amd64 ]; then
+            echo "❌ Binario api-admin-linux-amd64 no encontrado"
+            ls -la bin/ || echo "Directorio bin/ no existe"
+            exit 1
+          fi
+          echo "✅ Binario encontrado: $(ls -lh bin/api-admin-linux-amd64)"
 
       - name: Crear GitHub Release
         env:
@@ -259,7 +270,7 @@ jobs:
           ---
 
           🤖 Generated with [Claude Code](https://claude.com/claude-code)" \
-            bin/* || true
+            bin/*
 
       - name: Release Summary
         run: |

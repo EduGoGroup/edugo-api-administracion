@@ -27,7 +27,7 @@
 
 ### Entities Locales en api-administracion
 
-**Ubicación:** `/Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion/internal/domain/entity/`
+**Ubicación:** `internal/domain/entity/` (desde la raíz del repositorio)
 
 | # | Archivo | Entity | Lines | Complejidad | Mapea a Infrastructure |
 |---|---------|--------|-------|-------------|------------------------|
@@ -276,7 +276,8 @@ children []*AcademicUnit
 #### Tarea 0.1: Verificar infrastructure entities disponibles
 
 ```bash
-cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-infrastructure
+# Nota: Este comando es solo de referencia
+# cd [ruta-al-repositorio-edugo-infrastructure]
 
 # Verificar que Sprint ENTITIES esté completo
 ls -la postgres/entities/
@@ -429,7 +430,7 @@ Similar a User, crear service para School.
 #### Tarea 2.1: Agregar infrastructure como dependencia
 
 ```bash
-cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion
+# Desde la raíz del repositorio edugo-api-administracion
 
 # Agregar infrastructure entities
 go get github.com/EduGoGroup/edugo-infrastructure/postgres/entities@postgres/entities/v0.1.0
@@ -688,7 +689,7 @@ func ToUserResponse(user *pgentities.User) UserResponse {
 #### Tarea 7.1: Verificar que no quedan imports
 
 ```bash
-cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion
+# Desde la raíz del repositorio edugo-api-administracion
 
 # Buscar imports antiguos
 grep -r "internal/domain/entity" --include="*.go" | grep -v "^Binary"
@@ -740,7 +741,7 @@ git push origin dev
 #### Tarea 8.1: Validar build
 
 ```bash
-cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion
+# Desde la raíz del repositorio edugo-api-administracion
 
 # Build completo
 go build -v ./...
@@ -943,9 +944,9 @@ Una vez completado este sprint:
 
 ## 📚 Referencias
 
-- **Sprint de Infrastructure:** `/Users/jhoanmedina/source/EduGo/Analisys/00-Projects-Isolated/cicd-analysis/implementation-plans/02-infrastructure/SPRINT-ENTITIES.md`
-- **Migraciones PostgreSQL:** `edugo-infrastructure/postgres/migrations/`
-- **Código actual de api-administracion:** `/Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion/`
+- **Sprint de Infrastructure:** Referencias a otros proyectos no están incluidas en este repositorio
+- **Migraciones PostgreSQL:** Proyecto `edugo-infrastructure/postgres/migrations/`
+- **Código actual de api-administracion:** Este repositorio
 
 ---
 
@@ -954,7 +955,7 @@ Una vez completado este sprint:
 ### Búsqueda y Reemplazo Masivo
 
 ```bash
-cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion
+# Desde la raíz del repositorio edugo-api-administracion
 
 # Buscar todos los archivos que importan entity
 grep -rl "internal/domain/entity" --include="*.go" .
