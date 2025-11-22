@@ -1,6 +1,6 @@
 module github.com/EduGoGroup/edugo-api-administracion
 
-go 1.24
+go 1.25
 
 require (
 	github.com/EduGoGroup/edugo-shared/auth v0.7.0
