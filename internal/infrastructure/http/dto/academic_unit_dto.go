@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 )
 
 // CreateUnitRequest DTO para crear unidad académica
@@ -36,7 +36,7 @@ type UnitResponse struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 } // @name UnitResponse
 
-// UnitTreeNode DTO para árbol jerárquico (usa ltree!)
+// UnitTreeNode DTO para árbol jerárquico
 type UnitTreeNode struct {
 	ID       string          `json:"id"`
 	Name     string          `json:"name"`
@@ -46,29 +46,78 @@ type UnitTreeNode struct {
 	Children []*UnitTreeNode `json:"children,omitempty"`
 } // @name UnitTreeNode
 
-// ToUnitResponse convierte entity a DTO
-func ToUnitResponse(unit *entity.AcademicUnit) *UnitResponse {
+// ToUnitResponse convierte entity de infrastructure a DTO
+func ToUnitResponse(unit *entities.AcademicUnit) *UnitResponse {
 	var parentID *string
-	if unit.ParentUnitID() != nil {
-		pid := unit.ParentUnitID().String()
+	if unit.ParentUnitID != nil {
+		pid := unit.ParentUnitID.String()
 		parentID = &pid
 	}
 
 	var desc *string
-	if unit.Description() != "" {
-		d := unit.Description()
-		desc = &d
+	if unit.Description != nil && *unit.Description != "" {
+		desc = unit.Description
 	}
 
 	return &UnitResponse{
-		ID:           unit.ID().String(),
+		ID:           unit.ID.String(),
 		ParentUnitID: parentID,
-		SchoolID:     unit.SchoolID().String(),
-		Type:         unit.UnitType().String(),
-		Name:         unit.DisplayName(),
-		Code:         unit.Code(),
+		SchoolID:     unit.SchoolID.String(),
+		Type:         unit.Type,
+		Name:         unit.Name,
+		Code:         unit.Code,
 		Description:  desc,
-		CreatedAt:    unit.CreatedAt(),
-		UpdatedAt:    unit.UpdatedAt(),
+		CreatedAt:    unit.CreatedAt,
+		UpdatedAt:    unit.UpdatedAt,
 	}
+}
+
+// ToAcademicUnitResponse alias para compatibilidad
+func ToAcademicUnitResponse(unit *entities.AcademicUnit) *UnitResponse {
+	return ToUnitResponse(unit)
+}
+
+// BuildUnitTree construye árbol jerárquico desde lista plana
+func BuildUnitTree(units []*entities.AcademicUnit) []*UnitTreeNode {
+	if len(units) == 0 {
+		return []*UnitTreeNode{}
+	}
+
+	// Mapear units por ID para acceso rápido
+	unitMap := make(map[string]*UnitTreeNode)
+	var roots []*UnitTreeNode
+
+	// Crear nodos
+	for _, unit := range units {
+		node := &UnitTreeNode{
+			ID:       unit.ID.String(),
+			Name:     unit.Name,
+			Code:     unit.Code,
+			Type:     unit.Type,
+			Depth:    0,
+			Children: []*UnitTreeNode{},
+		}
+		unitMap[unit.ID.String()] = node
+	}
+
+	// Construir árbol
+	for _, unit := range units {
+		node := unitMap[unit.ID.String()]
+		if unit.ParentUnitID == nil {
+			// Es raíz
+			roots = append(roots, node)
+		} else {
+			// Tiene padre
+			parentID := unit.ParentUnitID.String()
+			if parent, exists := unitMap[parentID]; exists {
+				node.Depth = parent.Depth + 1
+				parent.Children = append(parent.Children, node)
+			} else {
+				// Padre no encontrado, tratar como raíz
+				roots = append(roots, node)
+			}
+		}
+	}
+
+	return roots
 }

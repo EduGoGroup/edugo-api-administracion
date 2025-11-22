@@ -3,14 +3,27 @@ package repository
 import (
 	"context"
 
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
+	"github.com/google/uuid"
 )
 
 // SubjectRepository define las operaciones de persistencia para Subject
 type SubjectRepository interface {
-	Create(ctx context.Context, subject *entity.Subject) error
-	FindByID(ctx context.Context, id valueobject.SubjectID) (*entity.Subject, error)
-	Update(ctx context.Context, subject *entity.Subject) error
-	Delete(ctx context.Context, id valueobject.SubjectID) error
+	// Create crea una nueva materia
+	Create(ctx context.Context, subject *entities.Subject) error
+
+	// FindByID busca una materia por ID
+	FindByID(ctx context.Context, id uuid.UUID) (*entities.Subject, error)
+
+	// Update actualiza una materia
+	Update(ctx context.Context, subject *entities.Subject) error
+
+	// Delete elimina una materia (cambia is_active a false)
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// List lista todas las materias activas
+	List(ctx context.Context) ([]*entities.Subject, error)
+
+	// ExistsByName verifica si existe una materia con ese nombre
+	ExistsByName(ctx context.Context, name string) (bool, error)
 }

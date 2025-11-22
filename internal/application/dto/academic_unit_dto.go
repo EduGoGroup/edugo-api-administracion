@@ -1,9 +1,10 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 )
 
 // CreateAcademicUnitRequest representa la solicitud para crear una unidad académica
@@ -49,31 +50,42 @@ type UnitTreeNode struct {
 	Children    []*UnitTreeNode `json:"children,omitempty"`
 }
 
-// ToAcademicUnitResponse convierte una entidad AcademicUnit a response
-func ToAcademicUnitResponse(unit *entity.AcademicUnit) AcademicUnitResponse {
+// ToAcademicUnitResponse convierte una entidad AcademicUnit de infrastructure a response
+func ToAcademicUnitResponse(unit *entities.AcademicUnit) AcademicUnitResponse {
 	var parentID *string
-	if unit.ParentUnitID() != nil {
-		id := unit.ParentUnitID().String()
+	if unit.ParentUnitID != nil {
+		id := unit.ParentUnitID.String()
 		parentID = &id
 	}
 
+	// Deserializar metadata de []byte a map
+	var metadata map[string]interface{}
+	if len(unit.Metadata) > 0 {
+		_ = json.Unmarshal(unit.Metadata, &metadata)
+	}
+
+	desc := ""
+	if unit.Description != nil {
+		desc = *unit.Description
+	}
+
 	return AcademicUnitResponse{
-		ID:           unit.ID().String(),
+		ID:           unit.ID.String(),
 		ParentUnitID: parentID,
-		SchoolID:     unit.SchoolID().String(),
-		Type:         unit.UnitType().String(),
-		DisplayName:  unit.DisplayName(),
-		Code:         unit.Code(),
-		Description:  unit.Description(),
-		Metadata:     unit.Metadata(),
-		CreatedAt:    unit.CreatedAt(),
-		UpdatedAt:    unit.UpdatedAt(),
-		DeletedAt:    unit.DeletedAt(),
+		SchoolID:     unit.SchoolID.String(),
+		Type:         unit.Type,
+		DisplayName:  unit.Name,
+		Code:         unit.Code,
+		Description:  desc,
+		Metadata:     metadata,
+		CreatedAt:    unit.CreatedAt,
+		UpdatedAt:    unit.UpdatedAt,
+		DeletedAt:    unit.DeletedAt,
 	}
 }
 
 // ToAcademicUnitResponseList convierte una lista de entidades a lista de responses
-func ToAcademicUnitResponseList(units []*entity.AcademicUnit) []AcademicUnitResponse {
+func ToAcademicUnitResponseList(units []*entities.AcademicUnit) []AcademicUnitResponse {
 	responses := make([]AcademicUnitResponse, len(units))
 	for i, unit := range units {
 		responses[i] = ToAcademicUnitResponse(unit)
@@ -81,51 +93,43 @@ func ToAcademicUnitResponseList(units []*entity.AcademicUnit) []AcademicUnitResp
 	return responses
 }
 
-// BuildUnitTree construye un árbol jerárquico desde una lista plana de unidades
-func BuildUnitTree(units []*entity.AcademicUnit) []*UnitTreeNode {
-	// Mapas para construcción eficiente
-	nodeMap := make(map[string]*UnitTreeNode)
-	roots := []*UnitTreeNode{}
+// BuildUnitTree construye árbol jerárquico desde lista plana
+func BuildUnitTree(units []*entities.AcademicUnit) []*UnitTreeNode {
+	if len(units) == 0 {
+		return []*UnitTreeNode{}
+	}
 
-	// Crear todos los nodos
+	// Mapear units por ID
+	unitMap := make(map[string]*UnitTreeNode)
+	var roots []*UnitTreeNode
+
+	// Crear nodos
 	for _, unit := range units {
 		node := &UnitTreeNode{
-			ID:          unit.ID().String(),
-			Type:        unit.UnitType().String(),
-			DisplayName: unit.DisplayName(),
-			Code:        unit.Code(),
+			ID:          unit.ID.String(),
+			Type:        unit.Type,
+			DisplayName: unit.Name,
+			Code:        unit.Code,
+			Depth:       0,
 			Children:    []*UnitTreeNode{},
 		}
-		nodeMap[unit.ID().String()] = node
+		unitMap[unit.ID.String()] = node
 	}
 
-	// Construir relaciones padre-hijo
+	// Construir árbol
 	for _, unit := range units {
-		node := nodeMap[unit.ID().String()]
-
-		if unit.ParentUnitID() == nil {
-			// Es raíz
+		node := unitMap[unit.ID.String()]
+		if unit.ParentUnitID == nil {
 			roots = append(roots, node)
 		} else {
-			// Tiene padre, agregarlo como hijo
-			parentID := unit.ParentUnitID().String()
-			if parent, exists := nodeMap[parentID]; exists {
+			parentID := unit.ParentUnitID.String()
+			if parent, exists := unitMap[parentID]; exists {
+				node.Depth = parent.Depth + 1
 				parent.Children = append(parent.Children, node)
+			} else {
+				roots = append(roots, node)
 			}
 		}
-	}
-
-	// Calcular profundidad recursivamente
-	var calculateDepth func(node *UnitTreeNode, depth int)
-	calculateDepth = func(node *UnitTreeNode, depth int) {
-		node.Depth = depth
-		for _, child := range node.Children {
-			calculateDepth(child, depth+1)
-		}
-	}
-
-	for _, root := range roots {
-		calculateDepth(root, 1)
 	}
 
 	return roots

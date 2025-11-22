@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/types/enum"
 	"github.com/EduGoGroup/edugo-shared/common/validator"
 )
@@ -84,23 +84,23 @@ type UserResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// ToUserResponse convierte una entidad User a DTO de respuesta
-func ToUserResponse(user *entity.User) *UserResponse {
+// ToUserResponse convierte una entidad User de infrastructure a DTO de respuesta
+func ToUserResponse(user *entities.User) *UserResponse {
 	return &UserResponse{
-		ID:        user.ID().String(),
-		Email:     user.Email().String(),
-		FirstName: user.FirstName(),
-		LastName:  user.LastName(),
-		FullName:  user.FullName(),
-		Role:      user.Role().String(),
-		IsActive:  user.IsActive(),
-		CreatedAt: user.CreatedAt(),
-		UpdatedAt: user.UpdatedAt(),
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		FullName:  user.FirstName + " " + user.LastName,
+		Role:      user.Role,
+		IsActive:  user.IsActive,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
 }
 
 // ToUserResponses convierte una lista de entidades a DTOs
-func ToUserResponses(users []*entity.User) []*UserResponse {
+func ToUserResponses(users []*entities.User) []*UserResponse {
 	responses := make([]*UserResponse, len(users))
 	for i, user := range users {
 		responses[i] = ToUserResponse(user)
