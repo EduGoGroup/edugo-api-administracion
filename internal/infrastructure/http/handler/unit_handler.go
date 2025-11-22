@@ -104,7 +104,6 @@ func (h *UnitHandler) UpdateUnit(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Unit ID"
-// @Param request body dto.AssignMemberRequest true "Member data"
 // @Success 204 "No Content"
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
@@ -112,28 +111,11 @@ func (h *UnitHandler) UpdateUnit(c *gin.Context) {
 // @Router /v1/units/{id}/members [post]
 // @Security BearerAuth
 func (h *UnitHandler) AssignMember(c *gin.Context) {
-	id := c.Param("id")
-	var req dto.AssignMemberRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
-		return
-	}
-
-	err := h.unitService.AssignMember(c.Request.Context(), id, req)
-	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("assign member failed", "error", appErr.Message, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
-		return
-	}
-
-	h.logger.Info("member assigned", "unit_id", id, "user_id", req.UserID)
-	c.Status(http.StatusNoContent)
+	// TODO: Migrar esta funcionalidad a usar MembershipService
+	// Esta funcionalidad debería usar el servicio de membresías en lugar del servicio de unidades
+	h.logger.Warn("AssignMember endpoint deprecated - use membership service instead")
+	c.JSON(http.StatusNotImplemented, ErrorResponse{
+		Error: "This endpoint is being migrated. Please use /v1/memberships endpoint instead",
+		Code:  "NOT_IMPLEMENTED",
+	})
 }

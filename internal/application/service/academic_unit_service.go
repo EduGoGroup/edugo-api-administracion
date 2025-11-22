@@ -2,16 +2,16 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
+	"github.com/google/uuid"
 )
 
-// AcademicUnitService define las operaciones de negocio para AcademicUnit
 type AcademicUnitService interface {
 	CreateUnit(ctx context.Context, schoolID string, req dto.CreateAcademicUnitRequest) (*dto.AcademicUnitResponse, error)
 	GetUnit(ctx context.Context, id string) (*dto.AcademicUnitResponse, error)
@@ -30,7 +30,6 @@ type academicUnitService struct {
 	logger     logger.Logger
 }
 
-// NewAcademicUnitService crea un nuevo AcademicUnitService
 func NewAcademicUnitService(
 	unitRepo repository.AcademicUnitRepository,
 	schoolRepo repository.SchoolRepository,
@@ -43,15 +42,15 @@ func NewAcademicUnitService(
 	}
 }
 
-// CreateUnit crea una nueva unidad académica
 func (s *academicUnitService) CreateUnit(ctx context.Context, schoolID string, req dto.CreateAcademicUnitRequest) (*dto.AcademicUnitResponse, error) {
-	// 1. Validar que la escuela existe
-	schoolIDVO, err := valueobject.SchoolIDFromString(schoolID)
+	// Parse IDs
+	schoolUUID, err := uuid.Parse(schoolID)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid school ID")
 	}
 
-	school, err := s.schoolRepo.FindByID(ctx, schoolIDVO)
+	// Verificar escuela existe
+	school, err := s.schoolRepo.FindByID(ctx, schoolUUID)
 	if err != nil {
 		return nil, errors.NewDatabaseError("find school", err)
 	}
@@ -59,15 +58,9 @@ func (s *academicUnitService) CreateUnit(ctx context.Context, schoolID string, r
 		return nil, errors.NewNotFoundError("school")
 	}
 
-	// 2. Validar y crear el tipo de unidad
-	unitType, err := valueobject.NewUnitType(req.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	// 3. Verificar código único si se proporciona
+	// Verificar código único
 	if req.Code != "" {
-		exists, err := s.unitRepo.ExistsBySchoolIDAndCode(ctx, schoolIDVO, req.Code)
+		exists, err := s.unitRepo.ExistsBySchoolIDAndCode(ctx, schoolUUID, req.Code)
 		if err != nil {
 			return nil, errors.NewDatabaseError("check unit code", err)
 		}
@@ -76,64 +69,63 @@ func (s *academicUnitService) CreateUnit(ctx context.Context, schoolID string, r
 		}
 	}
 
-	// 4. Crear entidad
-	unit, err := entity.NewAcademicUnit(schoolIDVO, unitType, req.DisplayName, req.Code)
-	if err != nil {
-		s.logger.Warn("failed to create unit entity", "error", err)
-		return nil, err
-	}
-
-	// 5. Establecer padre si se proporciona
+	// Validar padre si existe
+	var parentUUID *uuid.UUID
 	if req.ParentUnitID != nil {
-		parentID, err := valueobject.UnitIDFromString(*req.ParentUnitID)
+		pid, err := uuid.Parse(*req.ParentUnitID)
 		if err != nil {
 			return nil, errors.NewValidationError("invalid parent_unit_id")
 		}
-
-		// Verificar que el padre existe y obtener su tipo
-		parent, err := s.unitRepo.FindByID(ctx, parentID, false)
+		parent, err := s.unitRepo.FindByID(ctx, pid, false)
 		if err != nil {
 			return nil, errors.NewDatabaseError("find parent unit", err)
 		}
 		if parent == nil {
 			return nil, errors.NewNotFoundError("parent unit")
 		}
-
-		// Validar la relación padre-hijo
-		//nolint:staticcheck // SA1019: método deprecado pero aún funcional, migración pendiente
-		if err := unit.SetParent(parentID, parent.UnitType()); err != nil {
-			return nil, err
-		}
+		parentUUID = &pid
 	}
 
-	// 6. Agregar descripción y metadata
-	if req.Description != "" {
-		if err := unit.UpdateInfo(req.DisplayName, req.Description); err != nil {
-			return nil, err
-		}
+	// Crear unidad (lógica de validación movida aquí del entity)
+	if req.DisplayName == "" {
+		return nil, errors.NewValidationError("display_name is required")
+	}
+	if len(req.DisplayName) < 3 {
+		return nil, errors.NewValidationError("display_name must be at least 3 characters")
 	}
 
-	if req.Metadata != nil {
-		for key, value := range req.Metadata {
-			unit.SetMetadata(key, value)
-		}
+	now := time.Now()
+	unit := &entities.AcademicUnit{
+		ID:           uuid.New(),
+		ParentUnitID: parentUUID,
+		SchoolID:     schoolUUID,
+		Name:         req.DisplayName,
+		Code:         req.Code,
+		Type:         req.Type,
+		Description:  &req.Description,
+		Level:        nil, // TODO: agregar si se necesita
+		AcademicYear: 0,   // TODO: agregar si se necesita
+		Metadata:     []byte("{}"),
+		IsActive:     true,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+		DeletedAt:    nil,
 	}
 
-	// 7. Persistir
+	// Persistir
 	if err := s.unitRepo.Create(ctx, unit); err != nil {
 		s.logger.Error("failed to create unit", "error", err, "name", req.DisplayName)
 		return nil, errors.NewDatabaseError("create unit", err)
 	}
 
-	s.logger.Info("unit created successfully", "id", unit.ID().String(), "name", req.DisplayName)
+	s.logger.Info("unit created successfully", "id", unit.ID.String(), "name", req.DisplayName)
 
 	response := dto.ToAcademicUnitResponse(unit)
 	return &response, nil
 }
 
-// GetUnit obtiene una unidad por ID
 func (s *academicUnitService) GetUnit(ctx context.Context, id string) (*dto.AcademicUnitResponse, error) {
-	unitID, err := valueobject.UnitIDFromString(id)
+	unitID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid unit ID")
 	}
@@ -143,7 +135,6 @@ func (s *academicUnitService) GetUnit(ctx context.Context, id string) (*dto.Acad
 		s.logger.Error("failed to find unit", "error", err, "id", id)
 		return nil, errors.NewDatabaseError("find unit", err)
 	}
-
 	if unit == nil {
 		return nil, errors.NewNotFoundError("academic unit")
 	}
@@ -152,156 +143,110 @@ func (s *academicUnitService) GetUnit(ctx context.Context, id string) (*dto.Acad
 	return &response, nil
 }
 
-// GetUnitTree obtiene el árbol jerárquico completo de una escuela
 func (s *academicUnitService) GetUnitTree(ctx context.Context, schoolID string) ([]*dto.UnitTreeNode, error) {
-	schoolIDVO, err := valueobject.SchoolIDFromString(schoolID)
+	schoolUUID, err := uuid.Parse(schoolID)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid school ID")
 	}
 
-	units, err := s.unitRepo.FindBySchoolID(ctx, schoolIDVO, false)
+	units, err := s.unitRepo.FindBySchoolID(ctx, schoolUUID, false)
 	if err != nil {
-		s.logger.Error("failed to get units", "error", err, "school_id", schoolID)
-		return nil, errors.NewDatabaseError("get units", err)
+		return nil, errors.NewDatabaseError("find units", err)
 	}
 
 	return dto.BuildUnitTree(units), nil
 }
 
-// ListUnitsBySchool lista todas las unidades de una escuela
 func (s *academicUnitService) ListUnitsBySchool(ctx context.Context, schoolID string, includeDeleted bool) ([]dto.AcademicUnitResponse, error) {
-	schoolIDVO, err := valueobject.SchoolIDFromString(schoolID)
+	schoolUUID, err := uuid.Parse(schoolID)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid school ID")
 	}
 
-	units, err := s.unitRepo.FindBySchoolID(ctx, schoolIDVO, includeDeleted)
+	units, err := s.unitRepo.FindBySchoolID(ctx, schoolUUID, includeDeleted)
 	if err != nil {
-		s.logger.Error("failed to list units", "error", err, "school_id", schoolID)
-		return nil, errors.NewDatabaseError("list units", err)
+		return nil, errors.NewDatabaseError("find units", err)
 	}
 
-	return dto.ToAcademicUnitResponseList(units), nil
+	responses := make([]dto.AcademicUnitResponse, len(units))
+	for i, unit := range units {
+		responses[i] = dto.ToAcademicUnitResponse(unit)
+	}
+	return responses, nil
 }
 
-// ListUnitsByType lista unidades por tipo
 func (s *academicUnitService) ListUnitsByType(ctx context.Context, schoolID string, unitType string) ([]dto.AcademicUnitResponse, error) {
-	schoolIDVO, err := valueobject.SchoolIDFromString(schoolID)
+	schoolUUID, err := uuid.Parse(schoolID)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid school ID")
 	}
 
-	unitTypeVO, err := valueobject.NewUnitType(unitType)
+	units, err := s.unitRepo.FindByType(ctx, schoolUUID, unitType, false)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewDatabaseError("find units", err)
 	}
 
-	units, err := s.unitRepo.FindByType(ctx, schoolIDVO, unitTypeVO, false)
-	if err != nil {
-		s.logger.Error("failed to list units by type", "error", err, "type", unitType)
-		return nil, errors.NewDatabaseError("list units", err)
+	responses := make([]dto.AcademicUnitResponse, len(units))
+	for i, unit := range units {
+		responses[i] = dto.ToAcademicUnitResponse(unit)
 	}
-
-	return dto.ToAcademicUnitResponseList(units), nil
+	return responses, nil
 }
 
-// UpdateUnit actualiza una unidad
 func (s *academicUnitService) UpdateUnit(ctx context.Context, id string, req dto.UpdateAcademicUnitRequest) (*dto.AcademicUnitResponse, error) {
-	unitID, err := valueobject.UnitIDFromString(id)
+	unitID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid unit ID")
 	}
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
-	if err != nil {
-		return nil, errors.NewDatabaseError("find unit", err)
-	}
-	if unit == nil {
+	if err != nil || unit == nil {
 		return nil, errors.NewNotFoundError("academic unit")
 	}
 
-	// Actualizar padre si se proporciona
+	// Actualizar campos (lógica movida del entity)
+	if req.DisplayName != nil {
+		if len(*req.DisplayName) < 3 {
+			return nil, errors.NewValidationError("display_name must be at least 3 characters")
+		}
+		unit.Name = *req.DisplayName
+	}
+
+	if req.Description != nil {
+		unit.Description = req.Description
+	}
+
 	if req.ParentUnitID != nil {
-		if *req.ParentUnitID == "" {
-			unit.RemoveParent()
-		} else {
-			parentID, err := valueobject.UnitIDFromString(*req.ParentUnitID)
-			if err != nil {
-				return nil, errors.NewValidationError("invalid parent_unit_id")
-			}
-
-			parent, err := s.unitRepo.FindByID(ctx, parentID, false)
-			if err != nil {
-				return nil, errors.NewDatabaseError("find parent unit", err)
-			}
-			if parent == nil {
-				return nil, errors.NewNotFoundError("parent unit")
-			}
-
-			//nolint:staticcheck // SA1019: método deprecado pero aún funcional, migración pendiente
-			if err := unit.SetParent(parentID, parent.UnitType()); err != nil {
-				return nil, err
-			}
+		pid, err := uuid.Parse(*req.ParentUnitID)
+		if err != nil {
+			return nil, errors.NewValidationError("invalid parent_unit_id")
 		}
+		if pid == unitID {
+			return nil, errors.NewBusinessRuleError("unit cannot be its own parent")
+		}
+		unit.ParentUnitID = &pid
 	}
 
-	// Actualizar info si se proporciona
-	if req.DisplayName != nil || req.Description != nil {
-		name := unit.DisplayName()
-		if req.DisplayName != nil {
-			name = *req.DisplayName
-		}
-		desc := unit.Description()
-		if req.Description != nil {
-			desc = *req.Description
-		}
-
-		if err := unit.UpdateInfo(name, desc); err != nil {
-			return nil, err
-		}
-	}
-
-	// Actualizar metadata
-	if req.Metadata != nil {
-		for key, value := range req.Metadata {
-			unit.SetMetadata(key, value)
-		}
-	}
+	unit.UpdatedAt = time.Now()
 
 	if err := s.unitRepo.Update(ctx, unit); err != nil {
-		s.logger.Error("failed to update unit", "error", err, "id", id)
+		s.logger.Error("failed to update unit", "error", err)
 		return nil, errors.NewDatabaseError("update unit", err)
 	}
-
-	s.logger.Info("unit updated successfully", "id", id)
 
 	response := dto.ToAcademicUnitResponse(unit)
 	return &response, nil
 }
 
-// DeleteUnit elimina una unidad (soft delete)
 func (s *academicUnitService) DeleteUnit(ctx context.Context, id string) error {
-	unitID, err := valueobject.UnitIDFromString(id)
+	unitID, err := uuid.Parse(id)
 	if err != nil {
 		return errors.NewValidationError("invalid unit ID")
 	}
 
-	// Verificar que existe
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
-	if err != nil {
-		return errors.NewDatabaseError("find unit", err)
-	}
-	if unit == nil {
+	if err != nil || unit == nil {
 		return errors.NewNotFoundError("academic unit")
-	}
-
-	// Verificar que no tiene hijos activos
-	hasChildren, err := s.unitRepo.HasChildren(ctx, unitID)
-	if err != nil {
-		return errors.NewDatabaseError("check children", err)
-	}
-	if hasChildren {
-		return errors.NewBusinessRuleError("cannot delete unit with active children")
 	}
 
 	if err := s.unitRepo.SoftDelete(ctx, unitID); err != nil {
@@ -309,13 +254,12 @@ func (s *academicUnitService) DeleteUnit(ctx context.Context, id string) error {
 		return errors.NewDatabaseError("delete unit", err)
 	}
 
-	s.logger.Info("unit deleted successfully", "id", id)
+	s.logger.Info("unit deleted", "id", id)
 	return nil
 }
 
-// RestoreUnit restaura una unidad eliminada
 func (s *academicUnitService) RestoreUnit(ctx context.Context, id string) error {
-	unitID, err := valueobject.UnitIDFromString(id)
+	unitID, err := uuid.Parse(id)
 	if err != nil {
 		return errors.NewValidationError("invalid unit ID")
 	}
@@ -325,22 +269,24 @@ func (s *academicUnitService) RestoreUnit(ctx context.Context, id string) error 
 		return errors.NewDatabaseError("restore unit", err)
 	}
 
-	s.logger.Info("unit restored successfully", "id", id)
+	s.logger.Info("unit restored", "id", id)
 	return nil
 }
 
-// GetHierarchyPath obtiene el path desde raíz hasta la unidad
 func (s *academicUnitService) GetHierarchyPath(ctx context.Context, id string) ([]dto.AcademicUnitResponse, error) {
-	unitID, err := valueobject.UnitIDFromString(id)
+	unitID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid unit ID")
 	}
 
 	units, err := s.unitRepo.GetHierarchyPath(ctx, unitID)
 	if err != nil {
-		s.logger.Error("failed to get hierarchy path", "error", err, "id", id)
 		return nil, errors.NewDatabaseError("get hierarchy path", err)
 	}
 
-	return dto.ToAcademicUnitResponseList(units), nil
+	responses := make([]dto.AcademicUnitResponse, len(units))
+	for i, unit := range units {
+		responses[i] = dto.ToAcademicUnitResponse(unit)
+	}
+	return responses, nil
 }

@@ -3,8 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/validator"
 )
 
@@ -26,7 +25,8 @@ func (r *CreateGuardianRelationRequest) Validate() error {
 	v.UUID(r.StudentID, "student_id")
 
 	v.Required(r.RelationshipType, "relationship_type")
-	v.InSlice(r.RelationshipType, valueobject.AllRelationshipTypes(), "relationship_type")
+	validTypes := []string{"father", "mother", "grandfather", "grandmother", "uncle", "aunt", "other"}
+	v.InSlice(r.RelationshipType, validTypes, "relationship_type")
 
 	return v.GetError()
 }
@@ -43,16 +43,16 @@ type GuardianRelationResponse struct {
 	CreatedBy        string    `json:"created_by"`
 }
 
-// ToGuardianRelationResponse convierte una entidad a DTO de respuesta
-func ToGuardianRelationResponse(relation *entity.GuardianRelation) *GuardianRelationResponse {
+// ToGuardianRelationResponse convierte una entidad de infrastructure a DTO de respuesta
+func ToGuardianRelationResponse(relation *entities.GuardianRelation) *GuardianRelationResponse {
 	return &GuardianRelationResponse{
-		ID:               relation.ID().String(),
-		GuardianID:       relation.GuardianID().String(),
-		StudentID:        relation.StudentID().String(),
-		RelationshipType: relation.RelationshipType().String(),
-		IsActive:         relation.IsActive(),
-		CreatedAt:        relation.CreatedAt(),
-		UpdatedAt:        relation.UpdatedAt(),
-		CreatedBy:        relation.CreatedBy(),
+		ID:               relation.ID.String(),
+		GuardianID:       relation.GuardianID.String(),
+		StudentID:        relation.StudentID.String(),
+		RelationshipType: relation.RelationshipType,
+		IsActive:         relation.IsActive,
+		CreatedAt:        relation.CreatedAt,
+		UpdatedAt:        relation.UpdatedAt,
+		CreatedBy:        relation.CreatedBy,
 	}
 }

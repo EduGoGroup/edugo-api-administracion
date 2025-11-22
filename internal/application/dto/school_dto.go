@@ -1,9 +1,10 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 )
 
 // CreateSchoolRequest representa la solicitud para crear una escuela
@@ -38,28 +39,44 @@ type SchoolResponse struct {
 	UpdatedAt    time.Time              `json:"updated_at"`
 }
 
-// ToSchoolResponse convierte una entidad School a SchoolResponse
-func ToSchoolResponse(school *entity.School) SchoolResponse {
+// ToSchoolResponse convierte una entidad School de infrastructure a SchoolResponse
+func ToSchoolResponse(school *entities.School) SchoolResponse {
 	var email string
-	if school.ContactEmail() != nil {
-		email = school.ContactEmail().String()
+	if school.Email != nil {
+		email = *school.Email
+	}
+
+	var phone string
+	if school.Phone != nil {
+		phone = *school.Phone
+	}
+
+	var address string
+	if school.Address != nil {
+		address = *school.Address
+	}
+
+	// Deserializar metadata
+	var metadata map[string]interface{}
+	if len(school.Metadata) > 0 {
+		_ = json.Unmarshal(school.Metadata, &metadata)
 	}
 
 	return SchoolResponse{
-		ID:           school.ID().String(),
-		Name:         school.Name(),
-		Code:         school.Code(),
-		Address:      school.Address(),
+		ID:           school.ID.String(),
+		Name:         school.Name,
+		Code:         school.Code,
+		Address:      address,
 		ContactEmail: email,
-		ContactPhone: school.ContactPhone(),
-		Metadata:     school.Metadata(),
-		CreatedAt:    school.CreatedAt(),
-		UpdatedAt:    school.UpdatedAt(),
+		ContactPhone: phone,
+		Metadata:     metadata,
+		CreatedAt:    school.CreatedAt,
+		UpdatedAt:    school.UpdatedAt,
 	}
 }
 
 // ToSchoolResponseList convierte una lista de entidades a lista de responses
-func ToSchoolResponseList(schools []*entity.School) []SchoolResponse {
+func ToSchoolResponseList(schools []*entities.School) []SchoolResponse {
 	responses := make([]SchoolResponse, len(schools))
 	for i, school := range schools {
 		responses[i] = ToSchoolResponse(school)

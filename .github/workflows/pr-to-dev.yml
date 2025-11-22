@@ -10,6 +10,10 @@ env:
   GO_VERSION: "1.25"
   COVERAGE_THRESHOLD: 33
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   unit-tests:
     name: Unit Tests
@@ -34,6 +38,8 @@ jobs:
 
       - name: 📦 Descargar dependencias
         run: go mod download
+        env:
+          GOPRIVATE: github.com/EduGoGroup/*
 
       - name: 🧪 Ejecutar tests unitarios
         run: make test-unit

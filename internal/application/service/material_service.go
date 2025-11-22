@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
+	"github.com/google/uuid"
 )
 
 // MaterialService define las operaciones de negocio para materiales
@@ -29,7 +29,7 @@ func NewMaterialService(materialRepo repository.MaterialRepository, logger logge
 
 func (s *materialService) DeleteMaterial(ctx context.Context, id string) error {
 	// Validar ID
-	materialID, err := valueobject.MaterialIDFromString(id)
+	materialID, err := uuid.Parse(id)
 	if err != nil {
 		return errors.NewValidationError("invalid material_id format")
 	}

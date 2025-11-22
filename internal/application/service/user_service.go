@@ -2,14 +2,15 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/entity"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/common/types/enum"
 	"github.com/EduGoGroup/edugo-shared/logger"
+	"github.com/google/uuid"
 )
 
 // UserService define las operaciones de negocio para usuarios
@@ -58,68 +59,71 @@ func (s *userService) CreateUser(
 		return nil, err
 	}
 
-	// 2. Crear value object Email
-	email, err := valueobject.NewEmail(req.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	// 3. Verificar si ya existe un usuario con ese email
-	exists, err := s.userRepo.ExistsByEmail(ctx, email)
+	// 2. Verificar si ya existe un usuario con ese email
+	exists, err := s.userRepo.ExistsByEmail(ctx, req.Email)
 	if err != nil {
 		s.logger.Error("failed to check existing user",
 			"error", err,
-			"email", email.String(),
+			"email", req.Email,
 		)
 		return nil, errors.NewDatabaseError("check user", err)
 	}
 
 	if exists {
 		return nil, errors.NewAlreadyExistsError("user").
-			WithField("email", email.String())
+			WithField("email", req.Email)
 	}
 
-	// 4. Convertir role a enum
+	// 3. Validar role (lógica de negocio movida del entity)
 	role := enum.SystemRole(req.Role)
 	if !role.IsValid() {
 		return nil, errors.NewValidationError("invalid role").
 			WithField("role", req.Role)
 	}
 
-	// 5. Crear entidad de dominio
-	user, err := entity.NewUser(
-		email,
-		req.FirstName,
-		req.LastName,
-		role,
-	)
-	if err != nil {
-		s.logger.Warn("failed to create user entity", "error", err)
-		return nil, err
+	// No permitir crear admin users (regla de negocio)
+	if role == enum.SystemRoleAdmin {
+		return nil, errors.NewBusinessRuleError("cannot create admin users through this endpoint")
 	}
 
-	// 6. Persistir en repositorio
+	// 4. Crear entidad de infrastructure (sin lógica de negocio)
+	now := time.Now()
+	user := &entities.User{
+		ID:            uuid.New(),
+		Email:         req.Email,
+		PasswordHash:  "", // TODO: Implementar hash de password cuando se agregue autenticación
+		FirstName:     req.FirstName,
+		LastName:      req.LastName,
+		Role:          req.Role,
+		IsActive:      true,
+		EmailVerified: false,
+		CreatedAt:     now,
+		UpdatedAt:     now,
+		DeletedAt:     nil,
+	}
+
+	// 5. Persistir en repositorio
 	if err := s.userRepo.Create(ctx, user); err != nil {
 		s.logger.Error("failed to save user",
 			"error", err,
-			"email", email.String(),
+			"email", req.Email,
 		)
 		return nil, errors.NewDatabaseError("create user", err)
 	}
 
 	s.logger.Info("user created",
-		"user_id", user.ID().String(),
-		"email", email.String(),
-		"role", role.String(),
+		"user_id", user.ID.String(),
+		"email", req.Email,
+		"role", req.Role,
 	)
 
-	// 7. Retornar DTO de respuesta
+	// 6. Retornar DTO de respuesta
 	return dto.ToUserResponse(user), nil
 }
 
 // GetUser obtiene un usuario por ID
 func (s *userService) GetUser(ctx context.Context, id string) (*dto.UserResponse, error) {
-	userID, err := valueobject.UserIDFromString(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid user_id format")
 	}
@@ -138,26 +142,26 @@ func (s *userService) GetUser(ctx context.Context, id string) (*dto.UserResponse
 }
 
 // GetUserByEmail obtiene un usuario por email
-func (s *userService) GetUserByEmail(ctx context.Context, emailStr string) (*dto.UserResponse, error) {
-	email, err := valueobject.NewEmail(emailStr)
-	if err != nil {
-		return nil, err
+func (s *userService) GetUserByEmail(ctx context.Context, email string) (*dto.UserResponse, error) {
+	// Validar email (lógica de negocio movida del value object)
+	if email == "" {
+		return nil, errors.NewValidationError("email is required")
 	}
 
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
-		s.logger.Error("failed to find user", "error", err, "email", emailStr)
+		s.logger.Error("failed to find user", "error", err, "email", email)
 		return nil, errors.NewDatabaseError("find user", err)
 	}
 
 	if user == nil {
-		return nil, errors.NewNotFoundError("user").WithField("email", emailStr)
+		return nil, errors.NewNotFoundError("user").WithField("email", email)
 	}
 
 	return dto.ToUserResponse(user), nil
 }
 
-// UpdateUser actualiza un usuario (implementación simplificada)
+// UpdateUser actualiza un usuario
 func (s *userService) UpdateUser(
 	ctx context.Context,
 	id string,
@@ -169,7 +173,7 @@ func (s *userService) UpdateUser(
 	}
 
 	// Buscar usuario
-	userID, err := valueobject.UserIDFromString(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid user_id format")
 	}
@@ -179,31 +183,49 @@ func (s *userService) UpdateUser(
 		return nil, errors.NewNotFoundError("user")
 	}
 
-	// Actualizar campos
+	// Actualizar campos (lógica de negocio movida del entity)
 	if req.FirstName != nil && req.LastName != nil {
-		if err := user.UpdateName(*req.FirstName, *req.LastName); err != nil {
-			return nil, err
+		// Validaciones (antes estaban en entity.UpdateName)
+		if *req.FirstName == "" || *req.LastName == "" {
+			return nil, errors.NewValidationError("first_name and last_name are required")
 		}
+		user.FirstName = *req.FirstName
+		user.LastName = *req.LastName
 	}
 
 	if req.Role != nil {
-		role := enum.SystemRole(*req.Role)
-		if err := user.ChangeRole(role); err != nil {
-			return nil, err
+		// Validaciones (antes estaban en entity.ChangeRole)
+		newRole := enum.SystemRole(*req.Role)
+		if !newRole.IsValid() {
+			return nil, errors.NewValidationError("invalid role")
 		}
+
+		if user.Role == *req.Role {
+			return nil, errors.NewBusinessRuleError("new role is the same as current role")
+		}
+
+		// No permitir promover a admin
+		if newRole == enum.SystemRoleAdmin {
+			return nil, errors.NewBusinessRuleError("cannot promote to admin role")
+		}
+
+		user.Role = *req.Role
 	}
 
 	if req.IsActive != nil {
-		if *req.IsActive {
-			if err := user.Activate(); err != nil {
-				return nil, err
-			}
-		} else {
-			if err := user.Deactivate(); err != nil {
-				return nil, err
-			}
+		// Validaciones (antes estaban en entity.Activate/Deactivate)
+		if *req.IsActive && user.IsActive {
+			return nil, errors.NewBusinessRuleError("user is already active")
 		}
+		if !*req.IsActive && !user.IsActive {
+			return nil, errors.NewBusinessRuleError("user is already inactive")
+		}
+
+		user.IsActive = *req.IsActive
 	}
+
+	// Actualizar timestamp
+	user.UpdatedAt = time.Now()
 
 	// Persistir
 	if err := s.userRepo.Update(ctx, user); err != nil {
@@ -211,14 +233,14 @@ func (s *userService) UpdateUser(
 		return nil, errors.NewDatabaseError("update user", err)
 	}
 
-	s.logger.Info("user updated", "user_id", user.ID().String())
+	s.logger.Info("user updated", "user_id", user.ID.String())
 
 	return dto.ToUserResponse(user), nil
 }
 
 // DeleteUser elimina un usuario
 func (s *userService) DeleteUser(ctx context.Context, id string) error {
-	userID, err := valueobject.UserIDFromString(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		return errors.NewValidationError("invalid user_id format")
 	}
