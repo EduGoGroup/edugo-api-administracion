@@ -26,7 +26,7 @@ func TestMembershipService_IsActive(t *testing.T) {
 	t.Run("should be active when current time is before validUntil", func(t *testing.T) {
 		membership, _ := entity.NewUnitMembership(unitID, userID, valueobject.RoleStudent, validFrom)
 		validUntil := time.Now().Add(24 * time.Hour)
-		service.SetValidUntil(membership, validUntil)
+		_ = service.SetValidUntil(membership, validUntil)
 
 		isActive := service.IsActive(membership)
 
@@ -151,7 +151,7 @@ func TestMembershipService_Expire(t *testing.T) {
 
 	t.Run("should fail when already expired", func(t *testing.T) {
 		membership, _ := entity.NewUnitMembership(unitID, userID, valueobject.RoleStudent, validFrom)
-		service.Expire(membership)
+		_ = service.Expire(membership)
 
 		err := service.Expire(membership)
 
@@ -231,7 +231,7 @@ func TestMembershipService_HasPermission(t *testing.T) {
 	t.Run("inactive membership should have no permissions", func(t *testing.T) {
 		pastValidFrom := time.Now().Add(-48 * time.Hour)
 		membership, _ := entity.NewUnitMembership(unitID, userID, valueobject.RoleAdmin, pastValidFrom)
-		service.Expire(membership)
+		_ = service.Expire(membership)
 
 		assert.False(t, service.HasPermission(membership, "view"))
 		assert.False(t, service.HasPermission(membership, "edit"))

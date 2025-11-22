@@ -155,7 +155,7 @@ readlink -f docs/cicd/sprints/SPRINT-1-TASKS.md
 
 ### Ver estado actual:
 ```bash
-cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion
+# Desde la raíz del repositorio
 cat docs/cicd/tracking/SPRINT-STATUS.md | head -40
 ```
 

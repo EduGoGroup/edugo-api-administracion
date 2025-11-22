@@ -260,7 +260,7 @@ Instrucciones:
 ### ⚠️ Regla #3: Validar Antes de Ejecutar
 ```bash
 # Antes de abrir un archivo de sprint:
-ls -la /Users/jhoanmedina/source/EduGo/repos-separados/edugo-api-administracion/docs/cicd/sprints/SPRINT-X-TASKS.md
+ls -la docs/cicd/sprints/SPRINT-X-TASKS.md
 
 # Debe existir. Si no existe, reportar error.
 ```

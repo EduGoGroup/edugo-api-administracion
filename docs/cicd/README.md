@@ -5,7 +5,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ 📍 Estás en: docs/cicd/ (dentro del repo edugo-api-administracion) │
-│ 📂 Ruta local: implementation-plans/04-api-administracion/ │
+│ 📂 Ruta relativa: docs/cicd/                               │
 │ ⚠️ NO uses archivos de otras carpetas sin confirmar       │
 │ ✅ SOLO usa archivos dentro de esta carpeta               │
 └─────────────────────────────────────────────────────────────┘
@@ -668,25 +668,9 @@ act -s GITHUB_TOKEN=ghp_xxx
 
 ## 📚 Documentación de Referencia
 
-### Workflows de api-mobile (Ejemplo a Seguir)
+### Documentación de Referencia
 
-```
-../03-api-mobile/
-├── sprints/SPRINT-2-TASKS.md    ← Cómo implementar pr-to-main.yml
-├── README.md                     ← Arquitectura similar
-└── assets/workflows/
-    └── pr-to-main.yml           ← Copiar y adaptar
-```
-
-### Análisis Previo
-
-```
-../../
-├── 01-ANALISIS-ESTADO-ACTUAL.md        ← Estado inicial
-├── 03-DUPLICIDADES-DETALLADAS.md       ← Código duplicado
-├── 05-QUICK-WINS.md                    ← Mejoras rápidas
-└── 08-RESULTADO-PRUEBAS-GO-1.25.md     ← Validación Go 1.25
-```
+**NOTA:** Este proyecto fue creado basándose en el análisis CI/CD del ecosistema EduGo. La documentación de referencia original no está incluida en este repositorio, pero los planes ya están adaptados y listos para ejecutar en este proyecto específico.
 
 ---
 
@@ -716,8 +700,7 @@ act -s GITHUB_TOKEN=ghp_xxx
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone o actualiza repo
-cd ~/source/EduGo/repos-separados/edugo-api-administracion
+# 1. Asegúrate de estar en la rama dev
 git checkout dev
 git pull origin dev
 
@@ -731,7 +714,7 @@ gh run list --limit 10
 git log --oneline -5
 
 # 4. Abrir plan de tareas
-open ../Analisys/00-Projects-Isolated/cicd-analysis/implementation-plans/04-api-administracion/sprints/SPRINT-2-TASKS.md
+cat docs/cicd/sprints/SPRINT-2-TASKS.md
 
 # 5. Comenzar con Tarea 1.1
 ```

@@ -406,7 +406,7 @@ func (r *postgresAcademicUnitRepository) MoveSubtree(
 	if err != nil {
 		return errors.NewDatabaseError("begin transaction", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	// Preparar el nuevo parent_unit_id (NULL si es raíz)
 	var newParentIDStr *string
