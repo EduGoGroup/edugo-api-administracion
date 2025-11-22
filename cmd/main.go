@@ -130,15 +130,6 @@ func main() {
 		{
 			users.GET("/:userId/memberships", c.UnitMembershipHandler.ListMembershipsByUser)
 		}
-
-		// ==================== LEGACY ROUTES (DEPRECATED - Remover en v0.6.0) ====================
-		// Estos endpoints retornan HTTP 410 Gone con información de deprecación
-		users.POST("", CreateUser)                  // DEPRECATED
-		users.PATCH("/:id", UpdateUser)             // DEPRECATED
-		users.DELETE("/:id", DeleteUser)            // DEPRECATED
-		v1.POST("/subjects", CreateSubject)         // DEPRECATED
-		v1.DELETE("/materials/:id", DeleteMaterial) // DEPRECATED
-		v1.GET("/stats/global", GetGlobalStats)     // DEPRECATED
 	}
 
 	// 5. Servidor HTTP con graceful shutdown
