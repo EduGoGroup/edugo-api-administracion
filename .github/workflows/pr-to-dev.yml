@@ -37,16 +37,13 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
 
-      - name: ✅ Verificar umbral de cobertura
+      - name: Check Coverage
         if: |
           !contains(github.event.pull_request.labels.*.name, 'skip-coverage')
-        run: |
-          ./scripts/check-coverage.sh coverage/coverage-filtered.out ${{ env.COVERAGE_THRESHOLD }} || {
-            echo "::warning::Cobertura por debajo del umbral de ${COVERAGE_THRESHOLD}%"
-            echo "💡 Tip: Agrega label 'skip-coverage' al PR si es temporal"
-            exit 1
-          }
-        continue-on-error: false
+        uses: EduGoGroup/edugo-infrastructure/.github/actions/coverage-check@main
+        with:
+          coverage-file: coverage/coverage-filtered.out
+          threshold: ${{ env.COVERAGE_THRESHOLD }}
 
       - name: 📤 Subir reporte de cobertura
         uses: actions/upload-artifact@v4

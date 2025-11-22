@@ -18,7 +18,7 @@
 
 ```
 Sprint Activo: SPRINT-4 - 🔄 EN PROGRESO
-Fase 1:        🔄 EN PROGRESO (2/10 tareas - 20%)
+Fase 1:        🔄 EN PROGRESO (3/10 tareas - 30%)
 Fase 2:        ⏳ Pendiente
 Fase 3:        ⏳ Pendiente
 Tareas SKIP:   1
@@ -31,9 +31,9 @@ Bloqueadores:  0
 ```
 🔄 SPRINT-4 FASE 1 EN PROGRESO
 
-📋 Próxima tarea: 3 - Migrar a coverage-check
-⏱️ Tiempo estimado: 1 hora
-📊 Progreso: 2/10 tareas (20%)
+📋 Próxima tarea: 4 - Migrar sync-main-to-dev.yml
+⏱️ Tiempo estimado: 2 horas
+📊 Progreso: 3/10 tareas (30%)
 ```
 
 ---
@@ -52,10 +52,10 @@ Bloqueadores:  0
 |---------|-------|
 | **Fase actual** | FASE 1 - 🔄 EN PROGRESO |
 | **Tareas totales** | 10 |
-| **Tareas completadas** | 2 |
+| **Tareas completadas** | 3 |
 | **Tareas SKIP** | 1 |
-| **Tareas pendientes** | 8 |
-| **Progreso** | 20% |
+| **Tareas pendientes** | 7 |
+| **Progreso** | 30% |
 
 ---
 
@@ -67,7 +67,7 @@ Bloqueadores:  0
 |---|-------|--------|-------|
 | 1 | Migrar a setup-edugo-go | ✅ (stub) | 10 ocurrencias migradas en 5 workflows. Ver TASK-1-BLOCKED.md |
 | 2 | Migrar a docker-build-edugo | ⏭️ SKIP | Complejidad alta + Riesgo en releases. Ver TASK-2-BLOCKED.md |
-| 3 | Migrar a coverage-check | ⏳ Pendiente | Verificar composite action, implementar con stub |
+| 3 | Migrar a coverage-check | ✅ (stub) | 3 ocurrencias migradas en 3 workflows. Ver TASK-3-BLOCKED.md |
 | 4 | Migrar sync-main-to-dev.yml | ⏳ Pendiente | Verificar workflow reusable, implementar con stub |
 | 5 | Migrar Release Logic (Opcional) | ⏳ Pendiente | Evaluar si procede, SKIP si no hay workflow reusable |
 | 6 | Implementar Matriz de Tests | ⏳ Pendiente | No requiere recursos externos |
@@ -76,7 +76,7 @@ Bloqueadores:  0
 | 9 | Medir Mejoras | ⏳ Pendiente | Requiere conectividad, implementar con stub |
 | 10 | Crear FASE-1-COMPLETE.md | ⏳ Pendiente | Resumen y cierre de Fase 1 |
 
-**Progreso Fase 1:** 2/10 (20%) - 🔄 EN PROGRESO (1 SKIP)
+**Progreso Fase 1:** 3/10 (30%) - 🔄 EN PROGRESO (1 SKIP)
 
 ---
 
@@ -94,12 +94,13 @@ Bloqueadores:  0
 
 ## 🚨 Bloqueos y Decisiones
 
-**Stubs activos:** 1
+**Stubs activos:** 2
 **Stubs resueltos:** 0
 
 | Tarea | Razón Original | Estado | Archivo Decisión |
 |-------|----------------|--------|------------------|
-| 1 | Sin conectividad para verificar composite action | ✅ (stub) | `decisions/TASK-1-BLOCKED.md` |
+| 1 | Sin conectividad para verificar composite action setup-edugo-go | ✅ (stub) | `decisions/TASK-1-BLOCKED.md` |
+| 3 | Sin conectividad para verificar composite action coverage-check | ✅ (stub) | `decisions/TASK-3-BLOCKED.md` |
 
 ---
 
