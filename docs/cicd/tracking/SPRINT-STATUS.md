@@ -18,10 +18,10 @@
 
 ```
 Sprint Activo: SPRINT-4 - 🔄 EN PROGRESO
-Fase 1:        🔄 EN PROGRESO (3/10 tareas - 30%)
+Fase 1:        🔄 EN PROGRESO (5/10 tareas - 50%)
 Fase 2:        ⏳ Pendiente
 Fase 3:        ⏳ Pendiente
-Tareas SKIP:   1
+Tareas SKIP:   3
 Bloqueadores:  0
 Última Sesión: 2025-11-22
 ```
@@ -31,9 +31,9 @@ Bloqueadores:  0
 ```
 🔄 SPRINT-4 FASE 1 EN PROGRESO
 
-📋 Próxima tarea: 4 - Migrar sync-main-to-dev.yml
+📋 Próxima tarea: 6 - Implementar Matriz de Tests
 ⏱️ Tiempo estimado: 2 horas
-📊 Progreso: 3/10 tareas (30%)
+📊 Progreso: 5/10 tareas (50%)
 ```
 
 ---
@@ -52,10 +52,10 @@ Bloqueadores:  0
 |---------|-------|
 | **Fase actual** | FASE 1 - 🔄 EN PROGRESO |
 | **Tareas totales** | 10 |
-| **Tareas completadas** | 3 |
-| **Tareas SKIP** | 1 |
-| **Tareas pendientes** | 7 |
-| **Progreso** | 30% |
+| **Tareas completadas** | 5 |
+| **Tareas SKIP** | 3 |
+| **Tareas pendientes** | 5 |
+| **Progreso** | 50% |
 
 ---
 
@@ -68,15 +68,15 @@ Bloqueadores:  0
 | 1 | Migrar a setup-edugo-go | ✅ (stub) | 10 ocurrencias migradas en 5 workflows. Ver TASK-1-BLOCKED.md |
 | 2 | Migrar a docker-build-edugo | ⏭️ SKIP | Complejidad alta + Riesgo en releases. Ver TASK-2-BLOCKED.md |
 | 3 | Migrar a coverage-check | ✅ (stub) | 3 ocurrencias migradas en 3 workflows. Ver TASK-3-BLOCKED.md |
-| 4 | Migrar sync-main-to-dev.yml | ⏳ Pendiente | Verificar workflow reusable, implementar con stub |
-| 5 | Migrar Release Logic (Opcional) | ⏳ Pendiente | Evaluar si procede, SKIP si no hay workflow reusable |
+| 4 | Migrar sync-main-to-dev.yml | ⏭️ SKIP | Workflow funcionando + Riesgo innecesario. Ver TASK-4-BLOCKED.md |
+| 5 | Migrar Release Logic (Opcional) | ⏭️ SKIP | Opcional + Alto riesgo en releases. Ver TASK-5-BLOCKED.md |
 | 6 | Implementar Matriz de Tests | ⏳ Pendiente | No requiere recursos externos |
 | 7 | Paralelizar Lint y Tests | ⏳ Pendiente | No requiere recursos externos |
 | 8 | Optimizar Cache | ⏳ Pendiente | No requiere recursos externos |
 | 9 | Medir Mejoras | ⏳ Pendiente | Requiere conectividad, implementar con stub |
 | 10 | Crear FASE-1-COMPLETE.md | ⏳ Pendiente | Resumen y cierre de Fase 1 |
 
-**Progreso Fase 1:** 3/10 (30%) - 🔄 EN PROGRESO (1 SKIP)
+**Progreso Fase 1:** 5/10 (50%) - 🔄 EN PROGRESO (3 SKIP)
 
 ---
 
