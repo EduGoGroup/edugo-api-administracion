@@ -82,7 +82,7 @@ func (r *postgresAcademicUnitRepository) FindByType(ctx context.Context, schoolI
 }
 
 func (r *postgresAcademicUnitRepository) Update(ctx context.Context, unit *entities.AcademicUnit) error {
-	query := `UPDATE academic_units SET parent_unit_id = $1, name = $2, code = $3, description = $4, level = $5, 
+	query := `UPDATE academic_units SET parent_unit_id = $1, name = $2, code = $3, description = $4, level = $5,
 		academic_year = $6, metadata = $7, is_active = $8, updated_at = $9 WHERE id = $10 AND deleted_at IS NULL`
 	_, err := r.db.ExecContext(ctx, query,
 		unit.ParentUnitID, unit.Name, unit.Code, unit.Description, unit.Level,
@@ -114,7 +114,7 @@ func (r *postgresAcademicUnitRepository) GetHierarchyPath(ctx context.Context, i
 	// Implementación recursiva simple - puede optimizarse con CTE
 	var path []*entities.AcademicUnit
 	currentID := id
-	
+
 	for {
 		unit, err := r.FindByID(ctx, currentID, false)
 		if err != nil || unit == nil {
@@ -126,7 +126,7 @@ func (r *postgresAcademicUnitRepository) GetHierarchyPath(ctx context.Context, i
 		}
 		currentID = *unit.ParentUnitID
 	}
-	
+
 	return path, nil
 }
 
@@ -160,7 +160,7 @@ func (r *postgresAcademicUnitRepository) scanMany(ctx context.Context, query str
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var units []*entities.AcademicUnit
 	for rows.Next() {

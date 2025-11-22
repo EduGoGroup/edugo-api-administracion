@@ -48,7 +48,7 @@ func (r *postgresSubjectRepository) FindByID(ctx context.Context, id uuid.UUID) 
 
 func (r *postgresSubjectRepository) Update(ctx context.Context, subject *entities.Subject) error {
 	query := `
-		UPDATE subjects SET name = $1, description = $2, metadata = $3, 
+		UPDATE subjects SET name = $1, description = $2, metadata = $3,
 		       is_active = $4, updated_at = $5 WHERE id = $6
 	`
 	_, err := r.db.ExecContext(ctx, query,
@@ -73,7 +73,7 @@ func (r *postgresSubjectRepository) List(ctx context.Context) ([]*entities.Subje
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var subjects []*entities.Subject
 	for rows.Next() {
