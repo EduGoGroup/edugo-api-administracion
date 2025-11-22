@@ -272,7 +272,7 @@ func (r *postgresAcademicUnitRepository) scanUnits(ctx context.Context, query st
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var units []*entity.AcademicUnit
 	for rows.Next() {

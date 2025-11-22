@@ -166,7 +166,7 @@ func (r *postgresGuardianRepository) FindByGuardian(
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	return r.scanRows(rows)
 }
@@ -188,7 +188,7 @@ func (r *postgresGuardianRepository) FindByStudent(
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	return r.scanRows(rows)
 }
