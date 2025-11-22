@@ -5,6 +5,14 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-11-22
+
+### Tipo de Release: patch
+
+- hotfix: eliminar rutas deprecated undefined en main.go
+
+---
+
 ## [0.6.0] - 2025-11-22
 
 ### Tipo de Release: patch
