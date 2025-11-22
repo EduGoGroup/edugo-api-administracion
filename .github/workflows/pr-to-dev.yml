@@ -92,26 +92,17 @@ jobs:
               body: comment
             });
 
+  # =====================================================
+  # MIGRADO: Job lint usando workflow reusable
+  # Migrado en SPRINT-4 para usar workflows centralizados
+  # Ver: edugo-infrastructure/.github/workflows/reusable-go-lint.yml
+  # =====================================================
   lint:
     name: Lint & Format Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: 📥 Checkout código
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: 🔍 Run golangci-lint
-        uses: golangci/golangci-lint-action@v7
-        with:
-          version: v2.6.2
-          args: --timeout=5m
+    uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable-go-lint.yml@main
+    with:
+      go-version: "1.25"
+      args: "--timeout=5m"
 
   summary:
     name: PR Summary
