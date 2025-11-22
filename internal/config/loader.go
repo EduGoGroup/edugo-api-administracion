@@ -56,6 +56,7 @@ func Load() (*Config, error) {
 	// Secrets
 	_ = v.BindEnv("database.postgres.password", "POSTGRES_PASSWORD")
 	_ = v.BindEnv("database.mongodb.uri", "MONGODB_URI")
+	_ = v.BindEnv("auth.jwt.secret", "AUTH_JWT_SECRET")
 
 	// Unmarshal
 	var cfg Config
