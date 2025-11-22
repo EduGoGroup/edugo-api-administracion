@@ -214,3 +214,24 @@ info: ## Info del proyecto
 	@echo "  Go: $$($(GOCMD) version)"
 
 .PHONY: help build run dev test test-coverage test-unit test-integration benchmark fmt vet lint audit deps tidy tools swagger docker-build docker-run docker-stop docker-logs ci pre-commit clean all info
+
+# ============================================
+# Git Hooks
+# ============================================
+
+install-hooks: ## Instalar git hooks
+	@echo "$(YELLOW)📎 Instalando git hooks...$(RESET)"
+	@git config core.hooksPath .githooks
+	@chmod +x .githooks/*
+	@echo "$(GREEN)✓ Git hooks instalados en .githooks/$(RESET)"
+	@echo "$(BLUE)  Pre-commit hook configurado:$(RESET)"
+	@echo "    - Format check"
+	@echo "    - Lint"
+	@echo "    - Unit tests"
+	@echo "    - Build check"
+
+uninstall-hooks: ## Desinstalar git hooks
+	@echo "$(YELLOW)📎 Desinstalando git hooks...$(RESET)"
+	@git config --unset core.hooksPath || true
+	@echo "$(GREEN)✓ Git hooks desinstalados$(RESET)"
+

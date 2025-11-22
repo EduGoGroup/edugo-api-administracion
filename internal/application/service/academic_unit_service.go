@@ -100,6 +100,7 @@ func (s *academicUnitService) CreateUnit(ctx context.Context, schoolID string, r
 		}
 
 		// Validar la relación padre-hijo
+		//nolint:staticcheck // SA1019: método deprecado pero aún funcional, migración pendiente
 		if err := unit.SetParent(parentID, parent.UnitType()); err != nil {
 			return nil, err
 		}
@@ -237,6 +238,7 @@ func (s *academicUnitService) UpdateUnit(ctx context.Context, id string, req dto
 				return nil, errors.NewNotFoundError("parent unit")
 			}
 
+			//nolint:staticcheck // SA1019: método deprecado pero aún funcional, migración pendiente
 			if err := unit.SetParent(parentID, parent.UnitType()); err != nil {
 				return nil, err
 			}

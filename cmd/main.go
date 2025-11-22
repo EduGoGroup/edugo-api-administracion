@@ -14,9 +14,17 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/bootstrap"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/container"
+	ginmiddleware "github.com/EduGoGroup/edugo-shared/middleware/gin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+)
+
+var (
+	// Version is the application version, injected at build time via ldflags
+	Version = "dev"
+	// BuildTime is the build timestamp, injected at build time via ldflags
+	BuildTime = "unknown"
 )
 
 // @title EduGo API Administración
@@ -29,7 +37,7 @@ import (
 // @name Authorization
 
 func main() {
-	log.Println("🔄 EduGo API Administración iniciando...")
+	log.Printf("🔄 EduGo API Administración iniciando... (Version: %s, Build: %s)", Version, BuildTime)
 
 	ctx := context.Background()
 
@@ -51,8 +59,12 @@ func main() {
 	}()
 
 	// 3. Crear container de dependencias
-	c := container.NewContainer(resources.PostgreSQL, resources.Logger)
-	defer c.Close()
+	jwtSecret := cfg.Auth.JWT.Secret
+	if jwtSecret == "" {
+		log.Fatalf("❌ JWT_SECRET no está configurado")
+	}
+	c := container.NewContainer(resources.PostgreSQL, resources.Logger, jwtSecret)
+	defer func() { _ = c.Close() }()
 
 	resources.Logger.Info("✅ API Administración iniciada", "port", cfg.Server.Port)
 
@@ -69,7 +81,8 @@ func main() {
 
 	// Rutas v1
 	v1 := r.Group("/v1")
-	v1.Use(AdminAuthRequired())
+	// Middleware de autenticación JWT (todas las rutas requieren token válido)
+	v1.Use(ginmiddleware.JWTAuthMiddleware(c.JWTManager))
 	{
 		// ==================== SCHOOLS ====================
 		schools := v1.Group("/schools")
@@ -104,7 +117,7 @@ func main() {
 		memberships := v1.Group("/memberships")
 		{
 			memberships.POST("", c.UnitMembershipHandler.CreateMembership)
-			memberships.GET("", c.UnitMembershipHandler.ListMembershipsByUnit) // Usa query param unit_id
+			memberships.GET("", c.UnitMembershipHandler.ListMembershipsByUnit)         // Usa query param unit_id
 			memberships.GET("/by-role", c.UnitMembershipHandler.ListMembershipsByRole) // Usa query params
 			memberships.GET("/:id", c.UnitMembershipHandler.GetMembership)
 			memberships.PUT("/:id", c.UnitMembershipHandler.UpdateMembership)
@@ -116,21 +129,16 @@ func main() {
 		users := v1.Group("/users")
 		{
 			users.GET("/:userId/memberships", c.UnitMembershipHandler.ListMembershipsByUser)
-			// Legacy routes (mantener por compatibilidad)
-			users.POST("", CreateUser)
-			users.PATCH("/:id", UpdateUser)
-			users.DELETE("/:id", DeleteUser)
 		}
 
-		// ==================== LEGACY ROUTES ====================
-		// Subjects
-		v1.POST("/subjects", CreateSubject)
-
-		// Materials
-		v1.DELETE("/materials/:id", DeleteMaterial)
-
-		// Stats
-		v1.GET("/stats/global", GetGlobalStats)
+		// ==================== LEGACY ROUTES (DEPRECATED - Remover en v0.6.0) ====================
+		// Estos endpoints retornan HTTP 410 Gone con información de deprecación
+		users.POST("", CreateUser)                  // DEPRECATED
+		users.PATCH("/:id", UpdateUser)             // DEPRECATED
+		users.DELETE("/:id", DeleteUser)            // DEPRECATED
+		v1.POST("/subjects", CreateSubject)         // DEPRECATED
+		v1.DELETE("/materials/:id", DeleteMaterial) // DEPRECATED
+		v1.GET("/stats/global", GetGlobalStats)     // DEPRECATED
 	}
 
 	// 5. Servidor HTTP con graceful shutdown
@@ -165,108 +173,4 @@ func main() {
 	}
 
 	resources.Logger.Info("✅ Servidor detenido correctamente")
-}
-
-// AdminAuthRequired es un middleware que valida autenticación de admin
-func AdminAuthRequired() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// TODO: Implementar validación real con JWT
-		// Por ahora, solo dejamos pasar todas las peticiones
-		c.Next()
-	}
-}
-
-// ==================== LEGACY HANDLERS (TODO: Migrar a handlers reales) ====================
-
-// CreateUser godoc
-// @Summary Crear usuario
-// @Tags Users
-// @Produce json
-// @Security BearerAuth
-// @Success 201 {object} CreateUserResponse
-// @Router /users [post]
-func CreateUser(c *gin.Context) {
-	c.JSON(http.StatusCreated, gin.H{"user_id": "mock-uuid"})
-}
-
-// UpdateUser godoc
-// @Summary Actualizar usuario
-// @Tags Users
-// @Produce json
-// @Param id path string true "ID del usuario"
-// @Security BearerAuth
-// @Success 200 {object} SuccessResponse
-// @Router /users/{id} [patch]
-func UpdateUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Usuario actualizado"})
-}
-
-// DeleteUser godoc
-// @Summary Eliminar usuario
-// @Tags Users
-// @Produce json
-// @Param id path string true "ID del usuario"
-// @Security BearerAuth
-// @Success 200 {object} SuccessResponse
-// @Router /users/{id} [delete]
-func DeleteUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Usuario eliminado"})
-}
-
-// CreateSubject godoc
-// @Summary Crear materia
-// @Tags Subjects
-// @Produce json
-// @Security BearerAuth
-// @Success 201 {object} CreateSubjectResponse
-// @Router /subjects [post]
-func CreateSubject(c *gin.Context) {
-	c.JSON(http.StatusCreated, gin.H{"subject_id": "mock-uuid"})
-}
-
-// DeleteMaterial godoc
-// @Summary Eliminar material
-// @Tags Materials
-// @Produce json
-// @Param id path string true "ID del material"
-// @Security BearerAuth
-// @Success 200 {object} SuccessResponse
-// @Router /materials/{id} [delete]
-func DeleteMaterial(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Material eliminado, limpieza en proceso"})
-}
-
-// GetGlobalStats godoc
-// @Summary Estadísticas globales
-// @Tags Stats
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} GlobalStatsResponse
-// @Router /stats/global [get]
-func GetGlobalStats(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"total_users":      1250,
-		"total_materials":  450,
-		"active_users_30d": 980,
-	})
-}
-
-// ==================== RESPONSE TYPES ====================
-
-type SuccessResponse struct {
-	Message string `json:"message"`
-}
-
-type CreateUserResponse struct {
-	UserID string `json:"user_id"`
-}
-
-type CreateSubjectResponse struct {
-	SubjectID string `json:"subject_id"`
-}
-
-type GlobalStatsResponse struct {
-	TotalUsers     int `json:"total_users"`
-	TotalMaterials int `json:"total_materials"`
-	ActiveUsers30d int `json:"active_users_30d"`
 }

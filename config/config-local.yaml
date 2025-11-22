@@ -22,3 +22,7 @@ database:
 logging:
   level: "debug"
   format: "text"
+
+auth:
+  jwt:
+    secret: "local-development-secret-change-in-production-min-32-chars"

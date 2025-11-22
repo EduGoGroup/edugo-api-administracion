@@ -272,7 +272,7 @@ func (r *postgresAcademicUnitRepository) scanUnits(ctx context.Context, query st
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var units []*entity.AcademicUnit
 	for rows.Next() {
@@ -406,7 +406,7 @@ func (r *postgresAcademicUnitRepository) MoveSubtree(
 	if err != nil {
 		return errors.NewDatabaseError("begin transaction", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	// Preparar el nuevo parent_unit_id (NULL si es raíz)
 	var newParentIDStr *string

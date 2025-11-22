@@ -109,7 +109,7 @@ func (r *postgresUnitRepository) FindBySchool(ctx context.Context, schoolID valu
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	return r.scanRows(rows)
 }
@@ -126,7 +126,7 @@ func (r *postgresUnitRepository) FindChildren(ctx context.Context, parentID valu
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	return r.scanRows(rows)
 }

@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25"
   COVERAGE_THRESHOLD: 15
 
 jobs:
@@ -124,26 +124,17 @@ jobs:
         run: |
           docker ps -a | grep -E "postgres|mongo|rabbitmq" | awk '{print $1}' | xargs -r docker rm -f || true
 
+  # =====================================================
+  # MIGRADO: Job lint usando workflow reusable
+  # Migrado en SPRINT-4 para usar workflows centralizados
+  # Ver: edugo-infrastructure/.github/workflows/reusable-go-lint.yml
+  # =====================================================
   lint:
     name: Lint & Format Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: 📥 Checkout código
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: 🔍 Run golangci-lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.62.2
-          $(go env GOPATH)/bin/golangci-lint run --timeout=5m || echo "::warning::Lint encontró algunos problemas"
-        continue-on-error: true
+    uses: EduGoGroup/edugo-infrastructure/.github/workflows/reusable-go-lint.yml@main
+    with:
+      go-version: "1.25"
+      args: "--timeout=5m"
 
   security-scan:
     name: Security Scan
