@@ -10,6 +10,10 @@ env:
   GO_VERSION: "1.25"
   COVERAGE_THRESHOLD: 33
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   unit-tests:
     name: Unit Tests
