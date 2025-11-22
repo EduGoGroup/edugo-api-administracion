@@ -117,7 +117,7 @@ func main() {
 		memberships := v1.Group("/memberships")
 		{
 			memberships.POST("", c.UnitMembershipHandler.CreateMembership)
-			memberships.GET("", c.UnitMembershipHandler.ListMembershipsByUnit) // Usa query param unit_id
+			memberships.GET("", c.UnitMembershipHandler.ListMembershipsByUnit)         // Usa query param unit_id
 			memberships.GET("/by-role", c.UnitMembershipHandler.ListMembershipsByRole) // Usa query params
 			memberships.GET("/:id", c.UnitMembershipHandler.GetMembership)
 			memberships.PUT("/:id", c.UnitMembershipHandler.UpdateMembership)
@@ -133,12 +133,12 @@ func main() {
 
 		// ==================== LEGACY ROUTES (DEPRECATED - Remover en v0.6.0) ====================
 		// Estos endpoints retornan HTTP 410 Gone con información de deprecación
-		users.POST("", CreateUser)              // DEPRECATED
-		users.PATCH("/:id", UpdateUser)         // DEPRECATED
-		users.DELETE("/:id", DeleteUser)        // DEPRECATED
-		v1.POST("/subjects", CreateSubject)     // DEPRECATED
+		users.POST("", CreateUser)                  // DEPRECATED
+		users.PATCH("/:id", UpdateUser)             // DEPRECATED
+		users.DELETE("/:id", DeleteUser)            // DEPRECATED
+		v1.POST("/subjects", CreateSubject)         // DEPRECATED
 		v1.DELETE("/materials/:id", DeleteMaterial) // DEPRECATED
-		v1.GET("/stats/global", GetGlobalStats) // DEPRECATED
+		v1.GET("/stats/global", GetGlobalStats)     // DEPRECATED
 	}
 
 	// 5. Servidor HTTP con graceful shutdown
