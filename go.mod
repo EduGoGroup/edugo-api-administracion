@@ -3,7 +3,7 @@ module github.com/EduGoGroup/edugo-api-administracion
 go 1.25
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.10.0
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.10.1
 	github.com/EduGoGroup/edugo-shared/auth v0.7.0
 	github.com/EduGoGroup/edugo-shared/bootstrap v0.9.0
 	github.com/EduGoGroup/edugo-shared/common v0.7.0
