@@ -1,4 +1,7 @@
 # Configuración Base - API Administración
+# Este archivo contiene configuración común para todos los ambientes
+# Los valores específicos se sobreescriben en config-{env}.yaml
+
 server:
   port: 8081
   host: "0.0.0.0"
@@ -13,7 +16,7 @@ database:
     user: "edugo_user"
     max_connections: 25
     ssl_mode: "disable"
-  
+
   mongodb:
     database: "edugo"
     timeout: 10s
@@ -21,3 +24,66 @@ database:
 logging:
   level: "info"
   format: "json"
+
+# ============================================
+# AUTENTICACIÓN CENTRALIZADA
+# ============================================
+auth:
+  jwt:
+    # Secret y issuer se configuran via ENV vars
+    # AUTH_JWT_SECRET (mínimo 32 caracteres)
+    # AUTH_JWT_ISSUER (debe ser "edugo-central")
+    issuer: "edugo-central"
+    access_token_duration: 15m
+    refresh_token_duration: 168h  # 7 días
+    algorithm: "HS256"
+  
+  password:
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_number: true
+    require_special: false
+    bcrypt_cost: 10
+  
+  rate_limit:
+    login:
+      max_attempts: 5
+      window: 15m
+      block_duration: 1h
+    
+    internal_services:
+      max_requests: 1000
+      window: 1m
+    
+    external_clients:
+      max_requests: 60
+      window: 1m
+  
+  internal_services:
+    # Configurar via ENV: AUTH_INTERNAL_SERVICES_API_KEYS
+    # Formato: "api-mobile:key1,worker:key2"
+    api_keys: ""
+    # Configurar via ENV: AUTH_INTERNAL_SERVICES_IP_RANGES
+    # Formato CIDR: "127.0.0.1/32,10.0.0.0/8"
+    ip_ranges: "127.0.0.1/32"
+  
+  cache:
+    token_validation:
+      enabled: true
+      ttl: 60s
+      max_size: 10000
+    
+    user_info:
+      enabled: true
+      ttl: 300s
+      max_size: 1000
+
+# ============================================
+# REDIS (para cache de tokens)
+# ============================================
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
