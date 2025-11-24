@@ -49,10 +49,6 @@ func Validate(cfg *Config) error {
 
 	if cfg.Auth.JWT.Issuer == "" {
 		validationErrors = append(validationErrors, "AUTH_JWT_ISSUER is required")
-	} else if cfg.Auth.JWT.Issuer != "edugo-central" {
-		// Warning: issuer debe ser "edugo-central" para el ecosistema unificado
-		// En producción esto podría ser un error, pero por ahora solo validamos que exista
-		// validationErrors = append(validationErrors, "AUTH_JWT_ISSUER should be 'edugo-central' for unified ecosystem")
 	}
 
 	if cfg.Auth.JWT.AccessTokenDuration <= 0 {
