@@ -2,11 +2,16 @@ package container
 
 import (
 	"database/sql"
+	"log"
+	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	authHandler "github.com/EduGoGroup/edugo-api-administracion/internal/auth/handler"
+	authService "github.com/EduGoGroup/edugo-api-administracion/internal/auth/service"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
 	postgresRepo "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/postgres/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/shared/crypto"
 	"github.com/EduGoGroup/edugo-shared/auth"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
@@ -18,6 +23,14 @@ type Container struct {
 	DB         *sql.DB
 	Logger     logger.Logger
 	JWTManager *auth.JWTManager
+
+	// Auth (centralizado)
+	PasswordHasher    *crypto.PasswordHasher
+	InternalJWTManager *crypto.JWTManager
+	TokenService      *authService.TokenService
+	AuthService       authService.AuthService
+	AuthHandler       *authHandler.AuthHandler
+	VerifyHandler     *authHandler.VerifyHandler
 
 	// Repositories
 	UserRepository           repository.UserRepository
@@ -58,8 +71,33 @@ func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string) *Container
 	c := &Container{
 		DB:         db,
 		Logger:     logger,
-		JWTManager: auth.NewJWTManager(jwtSecret, "edugo-admin"),
+		JWTManager: auth.NewJWTManager(jwtSecret, "edugo-central"),
 	}
+
+	// ==================== AUTH (Centralizado) ====================
+	// Password Hasher (costo 12 para producción)
+	c.PasswordHasher = crypto.NewPasswordHasher(12)
+
+	// JWT Manager interno para tokens (usando el crypto package local)
+	jwtConfig := crypto.JWTConfig{
+		Secret:               jwtSecret,
+		Issuer:               "edugo-central",
+		AccessTokenDuration:  15 * time.Minute,
+		RefreshTokenDuration: 7 * 24 * time.Hour,
+	}
+	internalJWTManager, err := crypto.NewJWTManager(jwtConfig)
+	if err != nil {
+		log.Fatalf("❌ Error creando JWTManager: %v", err)
+	}
+	c.InternalJWTManager = internalJWTManager
+
+	// Token Service
+	tokenConfig := authService.TokenServiceConfig{
+		CacheTTL:       60 * time.Second,
+		CacheEnabled:   false, // Por ahora sin cache (se habilitará con Redis)
+		BlacklistCheck: false, // Por ahora sin blacklist (se habilitará con Redis)
+	}
+	c.TokenService = authService.NewTokenService(internalJWTManager, nil, tokenConfig)
 
 	// Inicializar repositories (capa de infraestructura)
 	c.UserRepository = postgresRepo.NewPostgresUserRepository(db)
@@ -71,6 +109,24 @@ func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string) *Container
 	c.MaterialRepository = postgresRepo.NewPostgresMaterialRepository(db)
 	c.StatsRepository = postgresRepo.NewPostgresStatsRepository(db)
 	c.GuardianRepository = postgresRepo.NewPostgresGuardianRepository(db)
+
+	// Auth Service (usa UserRepository y TokenService)
+	c.AuthService = authService.NewAuthService(
+		c.UserRepository,
+		c.TokenService,
+		c.PasswordHasher,
+		logger,
+	)
+
+	// Auth Handler
+	c.AuthHandler = authHandler.NewAuthHandler(c.AuthService)
+
+	// Verify Handler (para /v1/auth/verify)
+	c.VerifyHandler = authHandler.NewVerifyHandler(
+		c.TokenService,
+		[]string{"127.0.0.1/32", "::1/128", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"},
+		map[string]string{"api-mobile": "internal-mobile-key", "api-worker": "internal-worker-key"},
+	)
 
 	// Inicializar services (capa de aplicación)
 	c.UserService = service.NewUserService(

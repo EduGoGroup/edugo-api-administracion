@@ -79,7 +79,17 @@ func main() {
 	// Swagger
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Rutas v1
+	// ==================== RUTAS PÚBLICAS (sin autenticación) ====================
+	v1Public := r.Group("/v1")
+	{
+		// Auth endpoints (públicos)
+		c.AuthHandler.RegisterRoutes(v1Public)
+		
+		// Verify endpoint (para otros servicios)
+		c.VerifyHandler.RegisterRoutes(v1Public)
+	}
+
+	// ==================== RUTAS PROTEGIDAS (requieren JWT) ====================
 	v1 := r.Group("/v1")
 	// Middleware de autenticación JWT (todas las rutas requieren token válido)
 	v1.Use(ginmiddleware.JWTAuthMiddleware(c.JWTManager))

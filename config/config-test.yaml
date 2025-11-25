@@ -1,0 +1,79 @@
+# config/config-test.yaml
+# Configuración específica para tests - NO usar en producción
+
+server:
+  host: "127.0.0.1"
+  port: 8082  # Puerto diferente para no conflictar con desarrollo
+  read_timeout: 5s
+  write_timeout: 5s
+
+database:
+  postgres:
+    host: "localhost"
+    port: 5433  # Puerto diferente para test DB (si aplica)
+    database: "edugo_test"
+    user: "edugo_test"
+    password: "test_password"
+    max_connections: 5
+    ssl_mode: "disable"
+  mongodb:
+    uri: "mongodb://localhost:27018/edugo_test"
+    database: "edugo_test"
+    timeout: 5s
+
+logging:
+  level: "error"  # Menos verbose en tests
+  format: "text"
+
+# ============================================
+# AUTH - Configuración para Tests
+# ============================================
+auth:
+  jwt:
+    # Secret para tests - NUNCA usar en producción
+    secret: "test-secret-key-minimum-32-characters-for-unit-testing"
+    issuer: "edugo-central-test"
+    access_token_duration: 5m
+    refresh_token_duration: 1h
+    algorithm: "HS256"
+  
+  password:
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_number: true
+    require_special: false
+    bcrypt_cost: 4  # Costo bajo para tests más rápidos
+  
+  rate_limit:
+    login:
+      max_attempts: 100  # Alto para tests
+      window: 1m
+      block_duration: 1m
+    internal_services:
+      max_requests: 10000
+      window: 1m
+    external_clients:
+      max_requests: 1000
+      window: 1m
+  
+  internal_services:
+    api_keys: "test-service:test-key,test-mobile:test-mobile-key"
+    ip_ranges: "127.0.0.1/32,::1/128"
+  
+  cache:
+    token_validation:
+      enabled: false  # Deshabilitado para tests predecibles
+      ttl: 1s
+      max_size: 100
+    user_info:
+      enabled: false
+      ttl: 1s
+      max_size: 100
+
+# Redis para tests
+redis:
+  host: "localhost"
+  port: 6380  # Puerto diferente para test Redis
+  password: ""
+  db: 1  # DB diferente
