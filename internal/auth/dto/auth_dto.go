@@ -48,6 +48,7 @@ type VerifyTokenBulkResponse struct {
 }
 
 // LoginResponse representa la respuesta de login exitoso
+// Compatible con api-mobile (edugo-api-mobile/internal/application/dto/auth_dto.go)
 type LoginResponse struct {
 	AccessToken  string    `json:"access_token"`
 	RefreshToken string    `json:"refresh_token"`
@@ -57,14 +58,14 @@ type LoginResponse struct {
 }
 
 // UserInfo representa información básica del usuario
+// Compatible con api-mobile (mismo contrato JSON)
 type UserInfo struct {
-	ID            string `json:"id"`
-	Email         string `json:"email"`
-	FirstName     string `json:"first_name"`
-	LastName      string `json:"last_name"`
-	Role          string `json:"role"`
-	IsActive      bool   `json:"is_active"`
-	EmailVerified bool   `json:"email_verified"`
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	FullName  string `json:"full_name"`
+	Role      string `json:"role"`
 }
 
 // ErrorResponse representa una respuesta de error estándar

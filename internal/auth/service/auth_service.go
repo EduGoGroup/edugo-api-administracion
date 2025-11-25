@@ -93,15 +93,14 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 		return nil, fmt.Errorf("error generando tokens: %w", err)
 	}
 
-	// 5. Agregar info del usuario a la respuesta
+	// 5. Agregar info del usuario a la respuesta (compatible con api-mobile)
 	tokenResponse.User = &dto.UserInfo{
-		ID:            user.ID.String(),
-		Email:         user.Email,
-		FirstName:     user.FirstName,
-		LastName:      user.LastName,
-		Role:          user.Role,
-		IsActive:      user.IsActive,
-		EmailVerified: user.EmailVerified,
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		FullName:  user.FirstName + " " + user.LastName,
+		Role:      user.Role,
 	}
 
 	s.logger.Info("login exitoso",
@@ -186,15 +185,14 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 		return nil, fmt.Errorf("error generando nuevos tokens: %w", err)
 	}
 
-	// 6. Agregar info del usuario
+	// 6. Agregar info del usuario (compatible con api-mobile)
 	tokenResponse.User = &dto.UserInfo{
-		ID:            user.ID.String(),
-		Email:         user.Email,
-		FirstName:     user.FirstName,
-		LastName:      user.LastName,
-		Role:          user.Role,
-		IsActive:      user.IsActive,
-		EmailVerified: user.EmailVerified,
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		FullName:  user.FirstName + " " + user.LastName,
+		Role:      user.Role,
 	}
 
 	s.logger.Info("token refresh exitoso", "user_id", user.ID.String())
