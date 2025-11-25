@@ -3,6 +3,7 @@ package integration
 
 import (
 	"bytes"
+	"sync"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -23,6 +24,7 @@ import (
 
 // mockTokenCache para tests de integración
 type mockTokenCache struct {
+	mu        sync.RWMutex
 	cache     map[string]*dto.VerifyTokenResponse
 	blacklist map[string]bool
 }
@@ -35,25 +37,35 @@ func newMockTokenCache() *mockTokenCache {
 }
 
 func (m *mockTokenCache) Get(_ context.Context, key string) (*dto.VerifyTokenResponse, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	val, ok := m.cache[key]
 	return val, ok
 }
 
 func (m *mockTokenCache) Set(_ context.Context, key string, value *dto.VerifyTokenResponse, _ time.Duration) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.cache[key] = value
 	return nil
 }
 
 func (m *mockTokenCache) Delete(_ context.Context, key string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	delete(m.cache, key)
 	return nil
 }
 
 func (m *mockTokenCache) IsBlacklisted(_ context.Context, tokenID string) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.blacklist[tokenID]
 }
 
 func (m *mockTokenCache) Blacklist(_ context.Context, tokenID string, _ time.Duration) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.blacklist[tokenID] = true
 	return nil
 }
