@@ -75,13 +75,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 // Refresh godoc
-// @Summary Refrescar tokens
-// @Description Genera nuevos tokens usando el refresh token
+// @Summary Refrescar access token
+// @Description Genera un nuevo access token usando el refresh token
 // @Tags auth
 // @Accept json
 // @Produce json
 // @Param request body dto.RefreshTokenRequest true "Refresh token"
-// @Success 200 {object} dto.LoginResponse
+// @Success 200 {object} dto.RefreshResponse "Solo access_token, expires_in, token_type"
 // @Failure 400 {object} dto.ErrorResponse "Request inválido"
 // @Failure 401 {object} dto.ErrorResponse "Refresh token inválido"
 // @Failure 403 {object} dto.ErrorResponse "Usuario inactivo"

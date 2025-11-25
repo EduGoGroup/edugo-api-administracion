@@ -30,8 +30,9 @@ type AuthService interface {
 	// Logout invalida los tokens del usuario
 	Logout(ctx context.Context, accessToken string) error
 
-	// RefreshToken genera nuevos tokens usando el refresh token
-	RefreshToken(ctx context.Context, refreshToken string) (*dto.LoginResponse, error)
+	// RefreshToken genera un nuevo access token usando el refresh token
+	// Retorna RefreshResponse (solo access_token) para compatibilidad con api-mobile
+	RefreshToken(ctx context.Context, refreshToken string) (*dto.RefreshResponse, error)
 }
 
 // authService implementa AuthService
@@ -135,8 +136,9 @@ func (s *authService) Logout(ctx context.Context, accessToken string) error {
 	return nil
 }
 
-// RefreshToken valida el refresh token y genera nuevos tokens
-func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*dto.LoginResponse, error) {
+// RefreshToken valida el refresh token y genera solo un nuevo access token
+// Retorna RefreshResponse para compatibilidad con api-mobile y apple-app
+func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*dto.RefreshResponse, error) {
 	// 1. Verificar el refresh token
 	response, err := s.tokenService.VerifyToken(ctx, refreshToken)
 	if err != nil {
@@ -172,30 +174,18 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 		return nil, ErrUserInactive
 	}
 
-	// 4. Revocar el refresh token anterior
-	_ = s.tokenService.RevokeToken(ctx, refreshToken)
-
-	// 5. Generar nuevos tokens
-	tokenResponse, err := s.tokenService.GenerateTokenPair(
+	// 4. Generar solo un nuevo access token (NO revocar el refresh token)
+	// El refresh token sigue siendo válido hasta su expiración
+	refreshResponse, err := s.tokenService.GenerateAccessToken(
 		user.ID.String(),
 		user.Email,
 		user.Role,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error generando nuevos tokens: %w", err)
-	}
-
-	// 6. Agregar info del usuario (compatible con api-mobile)
-	tokenResponse.User = &dto.UserInfo{
-		ID:        user.ID.String(),
-		Email:     user.Email,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		FullName:  user.FirstName + " " + user.LastName,
-		Role:      user.Role,
+		return nil, fmt.Errorf("error generando nuevo access token: %w", err)
 	}
 
 	s.logger.Info("token refresh exitoso", "user_id", user.ID.String())
 
-	return tokenResponse, nil
+	return refreshResponse, nil
 }

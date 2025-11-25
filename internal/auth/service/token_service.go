@@ -171,7 +171,7 @@ func (s *TokenService) RevokeToken(ctx context.Context, token string) error {
 	return nil
 }
 
-// GenerateTokenPair genera un par de tokens (access + refresh)
+// GenerateTokenPair genera un par de tokens (access + refresh) para login
 func (s *TokenService) GenerateTokenPair(userID, email, role string) (*dto.LoginResponse, error) {
 	accessToken, expiresAt, err := s.jwtManager.GenerateAccessToken(userID, email, role)
 	if err != nil {
@@ -188,6 +188,20 @@ func (s *TokenService) GenerateTokenPair(userID, email, role string) (*dto.Login
 		RefreshToken: refreshToken,
 		ExpiresIn:    int64(time.Until(expiresAt).Seconds()),
 		TokenType:    "Bearer",
+	}, nil
+}
+
+// GenerateAccessToken genera solo un nuevo access token (para refresh)
+func (s *TokenService) GenerateAccessToken(userID, email, role string) (*dto.RefreshResponse, error) {
+	accessToken, expiresAt, err := s.jwtManager.GenerateAccessToken(userID, email, role)
+	if err != nil {
+		return nil, fmt.Errorf("error generando access token: %w", err)
+	}
+
+	return &dto.RefreshResponse{
+		AccessToken: accessToken,
+		ExpiresIn:   int64(time.Until(expiresAt).Seconds()),
+		TokenType:   "Bearer",
 	}, nil
 }
 

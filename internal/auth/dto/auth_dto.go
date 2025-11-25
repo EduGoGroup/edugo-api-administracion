@@ -57,6 +57,14 @@ type LoginResponse struct {
 	User         *UserInfo `json:"user"`
 }
 
+// RefreshResponse representa la respuesta de refresh token
+// Compatible con api-mobile (solo access_token, expires_in, token_type)
+type RefreshResponse struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int64  `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+}
+
 // UserInfo representa información básica del usuario
 // Compatible con api-mobile (mismo contrato JSON)
 type UserInfo struct {
