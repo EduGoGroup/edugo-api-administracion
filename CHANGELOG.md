@@ -5,6 +5,15 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-11-25
+
+### Tipo de Release: patch
+
+- release: merge dev to main - Auth centralizada Sprint 1 (#51)
+- chore: actualizar infraestructura a v0.10.1
+
+---
+
 ## [0.6.3] - 2025-11-22
 
 ### Tipo de Release: patch
