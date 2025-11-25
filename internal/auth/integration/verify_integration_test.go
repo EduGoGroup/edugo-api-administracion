@@ -218,7 +218,7 @@ func TestIntegration_VerifyToken_RateLimitEnforced(t *testing.T) {
 			assert.Equal(t, http.StatusTooManyRequests, rec.Code)
 
 			var errorResponse dto.ErrorResponse
-			json.Unmarshal(rec.Body.Bytes(), &errorResponse)
+			_ = json.Unmarshal(rec.Body.Bytes(), &errorResponse)
 			assert.Equal(t, "RATE_LIMIT", errorResponse.Code)
 		}
 	}
@@ -285,7 +285,7 @@ func TestIntegration_VerifyTokenBulk_RequiresAPIKey(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 
 	var errorResponse dto.ErrorResponse
-	json.Unmarshal(rec.Body.Bytes(), &errorResponse)
+	_ = json.Unmarshal(rec.Body.Bytes(), &errorResponse)
 	assert.Equal(t, "API_KEY_REQUIRED", errorResponse.Code)
 }
 
@@ -330,7 +330,7 @@ func TestIntegration_WrongIssuer(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 
 	var response dto.VerifyTokenResponse
-	json.Unmarshal(rec.Body.Bytes(), &response)
+	_ = json.Unmarshal(rec.Body.Bytes(), &response)
 	assert.False(t, response.Valid)
 	assert.Contains(t, response.Error, "issuer")
 }
@@ -417,8 +417,8 @@ func TestIntegration_TokenCaching(t *testing.T) {
 
 	// Assert - Ambas deben tener el mismo resultado
 	var response1, response2 dto.VerifyTokenResponse
-	json.Unmarshal(rec1.Body.Bytes(), &response1)
-	json.Unmarshal(rec2.Body.Bytes(), &response2)
+	_ = json.Unmarshal(rec1.Body.Bytes(), &response1)
+	_ = json.Unmarshal(rec2.Body.Bytes(), &response2)
 
 	assert.True(t, response1.Valid)
 	assert.True(t, response2.Valid)

@@ -398,7 +398,7 @@ func TestVerifyHandler_IsInternalService_APIKey(t *testing.T) {
 			router.ServeHTTP(rec, req)
 
 			var response map[string]bool
-			json.Unmarshal(rec.Body.Bytes(), &response)
+			_ = json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.Equal(t, tc.expected, response["internal"])
 		})
 	}
