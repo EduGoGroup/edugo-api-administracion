@@ -228,3 +228,55 @@ go test ./test/integration/... -v -tags=integration
 ## Licencia
 
 Privado - EduGo © 2025
+
+---
+
+## 🔑 Autenticación Centralizada (Nuevo)
+
+A partir de la versión 1.1.0, `api-administracion` actúa como el **servicio central de autenticación** para todo el ecosistema EduGo.
+
+### Endpoint de Verificación
+
+```bash
+POST /v1/auth/verify
+```
+
+Permite a otros servicios (api-mobile, worker) validar tokens JWT de manera centralizada.
+
+### Documentación
+
+| Documento | Descripción |
+|-----------|-------------|
+| [API Verify Endpoint](docs/auth/API-VERIFY-ENDPOINT.md) | Documentación completa del endpoint |
+| [Configuración](docs/auth/CONFIGURACION.md) | Variables de entorno y configuración |
+| [Guía de Integración](docs/auth/GUIA-INTEGRACION.md) | Cómo integrar otros servicios |
+
+### Características
+
+- ✅ Verificación individual y bulk de tokens
+- ✅ Rate limiting diferenciado (interno/externo)
+- ✅ Cache de resultados con Redis
+- ✅ Blacklist para tokens revocados
+- ✅ Identificación de servicios internos por API Key o IP
+- ✅ Issuer unificado: `edugo-central`
+
+### Quick Start para Servicios
+
+```go
+// En tu servicio (api-mobile, worker, etc.)
+client := auth.NewAuthClient()
+
+result, err := client.VerifyToken(ctx, "eyJhbG...")
+if result.Valid {
+    fmt.Printf("Usuario: %s, Rol: %s\n", result.UserID, result.Role)
+}
+```
+
+### Configuración Mínima
+
+```env
+# .env de api-administracion
+AUTH_JWT_SECRET=tu-clave-secreta-de-al-menos-32-caracteres
+AUTH_JWT_ISSUER=edugo-central
+```
+
