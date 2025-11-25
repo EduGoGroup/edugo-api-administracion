@@ -1,4 +1,6 @@
 # Local Development
+# Valores específicos para desarrollo local
+
 server:
   port: 8081
   host: "0.0.0.0"
@@ -11,7 +13,7 @@ database:
     port: 5432
     database: "edugo"
     user: "edugo"
-    password: "edugo123"
+    password: "edugo123"  # Solo para local, en otros ambientes usar ENV
     max_connections: 25
     ssl_mode: "disable"
   mongodb:
@@ -23,6 +25,38 @@ logging:
   level: "debug"
   format: "text"
 
+# Auth para desarrollo local
 auth:
   jwt:
+    # En desarrollo se puede usar un secret fijo (NUNCA en producción)
     secret: "local-development-secret-change-in-production-min-32-chars"
+    issuer: "edugo-central"
+    access_token_duration: 15m
+    refresh_token_duration: 168h
+  
+  password:
+    bcrypt_cost: 10  # Menor costo para desarrollo más rápido
+
+  rate_limit:
+    login:
+      max_attempts: 10  # Más permisivo en desarrollo
+      window: 5m
+      block_duration: 5m
+
+  internal_services:
+    api_keys: "api-mobile:dev-mobile-key,worker:dev-worker-key"
+    ip_ranges: "127.0.0.1/32,::1/128"
+
+  cache:
+    token_validation:
+      enabled: true
+      ttl: 30s  # TTL más corto para ver cambios rápido
+    user_info:
+      enabled: true
+      ttl: 60s
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0

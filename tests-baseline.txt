@@ -1,0 +1,119 @@
+?   	github.com/EduGoGroup/edugo-api-administracion/cmd	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/docs	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/application/dto	[no test files]
+=== RUN   TestGetUnit_Success
+--- PASS: TestGetUnit_Success (0.00s)
+=== RUN   TestGetUnitTree_Success
+--- PASS: TestGetUnitTree_Success (0.00s)
+=== RUN   TestDeleteUnit_Success
+--- PASS: TestDeleteUnit_Success (0.00s)
+=== RUN   TestCreateGuardianRelation_Success
+--- PASS: TestCreateGuardianRelation_Success (0.00s)
+=== RUN   TestCreateGuardianRelation_AlreadyExists
+--- PASS: TestCreateGuardianRelation_AlreadyExists (0.00s)
+=== RUN   TestCreateGuardianRelation_InvalidRelationshipType
+--- PASS: TestCreateGuardianRelation_InvalidRelationshipType (0.00s)
+=== RUN   TestGetGuardianRelation_Success
+--- PASS: TestGetGuardianRelation_Success (0.00s)
+=== RUN   TestGetGuardianRelations_Success
+--- PASS: TestGetGuardianRelations_Success (0.00s)
+=== RUN   TestCreateSchool_Success
+--- PASS: TestCreateSchool_Success (0.00s)
+=== RUN   TestCreateSchool_CodeAlreadyExists
+--- PASS: TestCreateSchool_CodeAlreadyExists (0.00s)
+=== RUN   TestUpdateSchool_Success
+--- PASS: TestUpdateSchool_Success (0.00s)
+=== RUN   TestGetSchool_Success
+--- PASS: TestGetSchool_Success (0.00s)
+=== RUN   TestCreateSubject_Success
+--- PASS: TestCreateSubject_Success (0.00s)
+=== RUN   TestUpdateSubject_Success
+--- PASS: TestUpdateSubject_Success (0.00s)
+=== RUN   TestGetSubject_Success
+--- PASS: TestGetSubject_Success (0.00s)
+=== RUN   TestCreateUser_Success
+--- PASS: TestCreateUser_Success (0.00s)
+=== RUN   TestCreateUser_InvalidEmail
+--- PASS: TestCreateUser_InvalidEmail (0.00s)
+=== RUN   TestCreateUser_EmailAlreadyExists
+--- PASS: TestCreateUser_EmailAlreadyExists (0.00s)
+=== RUN   TestCreateUser_CannotCreateAdmin
+--- PASS: TestCreateUser_CannotCreateAdmin (0.00s)
+=== RUN   TestUpdateUser_Success
+--- PASS: TestUpdateUser_Success (0.00s)
+=== RUN   TestUpdateUser_CannotPromoteToAdmin
+--- PASS: TestUpdateUser_CannotPromoteToAdmin (0.00s)
+=== RUN   TestUpdateUser_ActivateInactiveUser
+--- PASS: TestUpdateUser_ActivateInactiveUser (0.00s)
+=== RUN   TestGetUser_Success
+--- PASS: TestGetUser_Success (0.00s)
+=== RUN   TestGetUser_NotFound
+--- PASS: TestGetUser_NotFound (0.00s)
+=== RUN   TestDeleteUser_Success
+--- PASS: TestDeleteUser_Success (0.00s)
+PASS
+ok  	github.com/EduGoGroup/edugo-api-administracion/internal/application/service	1.013s
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/bootstrap	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/bootstrap/adapter	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/config	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/container	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto	[no test files]
+=== RUN   TestAcademicUnitHandler_CreateUnit_Success
+--- PASS: TestAcademicUnitHandler_CreateUnit_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_GetUnit_Success
+--- PASS: TestAcademicUnitHandler_GetUnit_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_GetUnitTree_Success
+--- PASS: TestAcademicUnitHandler_GetUnitTree_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_ListUnitsBySchool_Success
+--- PASS: TestAcademicUnitHandler_ListUnitsBySchool_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_ListUnitsByType_Success
+--- PASS: TestAcademicUnitHandler_ListUnitsByType_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_UpdateUnit_Success
+--- PASS: TestAcademicUnitHandler_UpdateUnit_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_DeleteUnit_Success
+--- PASS: TestAcademicUnitHandler_DeleteUnit_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_RestoreUnit_Success
+--- PASS: TestAcademicUnitHandler_RestoreUnit_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_GetHierarchyPath_Success
+--- PASS: TestAcademicUnitHandler_GetHierarchyPath_Success (0.00s)
+=== RUN   TestAcademicUnitHandler_GetUnit_NotFound
+--- PASS: TestAcademicUnitHandler_GetUnit_NotFound (0.00s)
+=== RUN   TestSchoolHandler_CreateSchool_Success
+--- PASS: TestSchoolHandler_CreateSchool_Success (0.00s)
+=== RUN   TestSchoolHandler_CreateSchool_InvalidJSON
+--- PASS: TestSchoolHandler_CreateSchool_InvalidJSON (0.00s)
+=== RUN   TestSchoolHandler_CreateSchool_AlreadyExists
+--- PASS: TestSchoolHandler_CreateSchool_AlreadyExists (0.00s)
+=== RUN   TestSchoolHandler_GetSchool_Success
+--- PASS: TestSchoolHandler_GetSchool_Success (0.00s)
+=== RUN   TestSchoolHandler_GetSchool_NotFound
+--- PASS: TestSchoolHandler_GetSchool_NotFound (0.00s)
+=== RUN   TestSchoolHandler_ListSchools_Success
+--- PASS: TestSchoolHandler_ListSchools_Success (0.00s)
+=== RUN   TestSchoolHandler_UpdateSchool_Success
+--- PASS: TestSchoolHandler_UpdateSchool_Success (0.00s)
+=== RUN   TestSchoolHandler_DeleteSchool_Success
+--- PASS: TestSchoolHandler_DeleteSchool_Success (0.00s)
+=== RUN   TestSchoolHandler_DeleteSchool_InternalError
+--- PASS: TestSchoolHandler_DeleteSchool_InternalError (0.00s)
+=== RUN   TestMembershipHandler_CreateMembership_Success
+--- PASS: TestMembershipHandler_CreateMembership_Success (0.00s)
+=== RUN   TestMembershipHandler_GetMembership_Success
+--- PASS: TestMembershipHandler_GetMembership_Success (0.00s)
+=== RUN   TestMembershipHandler_ListByUnit_Success
+--- PASS: TestMembershipHandler_ListByUnit_Success (0.00s)
+=== RUN   TestMembershipHandler_ListByUser_Success
+--- PASS: TestMembershipHandler_ListByUser_Success (0.00s)
+=== RUN   TestMembershipHandler_UpdateMembership_Success
+--- PASS: TestMembershipHandler_UpdateMembership_Success (0.00s)
+=== RUN   TestMembershipHandler_ExpireMembership_Success
+--- PASS: TestMembershipHandler_ExpireMembership_Success (0.00s)
+=== RUN   TestMembershipHandler_DeleteMembership_Success
+--- PASS: TestMembershipHandler_DeleteMembership_Success (0.00s)
+=== RUN   TestMembershipHandler_GetMembership_NotFound
+--- PASS: TestMembershipHandler_GetMembership_NotFound (0.00s)
+PASS
+ok  	github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler	1.344s
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/router	[no test files]
+?   	github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/postgres/repository	[no test files]
