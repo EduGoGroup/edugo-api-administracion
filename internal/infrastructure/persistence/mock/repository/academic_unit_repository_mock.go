@@ -40,7 +40,7 @@ func (r *MockAcademicUnitRepository) Create(ctx context.Context, unit *entities.
 
 	// Validar duplicado por SchoolID + Code
 	for _, u := range r.academicUnits {
-		if u.DeletedAt.Valid {
+		if u.DeletedAt != nil {
 			continue
 		}
 		if u.SchoolID == unit.SchoolID && u.Code == unit.Code {
@@ -49,9 +49,9 @@ func (r *MockAcademicUnitRepository) Create(ctx context.Context, unit *entities.
 	}
 
 	// Validar que el padre existe y está en la misma escuela
-	if unit.ParentUnitID.Valid {
-		parent, exists := r.academicUnits[unit.ParentUnitID.UUID]
-		if !exists || parent.DeletedAt.Valid {
+	if unit.ParentUnitID != nil {
+		parent, exists := r.academicUnits[*unit.ParentUnitID]
+		if !exists || parent.DeletedAt != nil {
 			return errors.NewNotFoundError("parent unit not found")
 		}
 		if parent.SchoolID != unit.SchoolID {
@@ -59,7 +59,7 @@ func (r *MockAcademicUnitRepository) Create(ctx context.Context, unit *entities.
 		}
 
 		// Validar que no se crea un ciclo
-		if r.wouldCreateCycle(unit.ID, unit.ParentUnitID.UUID) {
+		if r.wouldCreateCycle(unit.ID, *unit.ParentUnitID) {
 			return errors.NewValidationError("creating this parent relationship would create a cycle in the hierarchy")
 		}
 	}
@@ -91,7 +91,7 @@ func (r *MockAcademicUnitRepository) FindByID(ctx context.Context, id uuid.UUID,
 		return nil, errors.NewNotFoundError("academic unit not found")
 	}
 
-	if !includeDeleted && unit.DeletedAt.Valid {
+	if !includeDeleted && unit.DeletedAt != nil {
 		return nil, errors.NewNotFoundError("academic unit not found")
 	}
 
@@ -106,7 +106,7 @@ func (r *MockAcademicUnitRepository) FindBySchoolIDAndCode(ctx context.Context, 
 	defer r.mu.RUnlock()
 
 	for _, unit := range r.academicUnits {
-		if unit.DeletedAt.Valid {
+		if unit.DeletedAt != nil {
 			continue
 		}
 		if unit.SchoolID == schoolID && unit.Code == code {
@@ -131,7 +131,7 @@ func (r *MockAcademicUnitRepository) FindBySchoolID(ctx context.Context, schoolI
 			continue
 		}
 
-		if !includeDeleted && unit.DeletedAt.Valid {
+		if !includeDeleted && unit.DeletedAt != nil {
 			continue
 		}
 
@@ -151,11 +151,11 @@ func (r *MockAcademicUnitRepository) FindByParentID(ctx context.Context, parentI
 	var result []*entities.AcademicUnit
 
 	for _, unit := range r.academicUnits {
-		if !unit.ParentUnitID.Valid || unit.ParentUnitID.UUID != parentID {
+		if unit.ParentUnitID == nil || *unit.ParentUnitID != parentID {
 			continue
 		}
 
-		if !includeDeleted && unit.DeletedAt.Valid {
+		if !includeDeleted && unit.DeletedAt != nil {
 			continue
 		}
 
@@ -179,12 +179,12 @@ func (r *MockAcademicUnitRepository) FindRootUnits(ctx context.Context, schoolID
 			continue
 		}
 
-		if unit.DeletedAt.Valid {
+		if unit.DeletedAt != nil {
 			continue
 		}
 
 		// Solo incluir unidades sin padre
-		if !unit.ParentUnitID.Valid {
+		if unit.ParentUnitID == nil {
 			// Agregar copia
 			unitCopy := *unit
 			result = append(result, &unitCopy)
@@ -210,7 +210,7 @@ func (r *MockAcademicUnitRepository) FindByType(ctx context.Context, schoolID uu
 			continue
 		}
 
-		if !includeDeleted && unit.DeletedAt.Valid {
+		if !includeDeleted && unit.DeletedAt != nil {
 			continue
 		}
 
@@ -229,13 +229,13 @@ func (r *MockAcademicUnitRepository) Update(ctx context.Context, unit *entities.
 
 	// Verificar que la unidad existe
 	existing, exists := r.academicUnits[unit.ID]
-	if !exists || existing.DeletedAt.Valid {
+	if !exists || existing.DeletedAt != nil {
 		return errors.NewNotFoundError("academic unit not found")
 	}
 
 	// Validar duplicado por SchoolID + Code (excepto el mismo registro)
 	for _, u := range r.academicUnits {
-		if u.DeletedAt.Valid {
+		if u.DeletedAt != nil {
 			continue
 		}
 		if u.ID != unit.ID && u.SchoolID == unit.SchoolID && u.Code == unit.Code {
@@ -244,9 +244,9 @@ func (r *MockAcademicUnitRepository) Update(ctx context.Context, unit *entities.
 	}
 
 	// Validar que el padre existe y está en la misma escuela
-	if unit.ParentUnitID.Valid {
-		parent, exists := r.academicUnits[unit.ParentUnitID.UUID]
-		if !exists || parent.DeletedAt.Valid {
+	if unit.ParentUnitID != nil {
+		parent, exists := r.academicUnits[*unit.ParentUnitID]
+		if !exists || parent.DeletedAt != nil {
 			return errors.NewNotFoundError("parent unit not found")
 		}
 		if parent.SchoolID != unit.SchoolID {
@@ -254,8 +254,8 @@ func (r *MockAcademicUnitRepository) Update(ctx context.Context, unit *entities.
 		}
 
 		// Validar que no se crea un ciclo (solo si el padre cambió)
-		if !existing.ParentUnitID.Valid || existing.ParentUnitID.UUID != unit.ParentUnitID.UUID {
-			if r.wouldCreateCycle(unit.ID, unit.ParentUnitID.UUID) {
+		if existing.ParentUnitID == nil || *existing.ParentUnitID != *unit.ParentUnitID {
+			if r.wouldCreateCycle(unit.ID, *unit.ParentUnitID) {
 				return errors.NewValidationError("updating this parent relationship would create a cycle in the hierarchy")
 			}
 		}
@@ -280,14 +280,13 @@ func (r *MockAcademicUnitRepository) SoftDelete(ctx context.Context, id uuid.UUI
 	defer r.mu.Unlock()
 
 	unit, exists := r.academicUnits[id]
-	if !exists || unit.DeletedAt.Valid {
+	if !exists || unit.DeletedAt != nil {
 		return errors.NewNotFoundError("academic unit not found")
 	}
 
 	// Soft delete
 	now := time.Now()
-	unit.DeletedAt.Time = now
-	unit.DeletedAt.Valid = true
+	unit.DeletedAt = &now
 	unit.UpdatedAt = now
 
 	return nil
@@ -303,12 +302,12 @@ func (r *MockAcademicUnitRepository) Restore(ctx context.Context, id uuid.UUID) 
 		return errors.NewNotFoundError("academic unit not found")
 	}
 
-	if !unit.DeletedAt.Valid {
+	if unit.DeletedAt == nil {
 		return errors.NewValidationError("academic unit is not deleted")
 	}
 
 	// Restore
-	unit.DeletedAt.Valid = false
+	unit.DeletedAt = nil
 	unit.UpdatedAt = time.Now()
 
 	return nil
@@ -357,8 +356,8 @@ func (r *MockAcademicUnitRepository) GetHierarchyPath(ctx context.Context, id uu
 		path = append([]*entities.AcademicUnit{&unitCopy}, path...)
 
 		// Buscar el padre
-		if currentUnit.ParentUnitID.Valid {
-			parent, exists := r.academicUnits[currentUnit.ParentUnitID.UUID]
+		if currentUnit.ParentUnitID != nil {
+			parent, exists := r.academicUnits[*currentUnit.ParentUnitID]
 			if !exists {
 				// Si el padre no existe, romper el ciclo
 				break
@@ -378,7 +377,7 @@ func (r *MockAcademicUnitRepository) ExistsBySchoolIDAndCode(ctx context.Context
 	defer r.mu.RUnlock()
 
 	for _, unit := range r.academicUnits {
-		if unit.DeletedAt.Valid {
+		if unit.DeletedAt != nil {
 			continue
 		}
 		if unit.SchoolID == schoolID && unit.Code == code {
@@ -415,11 +414,11 @@ func (r *MockAcademicUnitRepository) wouldCreateCycle(unitID, newParentID uuid.U
 
 		// Buscar el padre del actual
 		current, exists := r.academicUnits[currentID]
-		if !exists || !current.ParentUnitID.Valid {
+		if !exists || current.ParentUnitID == nil {
 			break
 		}
 
-		currentID = current.ParentUnitID.UUID
+		currentID = *current.ParentUnitID
 	}
 
 	return false

@@ -78,7 +78,6 @@ func TestMockUnitRepository_Update(t *testing.T) {
 		t.Fatalf("Error al buscar unidad: %v", err)
 	}
 
-	originalName := unit.Name
 	unit.Name = "Departamento Actualizado"
 
 	err = repo.Update(ctx, unit)
@@ -161,6 +160,10 @@ func TestMockUnitRepository_List_Empty(t *testing.T) {
 
 func TestMockUnitRepository_Reset(t *testing.T) {
 	repo := NewMockUnitRepository()
+	mockRepo, ok := repo.(*MockUnitRepository)
+	if !ok {
+		t.Fatal("No se pudo hacer cast a *MockUnitRepository")
+	}
 	ctx := context.Background()
 
 	// Crear una nueva unidad
@@ -177,7 +180,7 @@ func TestMockUnitRepository_Reset(t *testing.T) {
 	}
 
 	// Resetear
-	repo.Reset()
+	mockRepo.Reset()
 
 	// Verificar que la unidad creada ya no existe
 	_, err = repo.FindByID(ctx, newUnit.ID)

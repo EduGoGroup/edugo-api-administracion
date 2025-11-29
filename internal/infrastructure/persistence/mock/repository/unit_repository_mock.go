@@ -50,7 +50,7 @@ func (r *MockUnitRepository) Create(ctx context.Context, unit *entities.Unit) er
 	for _, existingUnit := range r.units {
 		if existingUnit.SchoolID == unit.SchoolID &&
 			existingUnit.Name == unit.Name &&
-			existingUnit.DeletedAt == nil {
+			existingUnit.IsActive {
 			return errors.NewConflictError("unit with this name already exists in the school")
 		}
 	}
@@ -63,7 +63,7 @@ func (r *MockUnitRepository) Create(ctx context.Context, unit *entities.Unit) er
 	// Validar que la unidad padre existe si se proporciona
 	if unit.ParentUnitID != nil && *unit.ParentUnitID != uuid.Nil {
 		parentUnit, exists := r.units[*unit.ParentUnitID]
-		if !exists || parentUnit.DeletedAt != nil {
+		if !exists || !parentUnit.IsActive {
 			return errors.NewNotFoundError("parent unit not found")
 		}
 	}
@@ -86,7 +86,7 @@ func (r *MockUnitRepository) FindByID(ctx context.Context, id uuid.UUID) (*entit
 	defer r.mu.RUnlock()
 
 	unit, exists := r.units[id]
-	if !exists || unit.DeletedAt != nil {
+	if !exists || !unit.IsActive {
 		return nil, errors.NewNotFoundError("unit not found")
 	}
 
@@ -102,7 +102,7 @@ func (r *MockUnitRepository) Update(ctx context.Context, unit *entities.Unit) er
 
 	// Verificar que la unidad existe
 	existingUnit, exists := r.units[unit.ID]
-	if !exists || existingUnit.DeletedAt != nil {
+	if !exists || !existingUnit.IsActive {
 		return errors.NewNotFoundError("unit not found")
 	}
 
@@ -111,7 +111,7 @@ func (r *MockUnitRepository) Update(ctx context.Context, unit *entities.Unit) er
 		if u.SchoolID == unit.SchoolID &&
 			u.Name == unit.Name &&
 			id != unit.ID &&
-			u.DeletedAt == nil {
+			u.IsActive {
 			return errors.NewConflictError("unit with this name already exists in the school")
 		}
 	}
@@ -119,7 +119,7 @@ func (r *MockUnitRepository) Update(ctx context.Context, unit *entities.Unit) er
 	// Validar que la unidad padre existe si se proporciona
 	if unit.ParentUnitID != nil && *unit.ParentUnitID != uuid.Nil {
 		parentUnit, exists := r.units[*unit.ParentUnitID]
-		if !exists || parentUnit.DeletedAt != nil {
+		if !exists || !parentUnit.IsActive {
 			return errors.NewNotFoundError("parent unit not found")
 		}
 	}
@@ -137,25 +137,24 @@ func (r *MockUnitRepository) Update(ctx context.Context, unit *entities.Unit) er
 	return nil
 }
 
-// Delete elimina una unidad (soft delete)
+// Delete desactiva una unidad (marca IsActive como false)
 func (r *MockUnitRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	unit, exists := r.units[id]
-	if !exists || unit.DeletedAt != nil {
+	if !exists || !unit.IsActive {
 		return errors.NewNotFoundError("unit not found")
 	}
 
-	// Soft delete: establecer DeletedAt
-	now := time.Now()
-	unit.DeletedAt = &now
-	unit.UpdatedAt = now
+	// Desactivar la unidad
+	unit.IsActive = false
+	unit.UpdatedAt = time.Now()
 
 	return nil
 }
 
-// List lista unidades por escuela
+// List lista unidades activas por escuela
 func (r *MockUnitRepository) List(ctx context.Context, schoolID uuid.UUID) ([]*entities.Unit, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -164,8 +163,8 @@ func (r *MockUnitRepository) List(ctx context.Context, schoolID uuid.UUID) ([]*e
 
 	// Filtrar unidades
 	for _, unit := range r.units {
-		// Excluir unidades eliminadas
-		if unit.DeletedAt != nil {
+		// Incluir solo unidades activas
+		if !unit.IsActive {
 			continue
 		}
 

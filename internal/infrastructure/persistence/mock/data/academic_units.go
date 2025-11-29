@@ -1,7 +1,6 @@
 package data
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
@@ -32,7 +31,7 @@ var (
 	deptBasesDatosID   = uuid.MustParse("cbeebc99-9c0b-4ef8-bb6d-6bb9bd380abb")
 
 	// Timestamp base
-	baseTime = time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	academicUnitsBaseTime = time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	academicUnitsMap map[uuid.UUID]*entities.AcademicUnit
 )
@@ -41,87 +40,97 @@ func init() {
 	academicUnitsMap = make(map[uuid.UUID]*entities.AcademicUnit)
 
 	// ESCUELA PRIMARIA - Primer Grado
+	level1 := "1"
 	primerGrado := &entities.AcademicUnit{
 		ID:           primerGradoID,
 		SchoolID:     schoolPrimariaID,
-		ParentUnitID: uuid.NullUUID{Valid: false},
+		ParentUnitID: nil,
 		Name:         "Primer Grado",
 		Code:         "P-G1",
 		Type:         "grade",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 60, "shift": "morning", "building": "Edificio A"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[primerGradoID] = primerGrado
 
 	// Sección A - Primer Grado
+	parentID1A := primerGradoID
 	seccionA1 := &entities.AcademicUnit{
 		ID:           seccionPrimer1A,
 		SchoolID:     schoolPrimariaID,
-		ParentUnitID: uuid.NullUUID{UUID: primerGradoID, Valid: true},
+		ParentUnitID: &parentID1A,
 		Name:         "Sección A",
 		Code:         "P-G1-A",
 		Type:         "section",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 30, "classroom": "101", "shift": "morning"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[seccionPrimer1A] = seccionA1
 
 	// Sección B - Primer Grado
+	parentID1B := primerGradoID
 	seccionB1 := &entities.AcademicUnit{
 		ID:           seccionPrimer1B,
 		SchoolID:     schoolPrimariaID,
-		ParentUnitID: uuid.NullUUID{UUID: primerGradoID, Valid: true},
+		ParentUnitID: &parentID1B,
 		Name:         "Sección B",
 		Code:         "P-G1-B",
 		Type:         "section",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 30, "classroom": "102", "shift": "morning"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[seccionPrimer1B] = seccionB1
 
 	// ESCUELA PRIMARIA - Segundo Grado
+	level2 := "2"
 	segundoGrado := &entities.AcademicUnit{
 		ID:           segundoGradoID,
 		SchoolID:     schoolPrimariaID,
-		ParentUnitID: uuid.NullUUID{Valid: false},
+		ParentUnitID: nil,
 		Name:         "Segundo Grado",
 		Code:         "P-G2",
 		Type:         "grade",
-		Level:        2,
+		Level:        &level2,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 55, "shift": "morning", "building": "Edificio A"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[segundoGradoID] = segundoGrado
 
 	// ESCUELA PRIMARIA - Tercer Grado
+	level3 := "3"
 	tercerGrado := &entities.AcademicUnit{
 		ID:           tercerGradoID,
 		SchoolID:     schoolPrimariaID,
-		ParentUnitID: uuid.NullUUID{Valid: false},
+		ParentUnitID: nil,
 		Name:         "Tercer Grado",
 		Code:         "P-G3",
 		Type:         "grade",
-		Level:        3,
+		Level:        &level3,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 50, "shift": "afternoon", "building": "Edificio B"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[tercerGradoID] = tercerGrado
 
@@ -129,50 +138,55 @@ func init() {
 	primerAnio := &entities.AcademicUnit{
 		ID:           primerAnioID,
 		SchoolID:     schoolSecundariaID,
-		ParentUnitID: uuid.NullUUID{Valid: false},
+		ParentUnitID: nil,
 		Name:         "Primer Año",
 		Code:         "S-A1",
 		Type:         "grade",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 80, "shift": "morning", "building": "Pabellón Central"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[primerAnioID] = primerAnio
 
 	// Sección 1 - Primer Año
+	parentIDAnio1S1 := primerAnioID
 	seccionAnio1 := &entities.AcademicUnit{
 		ID:           seccionAnio1S1,
 		SchoolID:     schoolSecundariaID,
-		ParentUnitID: uuid.NullUUID{UUID: primerAnioID, Valid: true},
+		ParentUnitID: &parentIDAnio1S1,
 		Name:         "Sección 1",
 		Code:         "S-A1-S1",
 		Type:         "section",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 40, "classroom": "201", "shift": "morning", "orientation": "general"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[seccionAnio1S1] = seccionAnio1
 
 	// Sección 2 - Primer Año
+	parentIDAnio1S2 := primerAnioID
 	seccionAnio2 := &entities.AcademicUnit{
 		ID:           seccionAnio1S2,
 		SchoolID:     schoolSecundariaID,
-		ParentUnitID: uuid.NullUUID{UUID: primerAnioID, Valid: true},
+		ParentUnitID: &parentIDAnio1S2,
 		Name:         "Sección 2",
 		Code:         "S-A1-S2",
 		Type:         "section",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 40, "classroom": "202", "shift": "morning", "orientation": "general"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[seccionAnio1S2] = seccionAnio2
 
@@ -180,16 +194,17 @@ func init() {
 	segundoAnio := &entities.AcademicUnit{
 		ID:           segundoAnioID,
 		SchoolID:     schoolSecundariaID,
-		ParentUnitID: uuid.NullUUID{Valid: false},
+		ParentUnitID: nil,
 		Name:         "Segundo Año",
 		Code:         "S-A2",
 		Type:         "grade",
-		Level:        2,
+		Level:        &level2,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 75, "shift": "afternoon", "building": "Pabellón Central"}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[segundoAnioID] = segundoAnio
 
@@ -197,16 +212,17 @@ func init() {
 	deptProgramacion := &entities.AcademicUnit{
 		ID:           deptProgramacionID,
 		SchoolID:     schoolTecnicoID,
-		ParentUnitID: uuid.NullUUID{Valid: false},
+		ParentUnitID: nil,
 		Name:         "Programación I",
 		Code:         "T-PROG1",
 		Type:         "department",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 35, "lab": "Laboratorio 1", "hours_per_week": 6, "professor_count": 2}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[deptProgramacionID] = deptProgramacion
 
@@ -214,16 +230,17 @@ func init() {
 	deptBasesDatos := &entities.AcademicUnit{
 		ID:           deptBasesDatosID,
 		SchoolID:     schoolTecnicoID,
-		ParentUnitID: uuid.NullUUID{Valid: false},
+		ParentUnitID: nil,
 		Name:         "Bases de Datos",
 		Code:         "T-BD",
 		Type:         "department",
-		Level:        1,
+		Level:        &level1,
 		AcademicYear: 2024,
 		Metadata:     []byte(`{"capacity": 35, "lab": "Laboratorio 2", "hours_per_week": 5, "professor_count": 2}`),
-		CreatedAt:    baseTime,
-		UpdatedAt:    baseTime,
-		DeletedAt:    sql.NullTime{Valid: false},
+		IsActive:     true,
+		CreatedAt:    academicUnitsBaseTime,
+		UpdatedAt:    academicUnitsBaseTime,
+		DeletedAt:    nil,
 	}
 	academicUnitsMap[deptBasesDatosID] = deptBasesDatos
 }
@@ -248,7 +265,7 @@ func GetAcademicUnitsBySchool(schoolID uuid.UUID) []*entities.AcademicUnit {
 func GetRootAcademicUnits(schoolID uuid.UUID) []*entities.AcademicUnit {
 	var rootUnits []*entities.AcademicUnit
 	for _, unit := range academicUnitsMap {
-		if unit.SchoolID == schoolID && !unit.ParentUnitID.Valid {
+		if unit.SchoolID == schoolID && unit.ParentUnitID == nil {
 			rootUnits = append(rootUnits, unit)
 		}
 	}
@@ -259,7 +276,7 @@ func GetRootAcademicUnits(schoolID uuid.UUID) []*entities.AcademicUnit {
 func GetChildAcademicUnits(parentID uuid.UUID) []*entities.AcademicUnit {
 	var childUnits []*entities.AcademicUnit
 	for _, unit := range academicUnitsMap {
-		if unit.ParentUnitID.Valid && unit.ParentUnitID.UUID == parentID {
+		if unit.ParentUnitID != nil && *unit.ParentUnitID == parentID {
 			childUnits = append(childUnits, unit)
 		}
 	}
@@ -281,8 +298,8 @@ func BuildHierarchyPath(unitID uuid.UUID) []*entities.AcademicUnit {
 		path = append([]*entities.AcademicUnit{currentUnit}, path...)
 
 		// Buscar el padre
-		if currentUnit.ParentUnitID.Valid {
-			currentUnit = academicUnitsMap[currentUnit.ParentUnitID.UUID]
+		if currentUnit.ParentUnitID != nil {
+			currentUnit = academicUnitsMap[*currentUnit.ParentUnitID]
 		} else {
 			break
 		}
