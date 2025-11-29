@@ -1,0 +1,50 @@
+[
+  {
+    "label": "Go: Debug main (Delve)",
+    "adapter": "Delve",
+    "program": "${ZED_WORKTREE_ROOT}/cmd/main.go",
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "request": "launch",
+    "mode": "debug",
+    "stopOnEntry": false,
+    "envFile": "${ZED_WORKTREE_ROOT}/.env"
+  },
+  {
+    "label": "Go: Debug current file",
+    "adapter": "Delve",
+    "program": "$ZED_FILE",
+    "request": "launch",
+    "mode": "debug",
+    "stopOnEntry": false
+  },
+  {
+    "label": "Go: Debug package tests",
+    "adapter": "Delve",
+    "request": "launch",
+    "mode": "test",
+    "program": ".",
+    "buildFlags": [],
+    "stopOnEntry": false
+  },
+  {
+    "label": "Go: Debug prebuilt unit tests (exec)",
+    "adapter": "Delve",
+    "request": "launch",
+    "mode": "exec",
+    "program": "${ZED_WORKTREE_ROOT}/__debug_unit",
+    "args": ["-test.v", "-test.run=${ZED_SYMBOL}"],
+    "build": {
+      "command": "go",
+      "args": [
+        "test",
+        "-c",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "__debug_unit",
+        "./..."
+      ]
+    },
+    "stopOnEntry": false
+  }
+]
