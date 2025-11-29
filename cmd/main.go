@@ -63,7 +63,7 @@ func main() {
 	if jwtSecret == "" {
 		log.Fatalf("❌ JWT_SECRET no está configurado")
 	}
-	c := container.NewContainer(resources.PostgreSQL, resources.Logger, jwtSecret)
+	c := container.NewContainer(resources.PostgreSQL, resources.Logger, jwtSecret, cfg)
 	defer func() { _ = c.Close() }()
 
 	resources.Logger.Info("✅ API Administración iniciada", "port", cfg.Server.Port)
@@ -84,7 +84,7 @@ func main() {
 	{
 		// Auth endpoints (públicos)
 		c.AuthHandler.RegisterRoutes(v1Public)
-		
+
 		// Verify endpoint (para otros servicios)
 		c.VerifyHandler.RegisterRoutes(v1Public)
 	}

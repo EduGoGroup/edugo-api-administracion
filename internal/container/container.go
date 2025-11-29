@@ -8,9 +8,10 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
 	authHandler "github.com/EduGoGroup/edugo-api-administracion/internal/auth/handler"
 	authService "github.com/EduGoGroup/edugo-api-administracion/internal/auth/service"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/factory"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
-	postgresRepo "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/postgres/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/shared/crypto"
 	"github.com/EduGoGroup/edugo-shared/auth"
 	"github.com/EduGoGroup/edugo-shared/logger"
@@ -67,7 +68,7 @@ type Container struct {
 }
 
 // NewContainer crea un nuevo contenedor e inicializa todas las dependencias
-func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string) *Container {
+func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string, cfg *config.Config) *Container {
 	c := &Container{
 		DB:         db,
 		Logger:     logger,
@@ -99,16 +100,28 @@ func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string) *Container
 	}
 	c.TokenService = authService.NewTokenService(internalJWTManager, nil, tokenConfig)
 
-	// Inicializar repositories (capa de infraestructura)
-	c.UserRepository = postgresRepo.NewPostgresUserRepository(db)
-	c.SchoolRepository = postgresRepo.NewPostgresSchoolRepository(db)
-	c.AcademicUnitRepository = postgresRepo.NewPostgresAcademicUnitRepository(db)
-	c.UnitMembershipRepository = postgresRepo.NewPostgresUnitMembershipRepository(db)
-	c.UnitRepository = postgresRepo.NewPostgresUnitRepository(db)
-	c.SubjectRepository = postgresRepo.NewPostgresSubjectRepository(db)
-	c.MaterialRepository = postgresRepo.NewPostgresMaterialRepository(db)
-	c.StatsRepository = postgresRepo.NewPostgresStatsRepository(db)
-	c.GuardianRepository = postgresRepo.NewPostgresGuardianRepository(db)
+	// ==================== REPOSITORY FACTORY ====================
+	// Decidir entre Mock o PostgreSQL según configuración
+	var repositoryFactory factory.RepositoryFactory
+
+	if cfg.Database.UseMockRepositories {
+		logger.Info("✅ Usando MOCK repositories (sin PostgreSQL)")
+		repositoryFactory = factory.NewMockRepositoryFactory()
+	} else {
+		logger.Info("✅ Usando POSTGRESQL repositories")
+		repositoryFactory = factory.NewPostgresRepositoryFactory(db)
+	}
+
+	// Inicializar repositories usando el factory
+	c.SchoolRepository = repositoryFactory.CreateSchoolRepository()
+	c.UserRepository = repositoryFactory.CreateUserRepository()
+	c.AcademicUnitRepository = repositoryFactory.CreateAcademicUnitRepository()
+	c.UnitMembershipRepository = repositoryFactory.CreateUnitMembershipRepository()
+	c.UnitRepository = repositoryFactory.CreateUnitRepository()
+	c.SubjectRepository = repositoryFactory.CreateSubjectRepository()
+	c.MaterialRepository = repositoryFactory.CreateMaterialRepository()
+	c.StatsRepository = repositoryFactory.CreateStatsRepository()
+	c.GuardianRepository = repositoryFactory.CreateGuardianRepository()
 
 	// Auth Service (usa UserRepository y TokenService)
 	c.AuthService = authService.NewAuthService(
