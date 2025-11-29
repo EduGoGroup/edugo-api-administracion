@@ -21,21 +21,21 @@ func (f *mockRepositoryFactory) CreateUserRepository() repository.UserRepository
 	return mockRepo.NewMockUserRepository()
 }
 
-// Sprint 2 - Pendientes
+// Sprint 2 - Implementados
 func (f *mockRepositoryFactory) CreateAcademicUnitRepository() repository.AcademicUnitRepository {
-	return nil // TODO: Implementar en Sprint 2
+	return mockRepo.NewMockAcademicUnitRepository()
 }
 
 func (f *mockRepositoryFactory) CreateUnitMembershipRepository() repository.UnitMembershipRepository {
-	return nil // TODO: Implementar en Sprint 2
+	return mockRepo.NewMockUnitMembershipRepository()
 }
 
 func (f *mockRepositoryFactory) CreateUnitRepository() repository.UnitRepository {
-	return nil // TODO: Implementar en Sprint 2
+	return mockRepo.NewMockUnitRepository()
 }
 
 func (f *mockRepositoryFactory) CreateSubjectRepository() repository.SubjectRepository {
-	return nil // TODO: Implementar en Sprint 2
+	return mockRepo.NewMockSubjectRepository()
 }
 
 // Sprint 3 - Pendientes
