@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// Hash de la contraseña "edugo2024" usando bcrypt
-const defaultPasswordHash = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
+// Hash de la contraseña "edugo2024" usando bcrypt cost 10
+const defaultPasswordHash = "$2a$10$iqg7LOZsHxS8mJuQMx/65ORpDltrR6LUmh6/cIHT3CMz6lPOwplY."
 
 // UUIDs fijos para los usuarios mock
 var (
