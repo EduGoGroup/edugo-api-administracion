@@ -9,6 +9,11 @@ server:
   write_timeout: 30s
 
 database:
+  # Toggle global para usar repositorios mock (true) o reales (false)
+  # En producción SIEMPRE debe ser false
+  # Puede sobreescribirse con ENV var: USE_MOCK_REPOSITORIES
+  use_mock_repositories: false
+
   postgres:
     host: "localhost"
     port: 5432
@@ -35,9 +40,9 @@ auth:
     # AUTH_JWT_ISSUER (debe ser "edugo-central")
     issuer: "edugo-central"
     access_token_duration: 15m
-    refresh_token_duration: 168h  # 7 días
+    refresh_token_duration: 168h # 7 días
     algorithm: "HS256"
-  
+
   password:
     min_length: 8
     require_uppercase: true
@@ -45,21 +50,21 @@ auth:
     require_number: true
     require_special: false
     bcrypt_cost: 10
-  
+
   rate_limit:
     login:
       max_attempts: 5
       window: 15m
       block_duration: 1h
-    
+
     internal_services:
       max_requests: 1000
       window: 1m
-    
+
     external_clients:
       max_requests: 60
       window: 1m
-  
+
   internal_services:
     # Configurar via ENV: AUTH_INTERNAL_SERVICES_API_KEYS
     # Formato: "api-mobile:key1,worker:key2"
@@ -67,13 +72,13 @@ auth:
     # Configurar via ENV: AUTH_INTERNAL_SERVICES_IP_RANGES
     # Formato CIDR: "127.0.0.1/32,10.0.0.0/8"
     ip_ranges: "127.0.0.1/32"
-  
+
   cache:
     token_validation:
       enabled: true
       ttl: 60s
       max_size: 10000
-    
+
     user_info:
       enabled: true
       ttl: 300s

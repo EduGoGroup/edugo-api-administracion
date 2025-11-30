@@ -8,12 +8,15 @@ server:
   write_timeout: 30s
 
 database:
+  # Activado para desarrollo local (sin Docker/PostgreSQL)
+  use_mock_repositories: true
+
   postgres:
     host: "localhost"
     port: 5432
     database: "edugo"
     user: "edugo"
-    password: "edugo123"  # Solo para local, en otros ambientes usar ENV
+    password: "edugo123" # Solo para local, en otros ambientes usar ENV
     max_connections: 25
     ssl_mode: "disable"
   mongodb:
@@ -33,13 +36,13 @@ auth:
     issuer: "edugo-central"
     access_token_duration: 15m
     refresh_token_duration: 168h
-  
+
   password:
-    bcrypt_cost: 10  # Menor costo para desarrollo más rápido
+    bcrypt_cost: 10 # Menor costo para desarrollo más rápido
 
   rate_limit:
     login:
-      max_attempts: 10  # Más permisivo en desarrollo
+      max_attempts: 10 # Más permisivo en desarrollo
       window: 5m
       block_duration: 5m
 
@@ -50,7 +53,7 @@ auth:
   cache:
     token_validation:
       enabled: true
-      ttl: 30s  # TTL más corto para ver cambios rápido
+      ttl: 30s # TTL más corto para ver cambios rápido
     user_info:
       enabled: true
       ttl: 60s
