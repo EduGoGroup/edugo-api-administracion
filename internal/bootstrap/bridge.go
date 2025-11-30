@@ -47,8 +47,16 @@ func bridgeToSharedBootstrap(ctx context.Context, cfg *config.Config) (*Resource
 	}
 
 	// 4. Bootstrap
+	// Si usamos mocks, PostgreSQL NO es requerido
+	var requiredResources []string
+	if cfg.Database.UseMockRepositories {
+		requiredResources = []string{"logger"} // Solo logger requerido
+	} else {
+		requiredResources = []string{"logger", "postgresql"} // Logger + PostgreSQL
+	}
+
 	_, err := sharedBootstrap.Bootstrap(ctx, bootstrapConfig, customFactories, lifecycleManager,
-		sharedBootstrap.WithRequiredResources("logger", "postgresql"))
+		sharedBootstrap.WithRequiredResources(requiredResources...))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to bootstrap: %w", err)
 	}
