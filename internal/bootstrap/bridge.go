@@ -50,7 +50,7 @@ func bridgeToSharedBootstrap(ctx context.Context, cfg *config.Config) (*Resource
 	// Si usamos mocks, PostgreSQL NO es requerido
 	var requiredResources []string
 	if cfg.Database.UseMockRepositories {
-		requiredResources = []string{"logger"} // Solo logger requerido
+		requiredResources = []string{"logger"} // Solo logger requerido cuando se usan mock repositories (PostgreSQL no necesario)
 	} else {
 		requiredResources = []string{"logger", "postgresql"} // Logger + PostgreSQL
 	}

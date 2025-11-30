@@ -22,7 +22,6 @@ func (r *MockStatsRepository) GetGlobalStats(ctx context.Context) (repository.Gl
 	// Obtener datos desde mockData
 	schools := mockData.GetSchools()
 	users := mockData.GetUsers()
-	activeMemberships := mockData.GetActiveMemberships()
 
 	// Contar usuarios activos
 	totalActiveUsers := 0
@@ -44,8 +43,8 @@ func (r *MockStatsRepository) GetGlobalStats(ctx context.Context) (repository.Gl
 		TotalUsers:             len(users),
 		TotalActiveUsers:       totalActiveUsers,
 		TotalSchools:           len(schools),
-		TotalSubjects:          0, // No hay datos mock de subjects en los requisitos
-		TotalGuardianRelations: len(activeMemberships),
+		TotalSubjects:          len(mockData.GetSubjects()),
+		TotalGuardianRelations: len(mockData.GetGuardianRelations()),
 	}
 
 	return stats, nil

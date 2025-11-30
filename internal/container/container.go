@@ -105,10 +105,10 @@ func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string, cfg *confi
 	var repositoryFactory factory.RepositoryFactory
 
 	if cfg.Database.UseMockRepositories {
-		logger.Info("✅ Usando MOCK repositories (sin PostgreSQL)")
+		logger.Info("usando mock repositories", "mock_enabled", true, "postgres_required", false)
 		repositoryFactory = factory.NewMockRepositoryFactory()
 	} else {
-		logger.Info("✅ Usando POSTGRESQL repositories")
+		logger.Info("usando postgresql repositories", "mock_enabled", false, "postgres_required", true)
 		repositoryFactory = factory.NewPostgresRepositoryFactory(db)
 	}
 
