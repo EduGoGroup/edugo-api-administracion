@@ -22,8 +22,9 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Postgres PostgresConfig `mapstructure:"postgres"`
-	MongoDB  MongoDBConfig  `mapstructure:"mongodb"`
+	UseMockRepositories bool           `mapstructure:"use_mock_repositories"` // Toggle para usar repositorios mock (true) o reales (false)
+	Postgres            PostgresConfig `mapstructure:"postgres"`
+	MongoDB             MongoDBConfig  `mapstructure:"mongodb"`
 }
 
 type PostgresConfig struct {
