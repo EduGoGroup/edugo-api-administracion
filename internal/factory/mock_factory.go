@@ -38,15 +38,15 @@ func (f *mockRepositoryFactory) CreateSubjectRepository() repository.SubjectRepo
 	return mockRepo.NewMockSubjectRepository()
 }
 
-// Sprint 3 - Pendientes
+// Sprint 3 - Implementados (100% completo)
 func (f *mockRepositoryFactory) CreateMaterialRepository() repository.MaterialRepository {
-	return nil // TODO: Implementar en Sprint 3
+	return mockRepo.NewMockMaterialRepository()
 }
 
 func (f *mockRepositoryFactory) CreateStatsRepository() repository.StatsRepository {
-	return nil // TODO: Implementar en Sprint 3
+	return mockRepo.NewMockStatsRepository()
 }
 
 func (f *mockRepositoryFactory) CreateGuardianRepository() repository.GuardianRepository {
-	return nil // TODO: Implementar en Sprint 3
+	return mockRepo.NewMockGuardianRepository()
 }
