@@ -6,29 +6,29 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	mockData "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/data"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/dataset"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/google/uuid"
 )
 
 // MockUserRepository es una implementación en memoria del UserRepository para testing
+// Usa el dataset generado automáticamente desde SQL migrations
 type MockUserRepository struct {
 	mu    sync.RWMutex
 	users map[uuid.UUID]*entities.User
 }
 
 // NewMockUserRepository crea una nueva instancia de MockUserRepository
-// Pre-carga los usuarios desde mockData.GetUsers()
+// Pre-carga los usuarios desde el dataset generado
 func NewMockUserRepository() repository.UserRepository {
 	users := make(map[uuid.UUID]*entities.User)
 
-	// Pre-cargar datos desde mockData
-	mockUsers := mockData.GetUsers()
-	for id, user := range mockUsers {
+	// Pre-cargar datos desde dataset generado
+	for _, user := range dataset.DB.Users.List() {
 		// Hacer una copia del usuario para evitar modificaciones externas
 		userCopy := *user
-		users[id] = &userCopy
+		users[user.ID] = &userCopy
 	}
 
 	return &MockUserRepository{
@@ -209,12 +209,11 @@ func (r *MockUserRepository) Reset() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// Recargar datos desde mockData
+	// Recargar datos desde dataset generado
 	users := make(map[uuid.UUID]*entities.User)
-	mockUsers := mockData.GetUsers()
-	for id, user := range mockUsers {
+	for _, user := range dataset.DB.Users.List() {
 		userCopy := *user
-		users[id] = &userCopy
+		users[user.ID] = &userCopy
 	}
 
 	r.users = users

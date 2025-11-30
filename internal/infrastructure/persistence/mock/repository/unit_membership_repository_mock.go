@@ -6,26 +6,26 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	mockData "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/data"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/dataset"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/google/uuid"
 )
 
 // MockUnitMembershipRepository es una implementación en memoria del UnitMembershipRepository para testing
+// Usa el dataset generado automáticamente desde SQL migrations
 type MockUnitMembershipRepository struct {
 	mu          sync.RWMutex
 	memberships map[uuid.UUID]*entities.Membership
 }
 
 // NewMockUnitMembershipRepository crea una nueva instancia de MockUnitMembershipRepository
-// Pre-carga las memberships desde mockData.GetMemberships()
+// Pre-carga las memberships desde el dataset generado
 func NewMockUnitMembershipRepository() repository.UnitMembershipRepository {
 	memberships := make(map[uuid.UUID]*entities.Membership)
 
-	// Pre-cargar datos desde mockData
-	mockMemberships := mockData.GetMemberships()
-	for id, membership := range mockMemberships {
+	// Pre-cargar datos desde dataset generado
+	for _, membership := range dataset.DB.Memberships.List() {
 		// Hacer una copia de la membership para evitar modificaciones externas
 		membershipCopy := *membership
 		// Copiar también el puntero de AcademicUnitID si existe
@@ -44,7 +44,7 @@ func NewMockUnitMembershipRepository() repository.UnitMembershipRepository {
 			copy(metadataCopy, membership.Metadata)
 			membershipCopy.Metadata = metadataCopy
 		}
-		memberships[id] = &membershipCopy
+		memberships[membership.ID] = &membershipCopy
 	}
 
 	return &MockUnitMembershipRepository{
@@ -263,10 +263,9 @@ func (r *MockUnitMembershipRepository) Reset() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// Recargar datos desde mockData
+	// Recargar datos desde dataset generado
 	memberships := make(map[uuid.UUID]*entities.Membership)
-	mockMemberships := mockData.GetMemberships()
-	for id, membership := range mockMemberships {
+	for _, membership := range dataset.DB.Memberships.List() {
 		membershipCopy := *membership
 		// Copiar también el puntero de AcademicUnitID si existe
 		if membership.AcademicUnitID != nil {
@@ -284,7 +283,7 @@ func (r *MockUnitMembershipRepository) Reset() {
 			copy(metadataCopy, membership.Metadata)
 			membershipCopy.Metadata = metadataCopy
 		}
-		memberships[id] = &membershipCopy
+		memberships[membership.ID] = &membershipCopy
 	}
 
 	r.memberships = memberships

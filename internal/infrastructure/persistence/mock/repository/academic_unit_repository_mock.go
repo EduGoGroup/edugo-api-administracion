@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	mockData "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/data"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/dataset"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/google/uuid"
 )
 
 // MockAcademicUnitRepository implementa repository.AcademicUnitRepository para testing
+// Usa el dataset generado automáticamente desde SQL migrations
 type MockAcademicUnitRepository struct {
 	mu            sync.RWMutex
 	academicUnits map[uuid.UUID]*entities.AcademicUnit
@@ -24,8 +25,8 @@ func NewMockAcademicUnitRepository() repository.AcademicUnitRepository {
 		academicUnits: make(map[uuid.UUID]*entities.AcademicUnit),
 	}
 
-	// Pre-cargar datos desde mockData
-	for _, unit := range mockData.GetAcademicUnits() {
+	// Pre-cargar datos desde dataset generado
+	for _, unit := range dataset.DB.AcademicUnits.List() {
 		unitCopy := *unit
 		repo.academicUnits[unit.ID] = &unitCopy
 	}
@@ -432,8 +433,8 @@ func (r *MockAcademicUnitRepository) Reset() {
 	// Limpiar mapa
 	r.academicUnits = make(map[uuid.UUID]*entities.AcademicUnit)
 
-	// Recargar datos desde mockData
-	for _, unit := range mockData.GetAcademicUnits() {
+	// Recargar datos desde dataset generado
+	for _, unit := range dataset.DB.AcademicUnits.List() {
 		unitCopy := *unit
 		r.academicUnits[unit.ID] = &unitCopy
 	}
