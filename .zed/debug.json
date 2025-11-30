@@ -10,6 +10,20 @@
     "envFile": "${ZED_WORKTREE_ROOT}/.env"
   },
   {
+    "label": "Go: Debug main (MOCK - Sin Docker)",
+    "adapter": "Delve",
+    "program": "${ZED_WORKTREE_ROOT}/cmd/main.go",
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "request": "launch",
+    "mode": "debug",
+    "stopOnEntry": false,
+    "env": {
+      "APP_ENV": "local",
+      "USE_MOCK_REPOSITORIES": "true",
+      "GIN_MODE": "debug"
+    }
+  },
+  {
     "label": "Go: Debug current file",
     "adapter": "Delve",
     "program": "$ZED_FILE",
