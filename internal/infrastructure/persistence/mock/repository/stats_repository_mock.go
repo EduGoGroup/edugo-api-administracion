@@ -23,7 +23,8 @@ func (r *MockStatsRepository) GetGlobalStats(ctx context.Context) (repository.Gl
 	schools := mockData.GetSchools()
 	users := mockData.GetUsers()
 
-	// Contar usuarios activos
+	// Contar usuarios válidos (no eliminados) y activos
+	totalUsers := 0
 	totalActiveUsers := 0
 
 	for _, user := range users {
@@ -31,6 +32,8 @@ func (r *MockStatsRepository) GetGlobalStats(ctx context.Context) (repository.Gl
 		if user.DeletedAt != nil {
 			continue
 		}
+
+		totalUsers++
 
 		// Contar usuarios activos
 		if user.IsActive {
@@ -40,7 +43,7 @@ func (r *MockStatsRepository) GetGlobalStats(ctx context.Context) (repository.Gl
 
 	// Crear estructura de estadísticas globales
 	stats := repository.GlobalStats{
-		TotalUsers:             len(users),
+		TotalUsers:             totalUsers, // Ahora excluye eliminados
 		TotalActiveUsers:       totalActiveUsers,
 		TotalSchools:           len(schools),
 		TotalSubjects:          len(mockData.GetSubjects()),
