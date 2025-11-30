@@ -1,0 +1,8 @@
+{
+  "diagnostics": {
+    "inline": {
+      "enabled": true,
+      "max_severity": null
+    }
+  }
+}

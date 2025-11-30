@@ -1,0 +1,160 @@
+[
+  {
+    "label": "Make: build",
+    "command": "make",
+    "args": ["build"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true,
+    "reveal": "always"
+  },
+  {
+    "label": "Make: run (dev)",
+    "command": "make",
+    "args": ["run"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "env": {
+      "APP_ENV": "local"
+    },
+    "show_summary": true,
+    "show_command": true,
+    "reveal": "always"
+  },
+  {
+    "label": "Make: test (unit)",
+    "command": "make",
+    "args": ["test"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: test (integration)",
+    "command": "make",
+    "args": ["test-integration"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: test (coverage)",
+    "command": "make",
+    "args": ["test-coverage"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: fmt",
+    "command": "make",
+    "args": ["fmt"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: vet",
+    "command": "make",
+    "args": ["vet"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: lint",
+    "command": "make",
+    "args": ["lint"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: swagger",
+    "command": "make",
+    "args": ["swagger"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: docker up",
+    "command": "make",
+    "args": ["docker-run"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: docker down",
+    "command": "make",
+    "args": ["docker-stop"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Make: ci (preflight)",
+    "command": "make",
+    "args": ["ci"],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Editor: Run current file",
+    "command": "bash",
+    "args": [
+      "-lc",
+      "if [ -z \"$ZED_FILE\" ]; then echo \"No ZED_FILE set\"; else go run \"$ZED_FILE\"; fi"
+    ],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "shell": "system",
+    "show_summary": true,
+    "show_command": true,
+    "reveal": "always",
+    "allow_concurrent_runs": true
+  },
+  {
+    "label": "Editor: Test current symbol",
+    "command": "bash",
+    "args": [
+      "-lc",
+      "if [ -z \"$ZED_SYMBOL\" ]; then echo 'No ZED_SYMBOL set (cursor not in a test)'; else go test -run \"${ZED_SYMBOL}\" -v ./...; fi"
+    ],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "shell": "system",
+    "show_summary": true,
+    "show_command": true,
+    "reveal": "always",
+    "allow_concurrent_runs": true
+  },
+  {
+    "label": "Editor: Debug built binary (dlv exec)",
+    "command": "bash",
+    "args": [
+      "-lc",
+      "set -e; make build || exit 1; dlv exec \"${ZED_WORKTREE_ROOT}/bin/api-administracion\" -- --APP_ENV=${APP_ENV:-local}"
+    ],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "env": {
+      "APP_ENV": "local"
+    },
+    "shell": "system",
+    "show_summary": true,
+    "show_command": true,
+    "reveal": "always",
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Editor: Attach to running Delve (tcp)",
+    "command": "bash",
+    "args": [
+      "-lc",
+      "echo 'Conectar a Delve ya corriendo: configure host/port y use el adaptador Delve en Zed si es necesario'"
+    ],
+    "cwd": "${ZED_WORKTREE_ROOT}",
+    "show_summary": true,
+    "show_command": false,
+    "reveal": "always"
+  }
+]
