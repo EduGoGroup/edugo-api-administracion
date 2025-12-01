@@ -133,6 +133,10 @@ func (s *academicUnitService) GetUnit(ctx context.Context, id string) (*dto.Acad
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
 	if err != nil {
 		s.logger.Error("failed to find unit", "error", err, "id", id)
+		// Propagar AppError directamente (ej: NotFoundError)
+		if _, ok := errors.GetAppError(err); ok {
+			return nil, err
+		}
 		return nil, errors.NewDatabaseError("find unit", err)
 	}
 	if unit == nil {

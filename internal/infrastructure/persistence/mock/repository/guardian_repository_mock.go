@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	mockData "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/data"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/google/uuid"
@@ -19,20 +18,10 @@ type MockGuardianRepository struct {
 }
 
 // NewMockGuardianRepository crea una nueva instancia de MockGuardianRepository
-// Pre-carga las relaciones desde mockData.GetGuardianRelations()
+// Inicializa con un mapa vacío - los datos se crean vía API durante los tests
 func NewMockGuardianRepository() repository.GuardianRepository {
-	relations := make(map[uuid.UUID]*entities.GuardianRelation)
-
-	// Pre-cargar datos desde mockData
-	mockRelations := mockData.GetGuardianRelations()
-	for id, relation := range mockRelations {
-		// Hacer una copia de la relación para evitar modificaciones externas
-		relationCopy := *relation
-		relations[id] = &relationCopy
-	}
-
 	return &MockGuardianRepository{
-		relations: relations,
+		relations: make(map[uuid.UUID]*entities.GuardianRelation),
 	}
 }
 
@@ -110,7 +99,6 @@ func (r *MockGuardianRepository) FindRelationsByGuardian(ctx context.Context, gu
 
 	for _, relation := range r.relations {
 		if relation.GuardianID == guardianID {
-			// Agregar copia de la relación
 			result = append(result, r.copyRelation(relation))
 		}
 	}
@@ -132,7 +120,6 @@ func (r *MockGuardianRepository) FindRelationsByStudent(ctx context.Context, stu
 
 	for _, relation := range r.relations {
 		if relation.StudentID == studentID {
-			// Agregar copia de la relación
 			result = append(result, r.copyRelation(relation))
 		}
 	}
@@ -150,18 +137,15 @@ func (r *MockGuardianRepository) UpdateRelation(ctx context.Context, relation *e
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// Verificar que la relación existe
 	existingRelation, exists := r.relations[relation.ID]
 	if !exists {
 		return errors.NewNotFoundError("guardian relation not found")
 	}
 
-	// Validar que guardian != student
 	if relation.GuardianID == relation.StudentID {
 		return errors.NewValidationError("guardian cannot be the same as student")
 	}
 
-	// Validar que no haya conflicto con otra relación activa (mismo guardian + student)
 	for id, rel := range r.relations {
 		if id != relation.ID &&
 			rel.GuardianID == relation.GuardianID &&
@@ -171,16 +155,12 @@ func (r *MockGuardianRepository) UpdateRelation(ctx context.Context, relation *e
 		}
 	}
 
-	// Actualizar timestamp
 	relation.UpdatedAt = time.Now()
-
-	// Preservar CreatedAt y CreatedBy originales
 	relation.CreatedAt = existingRelation.CreatedAt
 	if relation.CreatedBy == "" {
 		relation.CreatedBy = existingRelation.CreatedBy
 	}
 
-	// Guardar una copia de la relación actualizada
 	relationCopy := *relation
 	r.relations[relation.ID] = &relationCopy
 
@@ -202,9 +182,7 @@ func (r *MockGuardianRepository) DeleteRelation(ctx context.Context, id uuid.UUI
 		return errors.NewNotFoundError("guardian relation not found")
 	}
 
-	// Eliminar la relación del mapa
 	delete(r.relations, id)
-
 	return nil
 }
 
@@ -224,23 +202,14 @@ func (r *MockGuardianRepository) ExistsActiveRelation(ctx context.Context, guard
 	return false, nil
 }
 
-// Reset reinicia el repositorio a su estado inicial (útil para testing)
+// Reset reinicia el repositorio a un estado vacío (útil para testing)
 func (r *MockGuardianRepository) Reset() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-
-	// Recargar datos desde mockData
-	relations := make(map[uuid.UUID]*entities.GuardianRelation)
-	mockRelations := mockData.GetGuardianRelations()
-	for id, relation := range mockRelations {
-		relationCopy := *relation
-		relations[id] = &relationCopy
-	}
-
-	r.relations = relations
+	r.relations = make(map[uuid.UUID]*entities.GuardianRelation)
 }
 
-// copyRelation es una función auxiliar que crea una copia profunda de una relación
+// copyRelation crea una copia profunda de una relación
 func (r *MockGuardianRepository) copyRelation(relation *entities.GuardianRelation) *entities.GuardianRelation {
 	relationCopy := *relation
 	return &relationCopy

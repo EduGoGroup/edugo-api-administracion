@@ -100,6 +100,9 @@ func Load() (*Config, error) {
 	_ = v.BindEnv("database.postgres.password", "POSTGRES_PASSWORD")
 	_ = v.BindEnv("database.mongodb.uri", "MONGODB_URI")
 
+	// Mock repositories - binding explícito sin prefijo para compatibilidad con debug.json
+	_ = v.BindEnv("database.use_mock_repositories", "USE_MOCK_REPOSITORIES")
+
 	// Auth JWT
 	_ = v.BindEnv("auth.jwt.secret", "AUTH_JWT_SECRET")
 	_ = v.BindEnv("auth.jwt.issuer", "AUTH_JWT_ISSUER")
