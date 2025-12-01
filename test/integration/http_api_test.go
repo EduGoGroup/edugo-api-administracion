@@ -4,6 +4,7 @@ package integration
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/container"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-shared/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +24,17 @@ import (
 // getTestLogger crea un logger para tests
 func getTestLogger() logger.Logger {
 	return logger.NewZapLogger("debug", "console")
+}
+
+// Wrapper functions to adapt :id parameter to :unitId expected by handlers
+func wrapListMembershipsByUnit(handler func(*gin.Context)) func(*gin.Context) {
+	return func(c *gin.Context) {
+		// Copy id param to unitId for handler compatibility
+		if id := c.Param("id"); id != "" {
+			c.Params = append(c.Params, gin.Param{Key: "unitId", Value: id})
+		}
+		handler(c)
+	}
 }
 
 // setupTestServer levanta un servidor de test con PostgreSQL real
@@ -35,7 +48,16 @@ func setupTestServer(t *testing.T) (*httptest.Server, func()) {
 	// Crear container con la BD de test
 	// JWT secret para tests (no importa el valor en tests)
 	testJWTSecret := "test-jwt-secret-minimum-32-characters-required-for-security"
-	c := container.NewContainer(db, testLogger, testJWTSecret)
+
+	// Crear config de prueba
+	testConfig := &config.Config{
+		Environment: "test",
+		Database: config.DatabaseConfig{
+			UseMockRepositories: false,
+		},
+	}
+
+	c := container.NewContainer(db, testLogger, testJWTSecret, testConfig)
 
 	// Configurar Gin en modo test
 	gin.SetMode(gin.TestMode)
@@ -76,6 +98,24 @@ func setupTestServer(t *testing.T) (*httptest.Server, func()) {
 			units.DELETE("/:id", c.AcademicUnitHandler.DeleteUnit)
 			units.POST("/:id/restore", c.AcademicUnitHandler.RestoreUnit)
 			units.GET("/:id/hierarchy-path", c.AcademicUnitHandler.GetHierarchyPath)
+			units.GET("/:id/memberships", wrapListMembershipsByUnit(c.UnitMembershipHandler.ListMembershipsByUnit))
+			units.GET("/:id/memberships/by-role", wrapListMembershipsByUnit(c.UnitMembershipHandler.ListMembershipsByRole))
+		}
+
+		// Memberships
+		memberships := v1.Group("/memberships")
+		{
+			memberships.POST("", c.UnitMembershipHandler.CreateMembership)
+			memberships.GET("/:id", c.UnitMembershipHandler.GetMembership)
+			memberships.PUT("/:id", c.UnitMembershipHandler.UpdateMembership)
+			memberships.DELETE("/:id", c.UnitMembershipHandler.DeleteMembership)
+			memberships.POST("/:id/expire", c.UnitMembershipHandler.ExpireMembership)
+		}
+
+		// Users
+		users := v1.Group("/users")
+		{
+			users.GET("/:userId/memberships", c.UnitMembershipHandler.ListMembershipsByUser)
 		}
 	}
 
@@ -426,4 +466,87 @@ func TestSchoolAPI_UpdateAndDelete(t *testing.T) {
 // Helper para crear punteros a strings
 func strPtr(s string) *string {
 	return &s
+}
+
+// setupTestServerWithDB igual que setupTestServer pero retorna también la conexión a BD
+// para poder hacer seed de datos directamente
+func setupTestServerWithDB(t *testing.T) (*httptest.Server, *sql.DB, func()) {
+	// Setup BD con contenedor independiente por test (mejor aislamiento)
+	db, dbCleanup := setupTestDB(t)
+
+	// Crear logger para tests
+	testLogger := getTestLogger()
+
+	// JWT secret y config para tests
+	testJWTSecret := "test-jwt-secret-minimum-32-characters-required-for-security"
+	testConfig := &config.Config{
+		Environment: "test",
+		Database: config.DatabaseConfig{
+			UseMockRepositories: false,
+		},
+	}
+
+	c := container.NewContainer(db, testLogger, testJWTSecret, testConfig)
+
+	// Configurar Gin en modo test
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+
+	// Health check
+	r.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"status": "healthy"})
+	})
+
+	// Rutas v1 (mismas que setupTestServer)
+	v1 := r.Group("/v1")
+	{
+		schools := v1.Group("/schools")
+		{
+			schools.POST("", c.SchoolHandler.CreateSchool)
+			schools.GET("", c.SchoolHandler.ListSchools)
+			schools.GET("/code/:code", c.SchoolHandler.GetSchoolByCode)
+			schools.POST("/:id/units", c.AcademicUnitHandler.CreateUnit)
+			schools.GET("/:id/units", c.AcademicUnitHandler.ListUnitsBySchool)
+			schools.GET("/:id/units/tree", c.AcademicUnitHandler.GetUnitTree)
+			schools.GET("/:id/units/by-type", c.AcademicUnitHandler.ListUnitsByType)
+			schools.GET("/:id", c.SchoolHandler.GetSchool)
+			schools.PUT("/:id", c.SchoolHandler.UpdateSchool)
+			schools.DELETE("/:id", c.SchoolHandler.DeleteSchool)
+		}
+
+		units := v1.Group("/units")
+		{
+			units.GET("/:id", c.AcademicUnitHandler.GetUnit)
+			units.PUT("/:id", c.AcademicUnitHandler.UpdateUnit)
+			units.DELETE("/:id", c.AcademicUnitHandler.DeleteUnit)
+			units.POST("/:id/restore", c.AcademicUnitHandler.RestoreUnit)
+			units.GET("/:id/hierarchy-path", c.AcademicUnitHandler.GetHierarchyPath)
+			units.GET("/:id/memberships", wrapListMembershipsByUnit(c.UnitMembershipHandler.ListMembershipsByUnit))
+			units.GET("/:id/memberships/by-role", wrapListMembershipsByUnit(c.UnitMembershipHandler.ListMembershipsByRole))
+		}
+
+		memberships := v1.Group("/memberships")
+		{
+			memberships.POST("", c.UnitMembershipHandler.CreateMembership)
+			memberships.GET("/:id", c.UnitMembershipHandler.GetMembership)
+			memberships.PUT("/:id", c.UnitMembershipHandler.UpdateMembership)
+			memberships.DELETE("/:id", c.UnitMembershipHandler.DeleteMembership)
+			memberships.POST("/:id/expire", c.UnitMembershipHandler.ExpireMembership)
+		}
+
+		users := v1.Group("/users")
+		{
+			users.GET("/:userId/memberships", c.UnitMembershipHandler.ListMembershipsByUser)
+		}
+	}
+
+	server := httptest.NewServer(r)
+
+	cleanupFunc := func() {
+		server.Close()
+		c.Close()
+		dbCleanup()
+	}
+
+	return server, db, cleanupFunc
 }

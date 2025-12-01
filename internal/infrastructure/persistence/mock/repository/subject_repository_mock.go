@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	mockData "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/data"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/google/uuid"
@@ -19,18 +18,11 @@ type MockSubjectRepository struct {
 }
 
 // NewMockSubjectRepository crea una nueva instancia de MockSubjectRepository
+// Inicializa con un mapa vacío - los datos se crean vía API durante los tests
 func NewMockSubjectRepository() repository.SubjectRepository {
-	repo := &MockSubjectRepository{
+	return &MockSubjectRepository{
 		subjects: make(map[uuid.UUID]*entities.Subject),
 	}
-
-	// Pre-cargar datos desde mockData
-	for _, subject := range mockData.GetSubjects() {
-		subjectCopy := *subject
-		repo.subjects[subject.ID] = &subjectCopy
-	}
-
-	return repo
 }
 
 // Create crea una nueva materia
@@ -38,24 +30,20 @@ func (r *MockSubjectRepository) Create(ctx context.Context, subject *entities.Su
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// Validar duplicado por Name
 	for _, s := range r.subjects {
 		if s.Name == subject.Name {
 			return errors.NewConflictError("subject with this name already exists")
 		}
 	}
 
-	// Generar ID si no existe
 	if subject.ID == uuid.Nil {
 		subject.ID = uuid.New()
 	}
 
-	// Establecer timestamps
 	now := time.Now()
 	subject.CreatedAt = now
 	subject.UpdatedAt = now
 
-	// Almacenar copia
 	subjectCopy := *subject
 	r.subjects[subject.ID] = &subjectCopy
 
@@ -72,7 +60,6 @@ func (r *MockSubjectRepository) FindByID(ctx context.Context, id uuid.UUID) (*en
 		return nil, errors.NewNotFoundError("subject not found")
 	}
 
-	// Retornar copia
 	subjectCopy := *subject
 	return &subjectCopy, nil
 }
@@ -82,26 +69,20 @@ func (r *MockSubjectRepository) Update(ctx context.Context, subject *entities.Su
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// Verificar que la materia existe
 	existing, exists := r.subjects[subject.ID]
 	if !exists {
 		return errors.NewNotFoundError("subject not found")
 	}
 
-	// Validar duplicado por Name (excepto el mismo registro)
 	for _, s := range r.subjects {
 		if s.ID != subject.ID && s.Name == subject.Name {
 			return errors.NewConflictError("subject with this name already exists")
 		}
 	}
 
-	// Actualizar timestamp
 	subject.UpdatedAt = time.Now()
-
-	// Preservar CreatedAt original
 	subject.CreatedAt = existing.CreatedAt
 
-	// Almacenar copia actualizada
 	subjectCopy := *subject
 	r.subjects[subject.ID] = &subjectCopy
 
@@ -118,7 +99,6 @@ func (r *MockSubjectRepository) Delete(ctx context.Context, id uuid.UUID) error 
 		return errors.NewNotFoundError("subject not found")
 	}
 
-	// Soft delete
 	now := time.Now()
 	subject.IsActive = false
 	subject.UpdatedAt = now
@@ -133,10 +113,8 @@ func (r *MockSubjectRepository) List(ctx context.Context) ([]*entities.Subject, 
 
 	var result []*entities.Subject
 
-	// Filtrar materias activas
 	for _, subject := range r.subjects {
 		if subject.IsActive {
-			// Agregar copia de la materia
 			subjectCopy := *subject
 			result = append(result, &subjectCopy)
 		}
@@ -159,17 +137,9 @@ func (r *MockSubjectRepository) ExistsByName(ctx context.Context, name string) (
 	return false, nil
 }
 
-// Reset limpia todos los datos y recarga los datos mock (útil para testing)
+// Reset limpia todos los datos (útil para testing)
 func (r *MockSubjectRepository) Reset() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-
-	// Limpiar mapa
 	r.subjects = make(map[uuid.UUID]*entities.Subject)
-
-	// Recargar datos desde mockData
-	for _, subject := range mockData.GetSubjects() {
-		subjectCopy := *subject
-		r.subjects[subject.ID] = &subjectCopy
-	}
 }
