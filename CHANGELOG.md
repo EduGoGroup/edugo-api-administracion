@@ -5,6 +5,34 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-12-01
+
+### Tipo de Release: minor
+
+- feat: eliminar sistema mock deprecado y agregar tests de integración (#55)
+- feat(tools): agregar herramienta generate_dataset (#54)
+- fix: aplicar sugerencias de Copilot
+- config: cambiar default de use_mock_repositories a false para usar PostgreSQL real por defecto
+- feat: Implementar Mock Repositories para desarrollo sin Docker (#52)
+- fix: agregar sync.RWMutex a mockTokenCache para evitar DATA RACE
+- feat(auth): implementar endpoints login/refresh/logout
+- fix(auth): agregar full_name a UserInfo para compatibilidad con api-mobile
+- feat(auth): implementar endpoints login/refresh/logout centralizados
+- docs(auth): agregar documentación completa de auth centralizada (T20-T23)
+- fix(tests): corregir errcheck en tests de integración
+- test(auth): implementar tests de integración (T18)
+- test(auth): implementar tests para RateLimiter (T17)
+- test(auth): implementar tests para VerifyHandler (T16)
+- test(auth): implementar tests para TokenService (T15)
+- feat(auth): implementar Rate Limiter Middleware (T14)
+- feat(auth): implementar VerifyHandler para endpoint /v1/auth/verify
+- feat(auth): implementar TokenService para gestión de tokens
+- test(crypto): agregar tests unitarios para JWTManager
+- feat(crypto): implementar JWTManager centralizado
+
+
+---
+
 ## [0.7.0] - 2025-11-25
 
 ### Tipo de Release: patch
