@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	mockData "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/data"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/dataset"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/google/uuid"
 )
 
 // MockSchoolRepository implementa repository.SchoolRepository para testing
+// Usa el dataset generado automáticamente desde SQL migrations
 type MockSchoolRepository struct {
 	mu      sync.RWMutex
 	schools map[uuid.UUID]*entities.School
@@ -24,8 +25,8 @@ func NewMockSchoolRepository() repository.SchoolRepository {
 		schools: make(map[uuid.UUID]*entities.School),
 	}
 
-	// Pre-cargar datos desde mockData
-	for _, school := range mockData.GetSchools() {
+	// Pre-cargar datos desde dataset generado
+	for _, school := range dataset.DB.Schools.List() {
 		schoolCopy := *school
 		repo.schools[school.ID] = &schoolCopy
 	}
@@ -243,8 +244,8 @@ func (r *MockSchoolRepository) Reset() {
 	// Limpiar mapa
 	r.schools = make(map[uuid.UUID]*entities.School)
 
-	// Recargar datos desde mockData
-	for _, school := range mockData.GetSchools() {
+	// Recargar datos desde dataset generado
+	for _, school := range dataset.DB.Schools.List() {
 		schoolCopy := *school
 		r.schools[school.ID] = &schoolCopy
 	}

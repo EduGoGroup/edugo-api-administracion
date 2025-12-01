@@ -6,27 +6,28 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
-	mockData "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/data"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/persistence/mock/dataset"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/google/uuid"
 )
 
 // MockMaterialRepository implementa repository.MaterialRepository para testing
+// Usa el dataset generado automáticamente desde SQL migrations
 type MockMaterialRepository struct {
 	mu        sync.RWMutex
 	materials map[uuid.UUID]*entities.Material
 }
 
 // NewMockMaterialRepository crea una nueva instancia de MockMaterialRepository
-// Pre-carga los materiales desde mockData.GetMaterials()
+// Pre-carga los materiales desde el dataset generado
 func NewMockMaterialRepository() repository.MaterialRepository {
 	repo := &MockMaterialRepository{
 		materials: make(map[uuid.UUID]*entities.Material),
 	}
 
-	// Pre-cargar datos desde mockData
-	for _, material := range mockData.GetMaterials() {
+	// Pre-cargar datos desde dataset generado
+	for _, material := range dataset.DB.Materials.List() {
 		materialCopy := *material
 		repo.materials[material.ID] = &materialCopy
 	}
@@ -73,8 +74,8 @@ func (r *MockMaterialRepository) Reset() {
 	// Limpiar mapa
 	r.materials = make(map[uuid.UUID]*entities.Material)
 
-	// Recargar datos desde mockData
-	for _, material := range mockData.GetMaterials() {
+	// Recargar datos desde dataset generado
+	for _, material := range dataset.DB.Materials.List() {
 		materialCopy := *material
 		r.materials[material.ID] = &materialCopy
 	}

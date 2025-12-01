@@ -110,7 +110,7 @@ func BuildUnitTree(units []*entities.AcademicUnit) []*UnitTreeNode {
 			Type:        unit.Type,
 			DisplayName: unit.Name,
 			Code:        unit.Code,
-			Depth:       0,
+			Depth:       1,  // Raíz empieza en 1
 			Children:    []*UnitTreeNode{},
 		}
 		unitMap[unit.ID.String()] = node
