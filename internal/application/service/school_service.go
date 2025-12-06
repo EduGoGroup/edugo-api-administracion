@@ -59,26 +59,52 @@ func (s *schoolService) CreateSchool(ctx context.Context, req dto.CreateSchoolRe
 		metadataJSON, _ = json.Marshal(req.Metadata)
 	}
 
-	// Crear entidad
+	// Crear entidad con valores del DTO o defaults
 	now := time.Now()
 	addr := &req.Address
 	email := &req.ContactEmail
 	phone := &req.ContactPhone
+
+	// Aplicar defaults para campos opcionales
+	country := req.Country
+	if country == "" {
+		country = "CO" // Default: Colombia
+	}
+
+	subscriptionTier := req.SubscriptionTier
+	if subscriptionTier == "" {
+		subscriptionTier = "free" // Default: plan gratuito
+	}
+
+	maxTeachers := req.MaxTeachers
+	if maxTeachers == 0 {
+		maxTeachers = 50 // Default: 50 profesores
+	}
+
+	maxStudents := req.MaxStudents
+	if maxStudents == 0 {
+		maxStudents = 500 // Default: 500 estudiantes
+	}
+
+	var city *string
+	if req.City != "" {
+		city = &req.City
+	}
 
 	school := &entities.School{
 		ID:               uuid.New(),
 		Name:             req.Name,
 		Code:             req.Code,
 		Address:          addr,
-		City:             nil,  // TODO: agregar cuando se agregue al DTO
-		Country:          "CO", // TODO: valor por defecto, agregar al DTO
+		City:             city,
+		Country:          country,
 		Phone:            phone,
 		Email:            email,
 		Metadata:         metadataJSON,
 		IsActive:         true,
-		SubscriptionTier: "free", // TODO: valor por defecto
-		MaxTeachers:      50,     // TODO: valor por defecto
-		MaxStudents:      500,    // TODO: valor por defecto
+		SubscriptionTier: subscriptionTier,
+		MaxTeachers:      maxTeachers,
+		MaxStudents:      maxStudents,
 		CreatedAt:        now,
 		UpdatedAt:        now,
 		DeletedAt:        nil,
@@ -158,6 +184,26 @@ func (s *schoolService) UpdateSchool(ctx context.Context, id string, req dto.Upd
 
 	if req.ContactPhone != nil {
 		school.Phone = req.ContactPhone
+	}
+
+	if req.City != nil {
+		school.City = req.City
+	}
+
+	if req.Country != nil && *req.Country != "" {
+		school.Country = *req.Country
+	}
+
+	if req.SubscriptionTier != nil && *req.SubscriptionTier != "" {
+		school.SubscriptionTier = *req.SubscriptionTier
+	}
+
+	if req.MaxTeachers != nil && *req.MaxTeachers > 0 {
+		school.MaxTeachers = *req.MaxTeachers
+	}
+
+	if req.MaxStudents != nil && *req.MaxStudents > 0 {
+		school.MaxStudents = *req.MaxStudents
 	}
 
 	if req.Metadata != nil {

@@ -7,7 +7,6 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -49,14 +48,7 @@ func (h *UnitMembershipHandler) CreateMembership(c *gin.Context) {
 
 	membership, err := h.membershipService.CreateMembership(c.Request.Context(), req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create membership failed", "error", appErr.Message, "code", appErr.Code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "create membership")
 		return
 	}
 
@@ -85,14 +77,7 @@ func (h *UnitMembershipHandler) GetMembership(c *gin.Context) {
 
 	membership, err := h.membershipService.GetMembership(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get membership failed", "error", appErr.Message, "code", appErr.Code, "membership_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "membership_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "get membership")
 		return
 	}
 
@@ -122,14 +107,7 @@ func (h *UnitMembershipHandler) ListMembershipsByUnit(c *gin.Context) {
 
 	memberships, err := h.membershipService.ListMembershipsByUnit(c.Request.Context(), unitID, activeOnly)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list memberships by unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", unitID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", unitID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "list memberships by unit")
 		return
 	}
 
@@ -159,14 +137,7 @@ func (h *UnitMembershipHandler) ListMembershipsByUser(c *gin.Context) {
 
 	memberships, err := h.membershipService.ListMembershipsByUser(c.Request.Context(), userID, activeOnly)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list memberships by user failed", "error", appErr.Message, "code", appErr.Code, "user_id", userID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "user_id", userID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "list memberships by user")
 		return
 	}
 
@@ -203,14 +174,7 @@ func (h *UnitMembershipHandler) ListMembershipsByRole(c *gin.Context) {
 
 	memberships, err := h.membershipService.ListMembershipsByRole(c.Request.Context(), unitID, role, activeOnly)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list memberships by role failed", "error", appErr.Message, "code", appErr.Code, "unit_id", unitID, "role", role)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", unitID, "role", role)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "list memberships by role")
 		return
 	}
 
@@ -247,14 +211,7 @@ func (h *UnitMembershipHandler) UpdateMembership(c *gin.Context) {
 
 	membership, err := h.membershipService.UpdateMembership(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("update membership failed", "error", appErr.Message, "code", appErr.Code, "membership_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "membership_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "update membership")
 		return
 	}
 
@@ -283,14 +240,7 @@ func (h *UnitMembershipHandler) ExpireMembership(c *gin.Context) {
 
 	err := h.membershipService.ExpireMembership(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("expire membership failed", "error", appErr.Message, "code", appErr.Code, "membership_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "membership_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "expire membership")
 		return
 	}
 
@@ -319,14 +269,7 @@ func (h *UnitMembershipHandler) DeleteMembership(c *gin.Context) {
 
 	err := h.membershipService.DeleteMembership(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("delete membership failed", "error", appErr.Message, "code", appErr.Code, "membership_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "membership_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "delete membership")
 		return
 	}
 

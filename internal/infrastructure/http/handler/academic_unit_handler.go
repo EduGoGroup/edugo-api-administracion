@@ -7,7 +7,6 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -55,14 +54,7 @@ func (h *AcademicUnitHandler) CreateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.CreateUnit(c.Request.Context(), schoolID, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create unit failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "create unit")
 		return
 	}
 
@@ -91,14 +83,7 @@ func (h *AcademicUnitHandler) GetUnit(c *gin.Context) {
 
 	unit, err := h.unitService.GetUnit(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "get unit")
 		return
 	}
 
@@ -126,14 +111,7 @@ func (h *AcademicUnitHandler) GetUnitTree(c *gin.Context) {
 
 	tree, err := h.unitService.GetUnitTree(c.Request.Context(), schoolID)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get unit tree failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "get unit tree")
 		return
 	}
 
@@ -164,14 +142,7 @@ func (h *AcademicUnitHandler) ListUnitsBySchool(c *gin.Context) {
 
 	units, err := h.unitService.ListUnitsBySchool(c.Request.Context(), schoolID, includeDeleted)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list units failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "list units")
 		return
 	}
 
@@ -205,14 +176,7 @@ func (h *AcademicUnitHandler) ListUnitsByType(c *gin.Context) {
 
 	units, err := h.unitService.ListUnitsByType(c.Request.Context(), schoolID, unitType)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list units by type failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID, "type", unitType)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID, "type", unitType)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "list units by type")
 		return
 	}
 
@@ -249,14 +213,7 @@ func (h *AcademicUnitHandler) UpdateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.UpdateUnit(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("update unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "update unit")
 		return
 	}
 
@@ -285,14 +242,7 @@ func (h *AcademicUnitHandler) DeleteUnit(c *gin.Context) {
 
 	err := h.unitService.DeleteUnit(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("delete unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "delete unit")
 		return
 	}
 
@@ -321,14 +271,7 @@ func (h *AcademicUnitHandler) RestoreUnit(c *gin.Context) {
 
 	err := h.unitService.RestoreUnit(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("restore unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "restore unit")
 		return
 	}
 
@@ -357,14 +300,7 @@ func (h *AcademicUnitHandler) GetHierarchyPath(c *gin.Context) {
 
 	path, err := h.unitService.GetHierarchyPath(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get hierarchy path failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "get hierarchy path")
 		return
 	}
 
