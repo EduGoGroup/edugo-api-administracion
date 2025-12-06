@@ -6,6 +6,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
@@ -71,17 +72,9 @@ func (s *unitMembershipService) CreateMembership(ctx context.Context, req dto.Cr
 		return nil, errors.NewAlreadyExistsError("active membership for this user and unit")
 	}
 
-	// Validar role (lógica movida del value object)
-	validRoles := []string{"teacher", "student", "guardian", "coordinator", "admin", "assistant"}
-	isValid := false
-	for _, r := range validRoles {
-		if req.Role == r {
-			isValid = true
-			break
-		}
-	}
-	if !isValid {
-		return nil, errors.NewValidationError("invalid membership role")
+	// Validar role usando value object
+	if _, err := valueobject.ParseMembershipRole(req.Role); err != nil {
+		return nil, errors.NewValidationError(err.Error())
 	}
 
 	// Crear entidad
@@ -187,17 +180,9 @@ func (s *unitMembershipService) ListMembershipsByRole(ctx context.Context, unitI
 		return nil, errors.NewValidationError("invalid unit ID")
 	}
 
-	// Validar rol
-	validRoles := []string{"teacher", "student", "guardian", "coordinator", "admin", "assistant", "director", "observer"}
-	isValidRole := false
-	for _, r := range validRoles {
-		if role == r {
-			isValidRole = true
-			break
-		}
-	}
-	if !isValidRole {
-		return nil, errors.NewValidationError("invalid role: " + role)
+	// Validar rol usando value object
+	if _, err := valueobject.ParseMembershipRole(role); err != nil {
+		return nil, errors.NewValidationError(err.Error())
 	}
 
 	memberships, err := s.membershipRepo.FindByUnit(ctx, uid)
@@ -237,6 +222,10 @@ func (s *unitMembershipService) UpdateMembership(ctx context.Context, id string,
 
 	// Actualizar campos
 	if req.Role != nil {
+		// Validar rol usando value object
+		if _, err := valueobject.ParseMembershipRole(*req.Role); err != nil {
+			return nil, errors.NewValidationError(err.Error())
+		}
 		membership.Role = *req.Role
 	}
 	if req.ValidUntil != nil {

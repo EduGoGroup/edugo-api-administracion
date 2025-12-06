@@ -20,15 +20,15 @@
 | Item | Archivo | Descripción | Estado |
 |------|---------|-------------|--------|
 | ~~Legacy Handlers~~ | ~~`cmd/legacy_handlers.go`~~ | ~~Handlers deprecados sin uso~~ | ✅ COMPLETADO |
-| Valores hardcodeados | `school_service.go` | Country, tier, limits hardcodeados | 🟡 Pendiente |
+| ~~Valores hardcodeados~~ | ~~`school_service.go`~~ | ~~Country, tier, limits hardcodeados~~ | ✅ COMPLETADO |
 | ~~Función incompleta~~ | ~~`unit_membership_service.go:174`~~ | ~~`ListMembershipsByRole` no filtra por rol~~ | ✅ COMPLETADO |
 
 ### Prioridad Media 🟡
 
 | Item | Archivo | Descripción | Impacto |
 |------|---------|-------------|---------|
-| Código repetitivo | Handlers | Error handling duplicado | 🟡 Pendiente |
-| Validación de roles | Services | Roles hardcodeados en arrays | 🟡 Pendiente |
+| ~~Código repetitivo~~ | ~~Handlers~~ | ~~Error handling duplicado~~ | ✅ COMPLETADO (parcial) |
+| ~~Validación de roles~~ | ~~Services~~ | ~~Roles hardcodeados en arrays~~ | ✅ COMPLETADO |
 | ~~Parámetro sin usar~~ | ~~Services~~ | ~~`activeOnly` no se usa en queries~~ | ✅ COMPLETADO |
 
 ### Prioridad Baja 🟢
