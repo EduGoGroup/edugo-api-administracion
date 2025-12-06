@@ -146,6 +146,11 @@ func (s *unitMembershipService) ListMembershipsByUnit(ctx context.Context, unitI
 		return nil, errors.NewDatabaseError("find memberships", err)
 	}
 
+	// Filtrar por activeOnly si es necesario
+	if activeOnly {
+		memberships = filterActiveMemberships(memberships)
+	}
+
 	responses := make([]dto.MembershipResponse, len(memberships))
 	for i, m := range memberships {
 		responses[i] = dto.ToMembershipResponse(m)
@@ -164,6 +169,11 @@ func (s *unitMembershipService) ListMembershipsByUser(ctx context.Context, userI
 		return nil, errors.NewDatabaseError("find memberships", err)
 	}
 
+	// Filtrar por activeOnly si es necesario
+	if activeOnly {
+		memberships = filterActiveMemberships(memberships)
+	}
+
 	responses := make([]dto.MembershipResponse, len(memberships))
 	for i, m := range memberships {
 		responses[i] = dto.ToMembershipResponse(m)
@@ -172,8 +182,46 @@ func (s *unitMembershipService) ListMembershipsByUser(ctx context.Context, userI
 }
 
 func (s *unitMembershipService) ListMembershipsByRole(ctx context.Context, unitID string, role string, activeOnly bool) ([]dto.MembershipResponse, error) {
-	// Implementación simplificada
-	return s.ListMembershipsByUnit(ctx, unitID, activeOnly)
+	uid, err := uuid.Parse(unitID)
+	if err != nil {
+		return nil, errors.NewValidationError("invalid unit ID")
+	}
+
+	// Validar rol
+	validRoles := []string{"teacher", "student", "guardian", "coordinator", "admin", "assistant", "director", "observer"}
+	isValidRole := false
+	for _, r := range validRoles {
+		if role == r {
+			isValidRole = true
+			break
+		}
+	}
+	if !isValidRole {
+		return nil, errors.NewValidationError("invalid role: " + role)
+	}
+
+	memberships, err := s.membershipRepo.FindByUnit(ctx, uid)
+	if err != nil {
+		return nil, errors.NewDatabaseError("find memberships", err)
+	}
+
+	// Filtrar por rol y activeOnly
+	filtered := make([]*entities.Membership, 0)
+	for _, m := range memberships {
+		if m.Role != role {
+			continue
+		}
+		if activeOnly && (!m.IsActive || m.WithdrawnAt != nil) {
+			continue
+		}
+		filtered = append(filtered, m)
+	}
+
+	responses := make([]dto.MembershipResponse, len(filtered))
+	for i, m := range filtered {
+		responses[i] = dto.ToMembershipResponse(m)
+	}
+	return responses, nil
 }
 
 func (s *unitMembershipService) UpdateMembership(ctx context.Context, id string, req dto.UpdateMembershipRequest) (*dto.MembershipResponse, error) {
@@ -241,4 +289,15 @@ func (s *unitMembershipService) DeleteMembership(ctx context.Context, id string)
 	}
 
 	return nil
+}
+
+// filterActiveMemberships filtra membresías para retornar solo las activas
+func filterActiveMemberships(memberships []*entities.Membership) []*entities.Membership {
+	result := make([]*entities.Membership, 0, len(memberships))
+	for _, m := range memberships {
+		if m.IsActive && m.WithdrawnAt == nil {
+			result = append(result, m)
+		}
+	}
+	return result
 }

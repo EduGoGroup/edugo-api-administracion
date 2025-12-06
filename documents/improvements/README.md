@@ -17,19 +17,19 @@
 
 ### Prioridad Alta 🔴
 
-| Item | Archivo | Descripción | Impacto |
-|------|---------|-------------|---------|
-| Legacy Handlers | `cmd/legacy_handlers.go` | Handlers deprecados sin uso | Código muerto |
-| Valores hardcodeados | `school_service.go` | Country, tier, limits hardcodeados | Configurabilidad |
-| Función incompleta | `unit_membership_service.go:174` | `ListMembershipsByRole` no filtra por rol | Bug funcional |
+| Item | Archivo | Descripción | Estado |
+|------|---------|-------------|--------|
+| ~~Legacy Handlers~~ | ~~`cmd/legacy_handlers.go`~~ | ~~Handlers deprecados sin uso~~ | ✅ COMPLETADO |
+| Valores hardcodeados | `school_service.go` | Country, tier, limits hardcodeados | 🟡 Pendiente |
+| ~~Función incompleta~~ | ~~`unit_membership_service.go:174`~~ | ~~`ListMembershipsByRole` no filtra por rol~~ | ✅ COMPLETADO |
 
 ### Prioridad Media 🟡
 
 | Item | Archivo | Descripción | Impacto |
 |------|---------|-------------|---------|
-| Código repetitivo | Handlers | Error handling duplicado | Mantenibilidad |
-| Validación de roles | Services | Roles hardcodeados en arrays | Extensibilidad |
-| Parámetro sin usar | Services | `activeOnly` no se usa en queries | Funcionalidad incompleta |
+| Código repetitivo | Handlers | Error handling duplicado | 🟡 Pendiente |
+| Validación de roles | Services | Roles hardcodeados en arrays | 🟡 Pendiente |
+| ~~Parámetro sin usar~~ | ~~Services~~ | ~~`activeOnly` no se usa en queries~~ | ✅ COMPLETADO |
 
 ### Prioridad Baja 🟢
 
