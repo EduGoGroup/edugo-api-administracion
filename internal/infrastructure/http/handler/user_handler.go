@@ -7,7 +7,6 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -56,29 +55,8 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 
 	// Llamar al servicio
 	user, err := h.userService.CreateUser(c.Request.Context(), req)
-
 	if err != nil {
-		// Manejar errores usando shared/errors
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create user failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"email", req.Email,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		// Error no manejado
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		handleError(c, h.logger, err, "create user")
 		return
 	}
 
@@ -108,25 +86,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 	user, err := h.userService.GetUser(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Warn("get user failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"id", id,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		handleError(c, h.logger, err, "get user")
 		return
 	}
 
@@ -162,25 +122,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	user, err := h.userService.UpdateUser(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("update user failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"id", id,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		handleError(c, h.logger, err, "update user")
 		return
 	}
 
@@ -204,25 +146,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	err := h.userService.DeleteUser(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("delete user failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"id", id,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		handleError(c, h.logger, err, "delete user")
 		return
 	}
 

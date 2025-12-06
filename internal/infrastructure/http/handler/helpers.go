@@ -8,6 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ErrorResponse representa una respuesta de error HTTP estándar
+type ErrorResponse struct {
+	Error string `json:"error"`
+	Code  string `json:"code"`
+}
+
 // handleError maneja errores de forma centralizada en los handlers
 // Reduce código duplicado y estandariza las respuestas de error
 func handleError(c *gin.Context, log logger.Logger, err error, operation string) {

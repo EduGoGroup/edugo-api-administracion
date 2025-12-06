@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -35,14 +34,7 @@ func NewStatsHandler(statsService service.StatsService, logger logger.Logger) *S
 func (h *StatsHandler) GetGlobalStats(c *gin.Context) {
 	stats, err := h.statsService.GetGlobalStats(c.Request.Context())
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get global stats failed", "error", appErr.Message)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "get global stats")
 		return
 	}
 

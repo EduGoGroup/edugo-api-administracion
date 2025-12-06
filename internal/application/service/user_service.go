@@ -6,6 +6,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/shared/crypto"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/common/types/enum"
@@ -33,8 +34,9 @@ type UserService interface {
 
 // userService implementa UserService
 type userService struct {
-	userRepo repository.UserRepository
-	logger   logger.Logger
+	userRepo       repository.UserRepository
+	passwordHasher *crypto.PasswordHasher
+	logger         logger.Logger
 }
 
 // NewUserService crea un nuevo UserService
@@ -43,8 +45,9 @@ func NewUserService(
 	logger logger.Logger,
 ) UserService {
 	return &userService{
-		userRepo: userRepo,
-		logger:   logger,
+		userRepo:       userRepo,
+		passwordHasher: crypto.NewPasswordHasher(12), // bcrypt cost 12 para producción
+		logger:         logger,
 	}
 }
 
@@ -86,12 +89,23 @@ func (s *userService) CreateUser(
 		return nil, errors.NewBusinessRuleError("cannot create admin users through this endpoint")
 	}
 
-	// 4. Crear entidad de infrastructure (sin lógica de negocio)
+	// 4. Validar y hashear password
+	if err := s.passwordHasher.Validate(req.Password); err != nil {
+		return nil, errors.NewValidationError(err.Error())
+	}
+
+	passwordHash, err := s.passwordHasher.Hash(req.Password)
+	if err != nil {
+		s.logger.Error("failed to hash password", "error", err)
+		return nil, errors.NewDatabaseError("hash password", err)
+	}
+
+	// 5. Crear entidad de infrastructure
 	now := time.Now()
 	user := &entities.User{
 		ID:            uuid.New(),
 		Email:         req.Email,
-		PasswordHash:  "", // TODO: Implementar hash de password cuando se agregue autenticación
+		PasswordHash:  passwordHash,
 		FirstName:     req.FirstName,
 		LastName:      req.LastName,
 		Role:          req.Role,

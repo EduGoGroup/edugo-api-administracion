@@ -7,7 +7,6 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -46,14 +45,7 @@ func (h *UnitHandler) CreateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.CreateUnit(c.Request.Context(), req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create unit failed", "error", appErr.Message, "code", appErr.Code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "create unit")
 		return
 	}
 
@@ -85,11 +77,7 @@ func (h *UnitHandler) UpdateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.UpdateUnit(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "update unit")
 		return
 	}
 
