@@ -92,6 +92,7 @@ Estimación de esfuerzo total:    ~20-30 horas de desarrollo
 
 | Fecha | Item | Descripción | PR |
 |-------|------|-------------|-----|
+| 2025-12-22 | ListMembershipsByRole | Implementado filtro por rol y activeOnly a nivel de BD | - |
 | 2025-11-20 | Auth centralizado | Migración a auth unificado | #45 |
 | 2025-11-15 | Clean Architecture | Refactor a capas limpias | #42 |
 | 2025-11-01 | Bootstrap | Migración a shared/bootstrap | #38 |

@@ -71,6 +71,41 @@ func (r *postgresUnitMembershipRepository) FindByUnit(ctx context.Context, unitI
 	return r.scanMemberships(ctx, query, unitID)
 }
 
+func (r *postgresUnitMembershipRepository) FindByUnitAndRole(ctx context.Context, unitID uuid.UUID, role string, activeOnly bool) ([]*entities.Membership, error) {
+	var query string
+	if activeOnly {
+		query = `SELECT id, user_id, school_id, academic_unit_id, role, metadata, is_active, enrolled_at, withdrawn_at, created_at, updated_at
+			FROM memberships WHERE academic_unit_id = $1 AND role = $2 AND is_active = true AND withdrawn_at IS NULL ORDER BY enrolled_at DESC`
+	} else {
+		query = `SELECT id, user_id, school_id, academic_unit_id, role, metadata, is_active, enrolled_at, withdrawn_at, created_at, updated_at
+			FROM memberships WHERE academic_unit_id = $1 AND role = $2 ORDER BY enrolled_at DESC`
+	}
+	return r.scanMembershipsWithRole(ctx, query, unitID, role)
+}
+
+func (r *postgresUnitMembershipRepository) scanMembershipsWithRole(ctx context.Context, query string, unitID uuid.UUID, role string) ([]*entities.Membership, error) {
+	rows, err := r.db.QueryContext(ctx, query, unitID, role)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var memberships []*entities.Membership
+	for rows.Next() {
+		membership := &entities.Membership{}
+		err := rows.Scan(
+			&membership.ID, &membership.UserID, &membership.SchoolID, &membership.AcademicUnitID,
+			&membership.Role, &membership.Metadata, &membership.IsActive, &membership.EnrolledAt,
+			&membership.WithdrawnAt, &membership.CreatedAt, &membership.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		memberships = append(memberships, membership)
+	}
+	return memberships, rows.Err()
+}
+
 func (r *postgresUnitMembershipRepository) Update(ctx context.Context, membership *entities.Membership) error {
 	query := `UPDATE memberships SET role = $1, metadata = $2, is_active = $3, withdrawn_at = $4, updated_at = $5 WHERE id = $6`
 	_, err := r.db.ExecContext(ctx, query,

@@ -62,28 +62,9 @@ school := &entities.School{
 
 ---
 
-### 3. unit_membership_service.go - Implementación simplificada
-
-**Ubicación**: `internal/application/service/unit_membership_service.go:175-176`
-
-```go
-func (s *unitMembershipService) ListMembershipsByRole(...) ([]dto.MembershipResponse, error) {
-    // Implementación simplificada
-    return s.ListMembershipsByUnit(ctx, unitID, activeOnly)
-}
-```
-
-**Acción Requerida**:
-1. Implementar filtro por rol real
-2. Agregar método `FindByUnitAndRole` al repositorio
-3. Agregar tests
-
-**Prioridad**: Alta (es un bug)
-**Esfuerzo**: 2 horas
-
 ---
 
-### 4. legacy_handlers.go - Endpoints a remover
+### 3. legacy_handlers.go - Endpoints a remover
 
 **Ubicación**: `cmd/legacy_handlers.go:9-17`
 
@@ -114,9 +95,8 @@ func (s *unitMembershipService) ListMembershipsByRole(...) ([]dto.MembershipResp
 | Archivo | TODOs | Prioridad General |
 |---------|-------|-------------------|
 | `school_service.go` | 5 | Media |
-| `unit_membership_service.go` | 1 | Alta |
 | `legacy_handlers.go` | 1 | Alta |
-| **Total** | **7** | - |
+| **Total** | **6** | - |
 
 ---
 
@@ -125,7 +105,6 @@ func (s *unitMembershipService) ListMembershipsByRole(...) ([]dto.MembershipResp
 ### 🔴 Alta Prioridad
 | TODO | Archivo | Línea | Descripción |
 |------|---------|-------|-------------|
-| Implementación incompleta | `unit_membership_service.go` | 175 | ListMembershipsByRole no filtra |
 | Código deprecated | `legacy_handlers.go` | 9 | Eliminar en v0.6.0 |
 
 ### 🟡 Media Prioridad
@@ -159,7 +138,7 @@ func (s *unitMembershipService) ListMembershipsByRole(...) ([]dto.MembershipResp
 
 ### Sprint Actual (v0.6.0)
 - [ ] Eliminar `legacy_handlers.go`
-- [ ] Implementar `ListMembershipsByRole` correctamente
+- [x] ~~Implementar `ListMembershipsByRole` correctamente~~ (Resuelto)
 
 ### Próximo Sprint
 - [ ] Agregar campos City y Country al DTO de School
@@ -206,5 +185,6 @@ echo "HACKs: $(grep -rn 'HACK' --include='*.go' . | grep -v '_test.go' | wc -l)"
 
 | Fecha | TODO | Archivo | PR | Notas |
 |-------|------|---------|-----|-------|
+| 2025-12-22 | ListMembershipsByRole no filtra | `unit_membership_service.go` | - | Implementado FindByUnitAndRole en repositorio |
 | 2025-11-20 | Auth centralizado | `container.go` | #45 | Migrado a shared/auth |
 | 2025-11-15 | Mock repositories | `factory.go` | #42 | Implementado factory pattern |

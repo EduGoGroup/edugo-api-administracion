@@ -185,25 +185,14 @@ func (s *unitMembershipService) ListMembershipsByRole(ctx context.Context, unitI
 		return nil, errors.NewValidationError(err.Error())
 	}
 
-	memberships, err := s.membershipRepo.FindByUnit(ctx, uid)
+	// Usar el método del repositorio que filtra a nivel de base de datos
+	memberships, err := s.membershipRepo.FindByUnitAndRole(ctx, uid, role, activeOnly)
 	if err != nil {
-		return nil, errors.NewDatabaseError("find memberships", err)
+		return nil, errors.NewDatabaseError("find memberships by role", err)
 	}
 
-	// Filtrar por rol y activeOnly
-	filtered := make([]*entities.Membership, 0)
-	for _, m := range memberships {
-		if m.Role != role {
-			continue
-		}
-		if activeOnly && (!m.IsActive || m.WithdrawnAt != nil) {
-			continue
-		}
-		filtered = append(filtered, m)
-	}
-
-	responses := make([]dto.MembershipResponse, len(filtered))
-	for i, m := range filtered {
+	responses := make([]dto.MembershipResponse, len(memberships))
+	for i, m := range memberships {
 		responses[i] = dto.ToMembershipResponse(m)
 	}
 	return responses, nil
