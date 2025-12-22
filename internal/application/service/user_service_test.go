@@ -74,6 +74,7 @@ func TestCreateUser_Success(t *testing.T) {
 
 	req := dto.CreateUserRequest{
 		Email:     "test@example.com",
+		Password:  "SecurePass123!",
 		FirstName: "John",
 		LastName:  "Doe",
 		Role:      "teacher",
@@ -119,6 +120,7 @@ func TestCreateUser_EmailAlreadyExists(t *testing.T) {
 
 	req := dto.CreateUserRequest{
 		Email:     "existing@example.com",
+		Password:  "SecurePass123!",
 		FirstName: "John",
 		LastName:  "Doe",
 		Role:      "teacher",
@@ -141,6 +143,7 @@ func TestCreateUser_CannotCreateAdmin(t *testing.T) {
 
 	req := dto.CreateUserRequest{
 		Email:     "admin@example.com",
+		Password:  "SecurePass123!",
 		FirstName: "Admin",
 		LastName:  "User",
 		Role:      string(enum.SystemRoleAdmin),

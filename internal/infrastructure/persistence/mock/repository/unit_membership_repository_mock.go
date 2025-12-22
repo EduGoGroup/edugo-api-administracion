@@ -171,6 +171,29 @@ func (r *MockUnitMembershipRepository) FindByUnit(ctx context.Context, unitID uu
 	return result, nil
 }
 
+// FindByUnitAndRole busca todas las memberships de una unidad académica filtradas por rol
+func (r *MockUnitMembershipRepository) FindByUnitAndRole(ctx context.Context, unitID uuid.UUID, role string, activeOnly bool) ([]*entities.Membership, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []*entities.Membership
+
+	for _, membership := range r.memberships {
+		if membership.AcademicUnitID != nil && *membership.AcademicUnitID == unitID && membership.Role == role {
+			// Aplicar filtro activeOnly si es necesario
+			if activeOnly {
+				if !membership.IsActive || membership.WithdrawnAt != nil {
+					continue
+				}
+			}
+			// Agregar copia de la membership
+			result = append(result, r.copyMembership(membership))
+		}
+	}
+
+	return result, nil
+}
+
 // Update actualiza una membership existente
 func (r *MockUnitMembershipRepository) Update(ctx context.Context, membership *entities.Membership) error {
 	r.mu.Lock()

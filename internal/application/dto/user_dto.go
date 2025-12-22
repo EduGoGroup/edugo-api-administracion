@@ -11,6 +11,7 @@ import (
 // CreateUserRequest representa la solicitud para crear un usuario
 type CreateUserRequest struct {
 	Email     string `json:"email"`
+	Password  string `json:"password"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Role      string `json:"role"`
@@ -36,6 +37,9 @@ func (r *CreateUserRequest) Validate() error {
 
 	v.Required(r.Role, "role")
 	v.InSlice(r.Role, enum.AllSystemRolesStrings(), "role")
+
+	v.Required(r.Password, "password")
+	v.MinLength(r.Password, 8, "password")
 
 	return v.GetError()
 }

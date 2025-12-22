@@ -3,11 +3,11 @@ package integration
 
 import (
 	"bytes"
-	"sync"
 	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 

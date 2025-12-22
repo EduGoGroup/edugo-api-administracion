@@ -50,7 +50,7 @@ type UnitTreeNode struct {
 	Children    []*UnitTreeNode `json:"children,omitempty"`
 }
 
-// ToAcademicUnitResponse convierte una entidad AcademicUnit de infrastructure a response
+// ToAcademicUnitResponse convierte una entidad AcademicUnit de infrastructure response
 func ToAcademicUnitResponse(unit *entities.AcademicUnit) AcademicUnitResponse {
 	var parentID *string
 	if unit.ParentUnitID != nil {
@@ -58,7 +58,7 @@ func ToAcademicUnitResponse(unit *entities.AcademicUnit) AcademicUnitResponse {
 		parentID = &id
 	}
 
-	// Deserializar metadata de []byte a map
+	// Deserializer metadata de []byte a map
 	var metadata map[string]interface{}
 	if len(unit.Metadata) > 0 {
 		_ = json.Unmarshal(unit.Metadata, &metadata)
@@ -110,7 +110,7 @@ func BuildUnitTree(units []*entities.AcademicUnit) []*UnitTreeNode {
 			Type:        unit.Type,
 			DisplayName: unit.Name,
 			Code:        unit.Code,
-			Depth:       1,  // Raíz empieza en 1
+			Depth:       1, // Raíz empieza en 1
 			Children:    []*UnitTreeNode{},
 		}
 		unitMap[unit.ID.String()] = node

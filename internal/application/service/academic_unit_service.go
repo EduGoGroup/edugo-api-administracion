@@ -6,6 +6,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
@@ -84,6 +85,11 @@ func (s *academicUnitService) CreateUnit(ctx context.Context, schoolID string, r
 			return nil, errors.NewNotFoundError("parent unit")
 		}
 		parentUUID = &pid
+	}
+
+	// Validar tipo de unidad usando value object
+	if _, err := valueobject.ParseUnitType(req.Type); err != nil {
+		return nil, errors.NewValidationError(err.Error())
 	}
 
 	// Crear unidad (lógica de validación movida aquí del entity)
@@ -183,6 +189,11 @@ func (s *academicUnitService) ListUnitsByType(ctx context.Context, schoolID stri
 	schoolUUID, err := uuid.Parse(schoolID)
 	if err != nil {
 		return nil, errors.NewValidationError("invalid school ID")
+	}
+
+	// Validar tipo de unidad usando value object
+	if _, err := valueobject.ParseUnitType(unitType); err != nil {
+		return nil, errors.NewValidationError(err.Error())
 	}
 
 	units, err := s.unitRepo.FindByType(ctx, schoolUUID, unitType, false)

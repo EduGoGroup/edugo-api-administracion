@@ -7,7 +7,6 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -48,14 +47,7 @@ func (h *SchoolHandler) CreateSchool(c *gin.Context) {
 
 	school, err := h.schoolService.CreateSchool(c.Request.Context(), req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create school failed", "error", appErr.Message, "code", appErr.Code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "create school")
 		return
 	}
 
@@ -84,14 +76,7 @@ func (h *SchoolHandler) GetSchool(c *gin.Context) {
 
 	school, err := h.schoolService.GetSchool(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "get school")
 		return
 	}
 
@@ -119,14 +104,7 @@ func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
 
 	school, err := h.schoolService.GetSchoolByCode(c.Request.Context(), code)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get school by code failed", "error", appErr.Message, "code", appErr.Code, "school_code", code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_code", code)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "get school by code")
 		return
 	}
 
@@ -145,14 +123,7 @@ func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
 func (h *SchoolHandler) ListSchools(c *gin.Context) {
 	schools, err := h.schoolService.ListSchools(c.Request.Context())
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list schools failed", "error", appErr.Message, "code", appErr.Code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "list schools")
 		return
 	}
 
@@ -189,14 +160,7 @@ func (h *SchoolHandler) UpdateSchool(c *gin.Context) {
 
 	school, err := h.schoolService.UpdateSchool(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("update school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "update school")
 		return
 	}
 
@@ -225,14 +189,7 @@ func (h *SchoolHandler) DeleteSchool(c *gin.Context) {
 
 	err := h.schoolService.DeleteSchool(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("delete school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		handleError(c, h.logger, err, "delete school")
 		return
 	}
 
