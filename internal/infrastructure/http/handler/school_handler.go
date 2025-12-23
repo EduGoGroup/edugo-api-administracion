@@ -52,7 +52,6 @@ func (h *SchoolHandler) CreateSchool(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("school created", "school_id", school.ID, "name", school.Name)
 	c.JSON(http.StatusCreated, school)
 }
 
@@ -165,7 +164,6 @@ func (h *SchoolHandler) UpdateSchool(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("school updated", "school_id", id)
 	c.JSON(http.StatusOK, school)
 }
 
@@ -194,6 +192,5 @@ func (h *SchoolHandler) DeleteSchool(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("school deleted", "school_id", id)
 	c.Status(http.StatusNoContent)
 }

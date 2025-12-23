@@ -43,11 +43,6 @@ func (s *unitService) CreateUnit(ctx context.Context, req dto.CreateUnitRequest)
 		parentID = &pid
 	}
 
-	// Validaciones (lógica movida del entity)
-	if req.Name == "" || len(req.Name) < 2 {
-		return nil, errors.NewValidationError("name must be at least 2 characters")
-	}
-
 	// Crear entidad
 	now := time.Now()
 	desc := &req.Description
@@ -79,15 +74,20 @@ func (s *unitService) UpdateUnit(ctx context.Context, id string, req dto.UpdateU
 	}
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID)
-	if err != nil || unit == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_unit",
+			"unit_id", unitID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find unit", err)
+	}
+	if unit == nil {
 		return nil, errors.NewNotFoundError("unit")
 	}
 
 	// Actualizar campos
 	if req.Name != nil && *req.Name != "" {
-		if len(*req.Name) < 2 {
-			return nil, errors.NewValidationError("name must be at least 2 characters")
-		}
 		unit.Name = *req.Name
 	}
 

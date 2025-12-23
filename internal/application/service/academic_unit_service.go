@@ -120,11 +120,16 @@ func (s *academicUnitService) CreateUnit(ctx context.Context, schoolID string, r
 
 	// Persistir
 	if err := s.unitRepo.Create(ctx, unit); err != nil {
-		s.logger.Error("failed to create unit", "error", err, "name", req.DisplayName)
 		return nil, errors.NewDatabaseError("create unit", err)
 	}
 
-	s.logger.Info("unit created successfully", "id", unit.ID.String(), "name", req.DisplayName)
+	s.logger.Info("entity created",
+		"entity_type", "academic_unit",
+		"entity_id", unit.ID.String(),
+		"name", unit.Name,
+		"type", unit.Type,
+		"school_id", schoolUUID.String(),
+	)
 
 	response := dto.ToAcademicUnitResponse(unit)
 	return &response, nil
@@ -138,7 +143,6 @@ func (s *academicUnitService) GetUnit(ctx context.Context, id string) (*dto.Acad
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
 	if err != nil {
-		s.logger.Error("failed to find unit", "error", err, "id", id)
 		// Propagar AppError directamente (ej: NotFoundError)
 		if _, ok := errors.GetAppError(err); ok {
 			return nil, err
@@ -215,7 +219,15 @@ func (s *academicUnitService) UpdateUnit(ctx context.Context, id string, req dto
 	}
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
-	if err != nil || unit == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_academic_unit",
+			"unit_id", unitID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find academic unit", err)
+	}
+	if unit == nil {
 		return nil, errors.NewNotFoundError("academic unit")
 	}
 
@@ -245,9 +257,25 @@ func (s *academicUnitService) UpdateUnit(ctx context.Context, id string, req dto
 	unit.UpdatedAt = time.Now()
 
 	if err := s.unitRepo.Update(ctx, unit); err != nil {
-		s.logger.Error("failed to update unit", "error", err)
 		return nil, errors.NewDatabaseError("update unit", err)
 	}
+
+	updatedFields := []string{}
+	if req.DisplayName != nil {
+		updatedFields = append(updatedFields, "name")
+	}
+	if req.Description != nil {
+		updatedFields = append(updatedFields, "description")
+	}
+	if req.ParentUnitID != nil {
+		updatedFields = append(updatedFields, "parent_unit_id")
+	}
+
+	s.logger.Info("entity updated",
+		"entity_type", "academic_unit",
+		"entity_id", id,
+		"fields_updated", updatedFields,
+	)
 
 	response := dto.ToAcademicUnitResponse(unit)
 	return &response, nil
@@ -260,16 +288,26 @@ func (s *academicUnitService) DeleteUnit(ctx context.Context, id string) error {
 	}
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
-	if err != nil || unit == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_academic_unit",
+			"unit_id", unitID,
+			"error", err.Error(),
+		)
+		return errors.NewDatabaseError("find academic unit", err)
+	}
+	if unit == nil {
 		return errors.NewNotFoundError("academic unit")
 	}
 
 	if err := s.unitRepo.SoftDelete(ctx, unitID); err != nil {
-		s.logger.Error("failed to delete unit", "error", err, "id", id)
 		return errors.NewDatabaseError("delete unit", err)
 	}
 
-	s.logger.Info("unit deleted", "id", id)
+	s.logger.Info("entity deleted",
+		"entity_type", "academic_unit",
+		"entity_id", id,
+	)
 	return nil
 }
 
@@ -280,11 +318,13 @@ func (s *academicUnitService) RestoreUnit(ctx context.Context, id string) error 
 	}
 
 	if err := s.unitRepo.Restore(ctx, unitID); err != nil {
-		s.logger.Error("failed to restore unit", "error", err, "id", id)
 		return errors.NewDatabaseError("restore unit", err)
 	}
 
-	s.logger.Info("unit restored", "id", id)
+	s.logger.Info("entity restored",
+		"entity_type", "academic_unit",
+		"entity_id", id,
+	)
 	return nil
 }
 

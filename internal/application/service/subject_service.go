@@ -64,7 +64,15 @@ func (s *subjectService) UpdateSubject(ctx context.Context, id string, req dto.U
 	}
 
 	subject, err := s.subjectRepo.FindByID(ctx, subjectID)
-	if err != nil || subject == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_subject",
+			"subject_id", subjectID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find subject", err)
+	}
+	if subject == nil {
 		return nil, errors.NewNotFoundError("subject")
 	}
 

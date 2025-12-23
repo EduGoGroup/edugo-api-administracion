@@ -59,7 +59,6 @@ func (h *AcademicUnitHandler) CreateUnit(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("unit created", "unit_id", unit.ID, "school_id", schoolID, "type", unit.Type)
 	c.JSON(http.StatusCreated, unit)
 }
 
@@ -218,7 +217,6 @@ func (h *AcademicUnitHandler) UpdateUnit(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("unit updated", "unit_id", id)
 	c.JSON(http.StatusOK, unit)
 }
 
@@ -247,7 +245,6 @@ func (h *AcademicUnitHandler) DeleteUnit(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("unit deleted", "unit_id", id)
 	c.Status(http.StatusNoContent)
 }
 
@@ -276,7 +273,6 @@ func (h *AcademicUnitHandler) RestoreUnit(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("unit restored", "unit_id", id)
 	c.Status(http.StatusNoContent)
 }
 

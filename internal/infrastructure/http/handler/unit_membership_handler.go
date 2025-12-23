@@ -53,7 +53,6 @@ func (h *UnitMembershipHandler) CreateMembership(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("membership created", "membership_id", membership.ID, "unit_id", membership.UnitID, "user_id", membership.UserID)
 	c.JSON(http.StatusCreated, membership)
 }
 
@@ -216,7 +215,6 @@ func (h *UnitMembershipHandler) UpdateMembership(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("membership updated", "membership_id", id)
 	c.JSON(http.StatusOK, membership)
 }
 
@@ -245,7 +243,6 @@ func (h *UnitMembershipHandler) ExpireMembership(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("membership expired", "membership_id", id)
 	c.Status(http.StatusNoContent)
 }
 
@@ -274,6 +271,5 @@ func (h *UnitMembershipHandler) DeleteMembership(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("membership deleted", "membership_id", id)
 	c.Status(http.StatusNoContent)
 }

@@ -61,13 +61,6 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	// Log de éxito
-	h.logger.Info("user created successfully",
-		"user_id", user.ID,
-		"email", user.Email,
-		"role", user.Role,
-	)
-
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -127,7 +120,6 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("user updated successfully", "user_id", user.ID)
 	c.JSON(http.StatusOK, user)
 }
 
@@ -151,6 +143,5 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("user deleted successfully", "user_id", id)
 	c.Status(http.StatusNoContent)
 }
