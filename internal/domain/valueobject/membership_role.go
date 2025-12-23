@@ -2,10 +2,9 @@ package valueobject
 
 import "fmt"
 
-// MembershipRole representa un rol válido para membresías de unidades académicas
+// MembershipRole representa el rol de un usuario en una unidad académica
 type MembershipRole string
 
-// Roles válidos para membresías
 const (
 	RoleTeacher     MembershipRole = "teacher"
 	RoleStudent     MembershipRole = "student"
@@ -17,7 +16,6 @@ const (
 	RoleObserver    MembershipRole = "observer"
 )
 
-// validMembershipRoles contiene todos los roles válidos
 var validMembershipRoles = map[MembershipRole]bool{
 	RoleTeacher:     true,
 	RoleStudent:     true,
@@ -48,8 +46,8 @@ func ParseMembershipRole(s string) (MembershipRole, error) {
 	return role, nil
 }
 
-// ValidMembershipRoles retorna una lista de todos los roles válidos
-func ValidMembershipRoles() []MembershipRole {
+// AllMembershipRoles retorna todos los roles válidos
+func AllMembershipRoles() []MembershipRole {
 	return []MembershipRole{
 		RoleTeacher,
 		RoleStudent,
@@ -62,12 +60,12 @@ func ValidMembershipRoles() []MembershipRole {
 	}
 }
 
-// ValidMembershipRoleStrings retorna los roles como slice de strings
-func ValidMembershipRoleStrings() []string {
-	roles := ValidMembershipRoles()
+// AllMembershipRolesStrings retorna todos los roles como strings
+func AllMembershipRolesStrings() []string {
+	roles := AllMembershipRoles()
 	result := make([]string, len(roles))
 	for i, r := range roles {
-		result[i] = r.String()
+		result[i] = string(r)
 	}
 	return result
 }

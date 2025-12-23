@@ -10,7 +10,7 @@ import (
 type CreateUnitRequest struct {
 	ParentUnitID *string `json:"parent_unit_id" binding:"omitempty,uuid"`
 	SchoolID     string  `json:"school_id" binding:"required,uuid"`
-	Type         string  `json:"type" binding:"required,oneof=grade section club department"`
+	Type         string  `json:"type" binding:"required"` // Validación realizada por valueobject.ParseUnitType
 	Name         string  `json:"name" binding:"required,min=3,max=100"`
 	Code         string  `json:"code" binding:"required,min=2,max=50"`
 	Description  *string `json:"description" binding:"omitempty,max=500"`
