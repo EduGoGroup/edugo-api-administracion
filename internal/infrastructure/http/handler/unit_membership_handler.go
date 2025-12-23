@@ -7,6 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -42,7 +43,7 @@ func (h *UnitMembershipHandler) CreateMembership(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -71,7 +72,7 @@ func (h *UnitMembershipHandler) GetMembership(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -99,7 +100,7 @@ func (h *UnitMembershipHandler) ListMembershipsByUnit(c *gin.Context) {
 	unitID := c.Param("unitId")
 
 	if unitID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -129,7 +130,7 @@ func (h *UnitMembershipHandler) ListMembershipsByUser(c *gin.Context) {
 	userID := c.Param("userId")
 
 	if userID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "user ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "user ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -161,12 +162,12 @@ func (h *UnitMembershipHandler) ListMembershipsByRole(c *gin.Context) {
 	role := c.Query("role")
 
 	if unitID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	if role == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "role is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "role is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -198,14 +199,14 @@ func (h *UnitMembershipHandler) UpdateMembership(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	var req dto.UpdateMembershipRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err, "membership_id", id)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -234,7 +235,7 @@ func (h *UnitMembershipHandler) ExpireMembership(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -263,7 +264,7 @@ func (h *UnitMembershipHandler) DeleteMembership(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "membership ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 

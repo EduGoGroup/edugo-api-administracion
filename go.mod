@@ -3,15 +3,15 @@ module github.com/EduGoGroup/edugo-api-administracion
 go 1.25
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.10.1
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.12.0
 	github.com/EduGoGroup/edugo-infrastructure/tools/mock-generator v0.1.0
-	github.com/EduGoGroup/edugo-shared/auth v0.7.0
+	github.com/EduGoGroup/edugo-shared/auth v0.9.0
 	github.com/EduGoGroup/edugo-shared/bootstrap v0.9.0
-	github.com/EduGoGroup/edugo-shared/common v0.7.0
-	github.com/EduGoGroup/edugo-shared/lifecycle v0.7.0
-	github.com/EduGoGroup/edugo-shared/logger v0.7.0
-	github.com/EduGoGroup/edugo-shared/middleware/gin v0.7.0
-	github.com/EduGoGroup/edugo-shared/testing v0.7.0
+	github.com/EduGoGroup/edugo-shared/common v0.9.0
+	github.com/EduGoGroup/edugo-shared/lifecycle v0.9.0
+	github.com/EduGoGroup/edugo-shared/logger v0.9.0
+	github.com/EduGoGroup/edugo-shared/middleware/gin v0.9.0
+	github.com/EduGoGroup/edugo-shared/testing v0.9.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
