@@ -7,6 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -39,7 +40,7 @@ func (h *UnitHandler) CreateUnit(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -71,7 +72,7 @@ func (h *UnitHandler) UpdateUnit(c *gin.Context) {
 	var req dto.UpdateUnitRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -102,7 +103,7 @@ func (h *UnitHandler) AssignMember(c *gin.Context) {
 	// TODO: Migrar esta funcionalidad a usar MembershipService
 	// Esta funcionalidad debería usar el servicio de membresías en lugar del servicio de unidades
 	h.logger.Warn("AssignMember endpoint deprecated - use membership service instead")
-	c.JSON(http.StatusNotImplemented, ErrorResponse{
+	c.JSON(http.StatusNotImplemented, httpdto.ErrorResponse{
 		Error: "This endpoint is being migrated. Please use /v1/memberships endpoint instead",
 		Code:  "NOT_IMPLEMENTED",
 	})

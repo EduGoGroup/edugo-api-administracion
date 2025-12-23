@@ -64,29 +64,15 @@ school := &entities.School{
 
 ---
 
-### 3. legacy_handlers.go - Endpoints a remover
+### 3. ~~legacy_handlers.go - Endpoints a remover~~ ✅ RESUELTO
 
 **Ubicación**: `cmd/legacy_handlers.go:9-17`
 
-```go
-// ==================== LEGACY HANDLERS ====================
-//
-// DEPRECATED: Estos endpoints están deprecated y serán removidos en v0.6.0
-// NO implementan lógica real, solo retornan datos mock para compatibilidad.
-//
-// Si necesitas estas funcionalidades, deberás:
-// 1. Implementar los handlers reales en internal/interface/http/handler/
-// 2. Crear los services correspondientes en internal/application/service/
-// 3. Actualizar la documentación Swagger
-```
+**Estado**: ✅ Completado en Fase 2
+**Fecha**: 2025-12-23
 
-**Acción Requerida**:
-1. Eliminar archivo completo en v0.6.0
-2. Verificar que no hay clientes usando estos endpoints
-3. Actualizar Swagger
-
-**Prioridad**: Alta (deadline v0.6.0)
-**Esfuerzo**: 30 minutos
+El archivo `legacy_handlers.go` no existe (fue eliminado previamente).
+Los tipos de respuesta han sido centralizados en `internal/infrastructure/http/dto/response.go`.
 
 ---
 
@@ -95,8 +81,8 @@ school := &entities.School{
 | Archivo | TODOs | Prioridad General |
 |---------|-------|-------------------|
 | `school_service.go` | 5 | Media |
-| `legacy_handlers.go` | 1 | Alta |
-| **Total** | **6** | - |
+| ~~`legacy_handlers.go`~~ | ~~1~~ ✅ | ~~Alta~~ Resuelto |
+| **Total** | **5** | - |
 
 ---
 
@@ -105,7 +91,7 @@ school := &entities.School{
 ### 🔴 Alta Prioridad
 | TODO | Archivo | Línea | Descripción |
 |------|---------|-------|-------------|
-| Código deprecated | `legacy_handlers.go` | 9 | Eliminar en v0.6.0 |
+| ~~Código deprecated~~ ✅ | ~~`legacy_handlers.go`~~ | ~~9~~ | ~~Eliminar en v0.6.0~~ Completado Fase 2 |
 
 ### 🟡 Media Prioridad
 | TODO | Archivo | Línea | Descripción |
@@ -137,8 +123,8 @@ school := &entities.School{
 ## Checklist de Resolución
 
 ### Sprint Actual (v0.6.0)
-- [ ] Eliminar `legacy_handlers.go`
-- [x] ~~Implementar `ListMembershipsByRole` correctamente~~ (Resuelto)
+- [x] ~~Eliminar `legacy_handlers.go`~~ ✅ Fase 2 (2025-12-23)
+- [x] ~~Implementar `ListMembershipsByRole` correctamente~~ ✅ Fase 1 (2025-12-22)
 
 ### Próximo Sprint
 - [ ] Agregar campos City y Country al DTO de School
@@ -185,6 +171,7 @@ echo "HACKs: $(grep -rn 'HACK' --include='*.go' . | grep -v '_test.go' | wc -l)"
 
 | Fecha | TODO | Archivo | PR | Notas |
 |-------|------|---------|-----|-------|
-| 2025-12-22 | ListMembershipsByRole no filtra | `unit_membership_service.go` | - | Implementado FindByUnitAndRole en repositorio |
+| 2025-12-23 | Código deprecated | `legacy_handlers.go` | Pendiente | Centralización de response types en dto/response.go |
+| 2025-12-22 | ListMembershipsByRole no filtra | `unit_membership_service.go` | #57 | Implementado FindByUnitAndRole en repositorio |
 | 2025-11-20 | Auth centralizado | `container.go` | #45 | Migrado a shared/auth |
 | 2025-11-15 | Mock repositories | `factory.go` | #42 | Implementado factory pattern |

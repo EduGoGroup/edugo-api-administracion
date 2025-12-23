@@ -7,6 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -37,7 +38,7 @@ func (h *SubjectHandler) CreateSubject(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -66,7 +67,7 @@ func (h *SubjectHandler) UpdateSubject(c *gin.Context) {
 	var req dto.UpdateSubjectRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 

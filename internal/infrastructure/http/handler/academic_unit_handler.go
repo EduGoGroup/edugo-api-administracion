@@ -7,6 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -41,14 +42,14 @@ func (h *AcademicUnitHandler) CreateUnit(c *gin.Context) {
 	schoolID := c.Param("id") // En la ruta es /:id/units
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	var req dto.CreateAcademicUnitRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -77,7 +78,7 @@ func (h *AcademicUnitHandler) GetUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -105,7 +106,7 @@ func (h *AcademicUnitHandler) GetUnitTree(c *gin.Context) {
 	schoolID := c.Param("id") // En la ruta es /:id/units/tree
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -134,7 +135,7 @@ func (h *AcademicUnitHandler) ListUnitsBySchool(c *gin.Context) {
 	schoolID := c.Param("id") // En la ruta es /:id/units
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -165,12 +166,12 @@ func (h *AcademicUnitHandler) ListUnitsByType(c *gin.Context) {
 	unitType := c.Query("type")
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	if unitType == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit type is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit type is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -200,14 +201,14 @@ func (h *AcademicUnitHandler) UpdateUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	var req dto.UpdateAcademicUnitRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err, "unit_id", id)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -236,7 +237,7 @@ func (h *AcademicUnitHandler) DeleteUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -265,7 +266,7 @@ func (h *AcademicUnitHandler) RestoreUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -294,7 +295,7 @@ func (h *AcademicUnitHandler) GetHierarchyPath(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -41,7 +42,7 @@ func (h *SchoolHandler) CreateSchool(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -70,7 +71,7 @@ func (h *SchoolHandler) GetSchool(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -98,7 +99,7 @@ func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
 	code := c.Param("code")
 
 	if code == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school code is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school code is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -147,14 +148,14 @@ func (h *SchoolHandler) UpdateSchool(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	var req dto.UpdateSchoolRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err, "school_id", id)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -183,7 +184,7 @@ func (h *SchoolHandler) DeleteSchool(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
