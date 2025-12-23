@@ -193,7 +193,15 @@ func (s *userService) UpdateUser(
 	}
 
 	user, err := s.userRepo.FindByID(ctx, userID)
-	if err != nil || user == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_user",
+			"user_id", userID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find user", err)
+	}
+	if user == nil {
 		return nil, errors.NewNotFoundError("user")
 	}
 
@@ -261,7 +269,15 @@ func (s *userService) DeleteUser(ctx context.Context, id string) error {
 
 	// Verificar que existe
 	user, err := s.userRepo.FindByID(ctx, userID)
-	if err != nil || user == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_user",
+			"user_id", userID,
+			"error", err.Error(),
+		)
+		return errors.NewDatabaseError("find user", err)
+	}
+	if user == nil {
 		return errors.NewNotFoundError("user")
 	}
 

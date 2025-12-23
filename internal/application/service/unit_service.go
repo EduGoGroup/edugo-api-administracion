@@ -79,7 +79,15 @@ func (s *unitService) UpdateUnit(ctx context.Context, id string, req dto.UpdateU
 	}
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID)
-	if err != nil || unit == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_unit",
+			"unit_id", unitID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find unit", err)
+	}
+	if unit == nil {
 		return nil, errors.NewNotFoundError("unit")
 	}
 

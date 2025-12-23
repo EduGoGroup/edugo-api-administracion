@@ -169,7 +169,15 @@ func (s *schoolService) UpdateSchool(ctx context.Context, id string, req dto.Upd
 	}
 
 	school, err := s.schoolRepo.FindByID(ctx, schoolID)
-	if err != nil || school == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_school",
+			"school_id", schoolID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find school", err)
+	}
+	if school == nil {
 		return nil, errors.NewNotFoundError("school")
 	}
 
@@ -249,7 +257,15 @@ func (s *schoolService) DeleteSchool(ctx context.Context, id string) error {
 	}
 
 	school, err := s.schoolRepo.FindByID(ctx, schoolID)
-	if err != nil || school == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_school",
+			"school_id", schoolID,
+			"error", err.Error(),
+		)
+		return errors.NewDatabaseError("find school", err)
+	}
+	if school == nil {
 		return errors.NewNotFoundError("school")
 	}
 

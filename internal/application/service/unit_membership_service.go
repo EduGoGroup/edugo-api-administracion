@@ -205,7 +205,15 @@ func (s *unitMembershipService) UpdateMembership(ctx context.Context, id string,
 	}
 
 	membership, err := s.membershipRepo.FindByID(ctx, membershipID)
-	if err != nil || membership == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_membership",
+			"membership_id", membershipID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find membership", err)
+	}
+	if membership == nil {
 		return nil, errors.NewNotFoundError("membership")
 	}
 
@@ -239,7 +247,15 @@ func (s *unitMembershipService) ExpireMembership(ctx context.Context, id string)
 	}
 
 	membership, err := s.membershipRepo.FindByID(ctx, membershipID)
-	if err != nil || membership == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_membership",
+			"membership_id", membershipID,
+			"error", err.Error(),
+		)
+		return errors.NewDatabaseError("find membership", err)
+	}
+	if membership == nil {
 		return errors.NewNotFoundError("membership")
 	}
 

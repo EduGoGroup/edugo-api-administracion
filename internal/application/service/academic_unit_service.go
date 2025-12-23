@@ -215,7 +215,15 @@ func (s *academicUnitService) UpdateUnit(ctx context.Context, id string, req dto
 	}
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
-	if err != nil || unit == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_academic_unit",
+			"unit_id", unitID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find academic unit", err)
+	}
+	if unit == nil {
 		return nil, errors.NewNotFoundError("academic unit")
 	}
 
@@ -260,7 +268,15 @@ func (s *academicUnitService) DeleteUnit(ctx context.Context, id string) error {
 	}
 
 	unit, err := s.unitRepo.FindByID(ctx, unitID, false)
-	if err != nil || unit == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_academic_unit",
+			"unit_id", unitID,
+			"error", err.Error(),
+		)
+		return errors.NewDatabaseError("find academic unit", err)
+	}
+	if unit == nil {
 		return errors.NewNotFoundError("academic unit")
 	}
 
