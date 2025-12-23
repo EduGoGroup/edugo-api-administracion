@@ -34,7 +34,7 @@ func NewStatsHandler(statsService service.StatsService, logger logger.Logger) *S
 func (h *StatsHandler) GetGlobalStats(c *gin.Context) {
 	stats, err := h.statsService.GetGlobalStats(c.Request.Context())
 	if err != nil {
-		handleError(c, h.logger, err, "get global stats")
+		_ = c.Error(err)
 		return
 	}
 

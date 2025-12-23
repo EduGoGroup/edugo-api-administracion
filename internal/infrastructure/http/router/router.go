@@ -7,6 +7,7 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/middleware"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -25,6 +26,7 @@ func SetupRouter(cfg *Config) *gin.Engine {
 	// Middleware global
 	router.Use(gin.Recovery())
 	router.Use(corsMiddleware())
+	router.Use(middleware.ErrorHandler(cfg.Logger))
 
 	// Health check
 	router.GET("/health", func(c *gin.Context) {

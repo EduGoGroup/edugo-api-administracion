@@ -38,7 +38,7 @@ func (h *MaterialHandler) DeleteMaterial(c *gin.Context) {
 
 	err := h.materialService.DeleteMaterial(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "delete material")
+		_ = c.Error(err)
 		return
 	}
 

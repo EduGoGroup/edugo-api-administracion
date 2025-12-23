@@ -68,7 +68,7 @@ func (h *GuardianHandler) CreateGuardianRelation(c *gin.Context) {
 	)
 
 	if err != nil {
-		handleError(c, h.logger, err, "create guardian relation")
+		_ = c.Error(err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (h *GuardianHandler) GetGuardianRelation(c *gin.Context) {
 
 	relation, err := h.guardianService.GetGuardianRelation(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "get guardian relation")
+		_ = c.Error(err)
 		return
 	}
 
@@ -122,7 +122,7 @@ func (h *GuardianHandler) GetGuardianRelations(c *gin.Context) {
 
 	relations, err := h.guardianService.GetGuardianRelations(c.Request.Context(), guardianID)
 	if err != nil {
-		handleError(c, h.logger, err, "get guardian relations")
+		_ = c.Error(err)
 		return
 	}
 
@@ -144,7 +144,7 @@ func (h *GuardianHandler) GetStudentGuardians(c *gin.Context) {
 
 	relations, err := h.guardianService.GetStudentGuardians(c.Request.Context(), studentID)
 	if err != nil {
-		handleError(c, h.logger, err, "get student guardians")
+		_ = c.Error(err)
 		return
 	}
 

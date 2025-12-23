@@ -57,7 +57,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	// Llamar al servicio
 	user, err := h.userService.CreateUser(c.Request.Context(), req)
 	if err != nil {
-		handleError(c, h.logger, err, "create user")
+		_ = c.Error(err)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 	user, err := h.userService.GetUser(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "get user")
+		_ = c.Error(err)
 		return
 	}
 
@@ -123,7 +123,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	user, err := h.userService.UpdateUser(c.Request.Context(), id, req)
 	if err != nil {
-		handleError(c, h.logger, err, "update user")
+		_ = c.Error(err)
 		return
 	}
 
@@ -147,7 +147,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	err := h.userService.DeleteUser(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "delete user")
+		_ = c.Error(err)
 		return
 	}
 

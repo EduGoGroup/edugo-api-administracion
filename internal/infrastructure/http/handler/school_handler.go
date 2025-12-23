@@ -48,7 +48,7 @@ func (h *SchoolHandler) CreateSchool(c *gin.Context) {
 
 	school, err := h.schoolService.CreateSchool(c.Request.Context(), req)
 	if err != nil {
-		handleError(c, h.logger, err, "create school")
+		_ = c.Error(err)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *SchoolHandler) GetSchool(c *gin.Context) {
 
 	school, err := h.schoolService.GetSchool(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "get school")
+		_ = c.Error(err)
 		return
 	}
 
@@ -105,7 +105,7 @@ func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
 
 	school, err := h.schoolService.GetSchoolByCode(c.Request.Context(), code)
 	if err != nil {
-		handleError(c, h.logger, err, "get school by code")
+		_ = c.Error(err)
 		return
 	}
 
@@ -124,7 +124,7 @@ func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
 func (h *SchoolHandler) ListSchools(c *gin.Context) {
 	schools, err := h.schoolService.ListSchools(c.Request.Context())
 	if err != nil {
-		handleError(c, h.logger, err, "list schools")
+		_ = c.Error(err)
 		return
 	}
 
@@ -161,7 +161,7 @@ func (h *SchoolHandler) UpdateSchool(c *gin.Context) {
 
 	school, err := h.schoolService.UpdateSchool(c.Request.Context(), id, req)
 	if err != nil {
-		handleError(c, h.logger, err, "update school")
+		_ = c.Error(err)
 		return
 	}
 
@@ -190,7 +190,7 @@ func (h *SchoolHandler) DeleteSchool(c *gin.Context) {
 
 	err := h.schoolService.DeleteSchool(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "delete school")
+		_ = c.Error(err)
 		return
 	}
 

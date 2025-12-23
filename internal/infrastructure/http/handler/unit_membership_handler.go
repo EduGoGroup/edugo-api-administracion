@@ -49,7 +49,7 @@ func (h *UnitMembershipHandler) CreateMembership(c *gin.Context) {
 
 	membership, err := h.membershipService.CreateMembership(c.Request.Context(), req)
 	if err != nil {
-		handleError(c, h.logger, err, "create membership")
+		_ = c.Error(err)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (h *UnitMembershipHandler) GetMembership(c *gin.Context) {
 
 	membership, err := h.membershipService.GetMembership(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "get membership")
+		_ = c.Error(err)
 		return
 	}
 
@@ -108,7 +108,7 @@ func (h *UnitMembershipHandler) ListMembershipsByUnit(c *gin.Context) {
 
 	memberships, err := h.membershipService.ListMembershipsByUnit(c.Request.Context(), unitID, activeOnly)
 	if err != nil {
-		handleError(c, h.logger, err, "list memberships by unit")
+		_ = c.Error(err)
 		return
 	}
 
@@ -138,7 +138,7 @@ func (h *UnitMembershipHandler) ListMembershipsByUser(c *gin.Context) {
 
 	memberships, err := h.membershipService.ListMembershipsByUser(c.Request.Context(), userID, activeOnly)
 	if err != nil {
-		handleError(c, h.logger, err, "list memberships by user")
+		_ = c.Error(err)
 		return
 	}
 
@@ -175,7 +175,7 @@ func (h *UnitMembershipHandler) ListMembershipsByRole(c *gin.Context) {
 
 	memberships, err := h.membershipService.ListMembershipsByRole(c.Request.Context(), unitID, role, activeOnly)
 	if err != nil {
-		handleError(c, h.logger, err, "list memberships by role")
+		_ = c.Error(err)
 		return
 	}
 
@@ -212,7 +212,7 @@ func (h *UnitMembershipHandler) UpdateMembership(c *gin.Context) {
 
 	membership, err := h.membershipService.UpdateMembership(c.Request.Context(), id, req)
 	if err != nil {
-		handleError(c, h.logger, err, "update membership")
+		_ = c.Error(err)
 		return
 	}
 
@@ -241,7 +241,7 @@ func (h *UnitMembershipHandler) ExpireMembership(c *gin.Context) {
 
 	err := h.membershipService.ExpireMembership(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "expire membership")
+		_ = c.Error(err)
 		return
 	}
 
@@ -270,7 +270,7 @@ func (h *UnitMembershipHandler) DeleteMembership(c *gin.Context) {
 
 	err := h.membershipService.DeleteMembership(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "delete membership")
+		_ = c.Error(err)
 		return
 	}
 

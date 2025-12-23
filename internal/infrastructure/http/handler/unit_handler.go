@@ -46,7 +46,7 @@ func (h *UnitHandler) CreateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.CreateUnit(c.Request.Context(), req)
 	if err != nil {
-		handleError(c, h.logger, err, "create unit")
+		_ = c.Error(err)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (h *UnitHandler) UpdateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.UpdateUnit(c.Request.Context(), id, req)
 	if err != nil {
-		handleError(c, h.logger, err, "update unit")
+		_ = c.Error(err)
 		return
 	}
 

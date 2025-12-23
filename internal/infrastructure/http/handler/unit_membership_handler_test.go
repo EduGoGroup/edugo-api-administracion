@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/middleware"
 	commonErrors "github.com/EduGoGroup/edugo-shared/common/errors"
 )
 
@@ -242,12 +243,14 @@ func TestMembershipHandler_GetMembership_NotFound(t *testing.T) {
 	appErr := commonErrors.NewNotFoundError("membership")
 	mockService.On("GetMembership", mock.Anything, "membership-999").Return(nil, appErr)
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/v1/memberships/membership-999", nil)
-	c.Params = gin.Params{{Key: "id", Value: "membership-999"}}
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(middleware.ErrorHandler(&MockLogger{}))
+	router.GET("/v1/memberships/:id", handler.GetMembership)
 
-	handler.GetMembership(c)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/v1/memberships/membership-999", nil)
+	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
 	mockService.AssertExpectations(t)

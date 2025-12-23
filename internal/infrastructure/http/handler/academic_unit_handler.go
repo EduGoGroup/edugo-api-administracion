@@ -55,7 +55,7 @@ func (h *AcademicUnitHandler) CreateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.CreateUnit(c.Request.Context(), schoolID, req)
 	if err != nil {
-		handleError(c, h.logger, err, "create unit")
+		_ = c.Error(err)
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *AcademicUnitHandler) GetUnit(c *gin.Context) {
 
 	unit, err := h.unitService.GetUnit(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "get unit")
+		_ = c.Error(err)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (h *AcademicUnitHandler) GetUnitTree(c *gin.Context) {
 
 	tree, err := h.unitService.GetUnitTree(c.Request.Context(), schoolID)
 	if err != nil {
-		handleError(c, h.logger, err, "get unit tree")
+		_ = c.Error(err)
 		return
 	}
 
@@ -143,7 +143,7 @@ func (h *AcademicUnitHandler) ListUnitsBySchool(c *gin.Context) {
 
 	units, err := h.unitService.ListUnitsBySchool(c.Request.Context(), schoolID, includeDeleted)
 	if err != nil {
-		handleError(c, h.logger, err, "list units")
+		_ = c.Error(err)
 		return
 	}
 
@@ -177,7 +177,7 @@ func (h *AcademicUnitHandler) ListUnitsByType(c *gin.Context) {
 
 	units, err := h.unitService.ListUnitsByType(c.Request.Context(), schoolID, unitType)
 	if err != nil {
-		handleError(c, h.logger, err, "list units by type")
+		_ = c.Error(err)
 		return
 	}
 
@@ -214,7 +214,7 @@ func (h *AcademicUnitHandler) UpdateUnit(c *gin.Context) {
 
 	unit, err := h.unitService.UpdateUnit(c.Request.Context(), id, req)
 	if err != nil {
-		handleError(c, h.logger, err, "update unit")
+		_ = c.Error(err)
 		return
 	}
 
@@ -243,7 +243,7 @@ func (h *AcademicUnitHandler) DeleteUnit(c *gin.Context) {
 
 	err := h.unitService.DeleteUnit(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "delete unit")
+		_ = c.Error(err)
 		return
 	}
 
@@ -272,7 +272,7 @@ func (h *AcademicUnitHandler) RestoreUnit(c *gin.Context) {
 
 	err := h.unitService.RestoreUnit(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "restore unit")
+		_ = c.Error(err)
 		return
 	}
 
@@ -301,7 +301,7 @@ func (h *AcademicUnitHandler) GetHierarchyPath(c *gin.Context) {
 
 	path, err := h.unitService.GetHierarchyPath(c.Request.Context(), id)
 	if err != nil {
-		handleError(c, h.logger, err, "get hierarchy path")
+		_ = c.Error(err)
 		return
 	}
 
