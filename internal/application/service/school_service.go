@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
@@ -25,12 +26,18 @@ type SchoolService interface {
 type schoolService struct {
 	schoolRepo repository.SchoolRepository
 	logger     logger.Logger
+	defaults   config.SchoolDefaults
 }
 
-func NewSchoolService(schoolRepo repository.SchoolRepository, logger logger.Logger) SchoolService {
+func NewSchoolService(
+	schoolRepo repository.SchoolRepository,
+	logger logger.Logger,
+	defaults config.SchoolDefaults,
+) SchoolService {
 	return &schoolService{
 		schoolRepo: schoolRepo,
 		logger:     logger,
+		defaults:   defaults,
 	}
 }
 
@@ -65,25 +72,25 @@ func (s *schoolService) CreateSchool(ctx context.Context, req dto.CreateSchoolRe
 	email := &req.ContactEmail
 	phone := &req.ContactPhone
 
-	// Aplicar defaults para campos opcionales
+	// Aplicar defaults desde configuración para campos opcionales
 	country := req.Country
 	if country == "" {
-		country = "CO" // Default: Colombia
+		country = s.defaults.Country
 	}
 
 	subscriptionTier := req.SubscriptionTier
 	if subscriptionTier == "" {
-		subscriptionTier = "free" // Default: plan gratuito
+		subscriptionTier = s.defaults.SubscriptionTier
 	}
 
 	maxTeachers := req.MaxTeachers
 	if maxTeachers == 0 {
-		maxTeachers = 50 // Default: 50 profesores
+		maxTeachers = s.defaults.MaxTeachers
 	}
 
 	maxStudents := req.MaxStudents
 	if maxStudents == 0 {
-		maxStudents = 500 // Default: 500 estudiantes
+		maxStudents = s.defaults.MaxStudents
 	}
 
 	var city *string

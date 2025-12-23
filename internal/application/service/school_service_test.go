@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 )
@@ -76,10 +77,20 @@ func (m *MockSchoolRepository) ExistsByCode(ctx context.Context, code string) (b
 	return args.Bool(0), args.Error(1)
 }
 
+// getTestDefaults retorna configuración de defaults para pruebas
+func getTestDefaults() config.SchoolDefaults {
+	return config.SchoolDefaults{
+		Country:          "CO",
+		SubscriptionTier: "free",
+		MaxTeachers:      50,
+		MaxStudents:      500,
+	}
+}
+
 func TestCreateSchool_Success(t *testing.T) {
 	mockRepo := new(MockSchoolRepository)
 	mockLogger := newTestLogger()
-	service := NewSchoolService(mockRepo, mockLogger)
+	service := NewSchoolService(mockRepo, mockLogger, getTestDefaults())
 
 	req := dto.CreateSchoolRequest{
 		Name:    "Test School",
@@ -102,7 +113,7 @@ func TestCreateSchool_Success(t *testing.T) {
 func TestCreateSchool_CodeAlreadyExists(t *testing.T) {
 	mockRepo := new(MockSchoolRepository)
 	mockLogger := newTestLogger()
-	service := NewSchoolService(mockRepo, mockLogger)
+	service := NewSchoolService(mockRepo, mockLogger, getTestDefaults())
 
 	req := dto.CreateSchoolRequest{
 		Name:    "Test School",
@@ -123,7 +134,7 @@ func TestCreateSchool_CodeAlreadyExists(t *testing.T) {
 func TestUpdateSchool_Success(t *testing.T) {
 	mockRepo := new(MockSchoolRepository)
 	mockLogger := newTestLogger()
-	service := NewSchoolService(mockRepo, mockLogger)
+	service := NewSchoolService(mockRepo, mockLogger, getTestDefaults())
 
 	schoolID := uuid.New()
 	existingSchool := &entities.School{
@@ -154,7 +165,7 @@ func TestUpdateSchool_Success(t *testing.T) {
 func TestGetSchool_Success(t *testing.T) {
 	mockRepo := new(MockSchoolRepository)
 	mockLogger := newTestLogger()
-	service := NewSchoolService(mockRepo, mockLogger)
+	service := NewSchoolService(mockRepo, mockLogger, getTestDefaults())
 
 	schoolID := uuid.New()
 	school := &entities.School{
