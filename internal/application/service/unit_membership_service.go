@@ -6,6 +6,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/valueobject"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/logger"
@@ -71,17 +72,9 @@ func (s *unitMembershipService) CreateMembership(ctx context.Context, req dto.Cr
 		return nil, errors.NewAlreadyExistsError("active membership for this user and unit")
 	}
 
-	// Validar role (lógica movida del value object)
-	validRoles := []string{"teacher", "student", "guardian", "coordinator", "admin", "assistant"}
-	isValid := false
-	for _, r := range validRoles {
-		if req.Role == r {
-			isValid = true
-			break
-		}
-	}
-	if !isValid {
-		return nil, errors.NewValidationError("invalid membership role")
+	// Validar role usando value object
+	if _, err := valueobject.ParseMembershipRole(req.Role); err != nil {
+		return nil, errors.NewValidationError(err.Error())
 	}
 
 	// Crear entidad
@@ -107,11 +100,16 @@ func (s *unitMembershipService) CreateMembership(ctx context.Context, req dto.Cr
 
 	// Persistir
 	if err := s.membershipRepo.Create(ctx, membership); err != nil {
-		s.logger.Error("failed to create membership", "error", err)
 		return nil, errors.NewDatabaseError("create membership", err)
 	}
 
-	s.logger.Info("membership created", "id", membership.ID.String())
+	s.logger.Info("entity created",
+		"entity_type", "membership",
+		"entity_id", membership.ID.String(),
+		"user_id", userID.String(),
+		"unit_id", unitID.String(),
+		"role", membership.Role,
+	)
 	response := dto.ToMembershipResponse(membership)
 	return &response, nil
 }
@@ -124,7 +122,6 @@ func (s *unitMembershipService) GetMembership(ctx context.Context, id string) (*
 
 	membership, err := s.membershipRepo.FindByID(ctx, membershipID)
 	if err != nil {
-		s.logger.Error("failed to find membership", "error", err)
 		return nil, errors.NewDatabaseError("find membership", err)
 	}
 	if membership == nil {
@@ -146,6 +143,11 @@ func (s *unitMembershipService) ListMembershipsByUnit(ctx context.Context, unitI
 		return nil, errors.NewDatabaseError("find memberships", err)
 	}
 
+	// Filtrar por activeOnly si es necesario
+	if activeOnly {
+		memberships = filterActiveMemberships(memberships)
+	}
+
 	responses := make([]dto.MembershipResponse, len(memberships))
 	for i, m := range memberships {
 		responses[i] = dto.ToMembershipResponse(m)
@@ -164,6 +166,11 @@ func (s *unitMembershipService) ListMembershipsByUser(ctx context.Context, userI
 		return nil, errors.NewDatabaseError("find memberships", err)
 	}
 
+	// Filtrar por activeOnly si es necesario
+	if activeOnly {
+		memberships = filterActiveMemberships(memberships)
+	}
+
 	responses := make([]dto.MembershipResponse, len(memberships))
 	for i, m := range memberships {
 		responses[i] = dto.ToMembershipResponse(m)
@@ -172,8 +179,27 @@ func (s *unitMembershipService) ListMembershipsByUser(ctx context.Context, userI
 }
 
 func (s *unitMembershipService) ListMembershipsByRole(ctx context.Context, unitID string, role string, activeOnly bool) ([]dto.MembershipResponse, error) {
-	// Implementación simplificada
-	return s.ListMembershipsByUnit(ctx, unitID, activeOnly)
+	uid, err := uuid.Parse(unitID)
+	if err != nil {
+		return nil, errors.NewValidationError("invalid unit ID")
+	}
+
+	// Validar rol usando value object
+	if _, err := valueobject.ParseMembershipRole(role); err != nil {
+		return nil, errors.NewValidationError(err.Error())
+	}
+
+	// Usar el método del repositorio que filtra a nivel de base de datos
+	memberships, err := s.membershipRepo.FindByUnitAndRole(ctx, uid, role, activeOnly)
+	if err != nil {
+		return nil, errors.NewDatabaseError("find memberships by role", err)
+	}
+
+	responses := make([]dto.MembershipResponse, len(memberships))
+	for i, m := range memberships {
+		responses[i] = dto.ToMembershipResponse(m)
+	}
+	return responses, nil
 }
 
 func (s *unitMembershipService) UpdateMembership(ctx context.Context, id string, req dto.UpdateMembershipRequest) (*dto.MembershipResponse, error) {
@@ -183,12 +209,24 @@ func (s *unitMembershipService) UpdateMembership(ctx context.Context, id string,
 	}
 
 	membership, err := s.membershipRepo.FindByID(ctx, membershipID)
-	if err != nil || membership == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_membership",
+			"membership_id", membershipID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find membership", err)
+	}
+	if membership == nil {
 		return nil, errors.NewNotFoundError("membership")
 	}
 
 	// Actualizar campos
 	if req.Role != nil {
+		// Validar rol usando value object
+		if _, err := valueobject.ParseMembershipRole(*req.Role); err != nil {
+			return nil, errors.NewValidationError(err.Error())
+		}
 		membership.Role = *req.Role
 	}
 	if req.ValidUntil != nil {
@@ -198,9 +236,22 @@ func (s *unitMembershipService) UpdateMembership(ctx context.Context, id string,
 	membership.UpdatedAt = time.Now()
 
 	if err := s.membershipRepo.Update(ctx, membership); err != nil {
-		s.logger.Error("failed to update membership", "error", err)
 		return nil, errors.NewDatabaseError("update membership", err)
 	}
+
+	updatedFields := []string{}
+	if req.Role != nil {
+		updatedFields = append(updatedFields, "role")
+	}
+	if req.ValidUntil != nil {
+		updatedFields = append(updatedFields, "valid_until")
+	}
+
+	s.logger.Info("entity updated",
+		"entity_type", "membership",
+		"entity_id", id,
+		"fields_updated", updatedFields,
+	)
 
 	response := dto.ToMembershipResponse(membership)
 	return &response, nil
@@ -213,7 +264,15 @@ func (s *unitMembershipService) ExpireMembership(ctx context.Context, id string)
 	}
 
 	membership, err := s.membershipRepo.FindByID(ctx, membershipID)
-	if err != nil || membership == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_membership",
+			"membership_id", membershipID,
+			"error", err.Error(),
+		)
+		return errors.NewDatabaseError("find membership", err)
+	}
+	if membership == nil {
 		return errors.NewNotFoundError("membership")
 	}
 
@@ -222,9 +281,13 @@ func (s *unitMembershipService) ExpireMembership(ctx context.Context, id string)
 	membership.UpdatedAt = now
 
 	if err := s.membershipRepo.Update(ctx, membership); err != nil {
-		s.logger.Error("failed to expire membership", "error", err)
 		return errors.NewDatabaseError("expire membership", err)
 	}
+
+	s.logger.Info("membership expired",
+		"entity_type", "membership",
+		"entity_id", id,
+	)
 
 	return nil
 }
@@ -236,9 +299,24 @@ func (s *unitMembershipService) DeleteMembership(ctx context.Context, id string)
 	}
 
 	if err := s.membershipRepo.Delete(ctx, membershipID); err != nil {
-		s.logger.Error("failed to delete membership", "error", err)
 		return errors.NewDatabaseError("delete membership", err)
 	}
 
+	s.logger.Info("entity deleted",
+		"entity_type", "membership",
+		"entity_id", id,
+	)
+
 	return nil
+}
+
+// filterActiveMemberships filtra membresías para retornar solo las activas
+func filterActiveMemberships(memberships []*entities.Membership) []*entities.Membership {
+	result := make([]*entities.Membership, 0, len(memberships))
+	for _, m := range memberships {
+		if m.IsActive && m.WithdrawnAt == nil {
+			result = append(result, m)
+		}
+	}
+	return result
 }

@@ -89,6 +89,36 @@ func Validate(cfg *Config) error {
 	}
 
 	// ============================================
+	// Validar School Defaults
+	// ============================================
+	if cfg.Defaults.School.Country == "" {
+		validationErrors = append(validationErrors, "defaults.school.country is required")
+	}
+
+	if cfg.Defaults.School.SubscriptionTier == "" {
+		validationErrors = append(validationErrors, "defaults.school.subscription_tier is required")
+	} else {
+		validTiers := map[string]bool{
+			"free":      true,
+			"basic":     true,
+			"premium":   true,
+			"enterprise": true,
+		}
+		if !validTiers[cfg.Defaults.School.SubscriptionTier] {
+			validationErrors = append(validationErrors,
+				"defaults.school.subscription_tier must be one of: free, basic, premium, enterprise")
+		}
+	}
+
+	if cfg.Defaults.School.MaxTeachers <= 0 {
+		validationErrors = append(validationErrors, "defaults.school.max_teachers must be positive")
+	}
+
+	if cfg.Defaults.School.MaxStudents <= 0 {
+		validationErrors = append(validationErrors, "defaults.school.max_students must be positive")
+	}
+
+	// ============================================
 	// Retornar errores si existen
 	// ============================================
 	if len(validationErrors) > 0 {

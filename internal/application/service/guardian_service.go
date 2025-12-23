@@ -56,19 +56,6 @@ func (s *guardianService) CreateGuardianRelation(
 		return nil, errors.NewValidationError("invalid student_id format").WithField("student_id", req.StudentID)
 	}
 
-	// Validar relationship type (lógica movida del value object)
-	validTypes := []string{"father", "mother", "grandfather", "grandmother", "uncle", "aunt", "other"}
-	isValid := false
-	for _, t := range validTypes {
-		if req.RelationshipType == t {
-			isValid = true
-			break
-		}
-	}
-	if !isValid {
-		return nil, errors.NewValidationError("invalid relationship_type").WithField("relationship_type", req.RelationshipType)
-	}
-
 	// Verificar si ya existe una relación activa
 	exists, err := s.guardianRepo.ExistsActiveRelation(ctx, guardianID, studentID)
 	if err != nil {

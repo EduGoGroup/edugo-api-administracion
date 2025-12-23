@@ -7,7 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -38,20 +38,13 @@ func (h *SubjectHandler) CreateSubject(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	subject, err := h.subjectService.CreateSubject(c.Request.Context(), req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create subject failed", "error", appErr.Message)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -74,17 +67,13 @@ func (h *SubjectHandler) UpdateSubject(c *gin.Context) {
 	var req dto.UpdateSubjectRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	subject, err := h.subjectService.UpdateSubject(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 

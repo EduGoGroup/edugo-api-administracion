@@ -7,7 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -42,24 +42,16 @@ func (h *SchoolHandler) CreateSchool(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	school, err := h.schoolService.CreateSchool(c.Request.Context(), req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create school failed", "error", appErr.Message, "code", appErr.Code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
-	h.logger.Info("school created", "school_id", school.ID, "name", school.Name)
 	c.JSON(http.StatusCreated, school)
 }
 
@@ -78,20 +70,13 @@ func (h *SchoolHandler) GetSchool(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	school, err := h.schoolService.GetSchool(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -113,20 +98,13 @@ func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
 	code := c.Param("code")
 
 	if code == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school code is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school code is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	school, err := h.schoolService.GetSchoolByCode(c.Request.Context(), code)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get school by code failed", "error", appErr.Message, "code", appErr.Code, "school_code", code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_code", code)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -145,14 +123,7 @@ func (h *SchoolHandler) GetSchoolByCode(c *gin.Context) {
 func (h *SchoolHandler) ListSchools(c *gin.Context) {
 	schools, err := h.schoolService.ListSchools(c.Request.Context())
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list schools failed", "error", appErr.Message, "code", appErr.Code)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -176,31 +147,23 @@ func (h *SchoolHandler) UpdateSchool(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	var req dto.UpdateSchoolRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err, "school_id", id)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	school, err := h.schoolService.UpdateSchool(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("update school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
-	h.logger.Info("school updated", "school_id", id)
 	c.JSON(http.StatusOK, school)
 }
 
@@ -219,23 +182,15 @@ func (h *SchoolHandler) DeleteSchool(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	err := h.schoolService.DeleteSchool(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("delete school failed", "error", appErr.Message, "code", appErr.Code, "school_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
-	h.logger.Info("school deleted", "school_id", id)
 	c.Status(http.StatusNoContent)
 }

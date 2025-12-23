@@ -12,6 +12,7 @@ type Config struct {
 	Logging     LoggingConfig  `mapstructure:"logging"`
 	Auth        AuthConfig     `mapstructure:"auth"`
 	Redis       RedisConfig    `mapstructure:"redis"`
+	Defaults    DefaultsConfig `mapstructure:"defaults"`
 }
 
 type ServerConfig struct {
@@ -131,4 +132,17 @@ func (c *PostgresConfig) GetConnectionString() string {
 // GetRedisAddr retorna la dirección de Redis en formato host:port
 func (c *RedisConfig) GetRedisAddr() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
+// DefaultsConfig contiene todas las configuraciones de valores por defecto
+type DefaultsConfig struct {
+	School SchoolDefaults `mapstructure:"school"`
+}
+
+// SchoolDefaults contiene los valores por defecto para escuelas
+type SchoolDefaults struct {
+	Country          string `mapstructure:"country"`           // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_COUNTRY
+	SubscriptionTier string `mapstructure:"subscription_tier"` // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_SUBSCRIPTION_TIER
+	MaxTeachers      int    `mapstructure:"max_teachers"`      // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_MAX_TEACHERS
+	MaxStudents      int    `mapstructure:"max_students"`      // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_MAX_STUDENTS
 }

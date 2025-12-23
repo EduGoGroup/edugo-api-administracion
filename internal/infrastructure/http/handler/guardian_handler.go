@@ -7,7 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -47,7 +47,7 @@ func (h *GuardianHandler) CreateGuardianRelation(c *gin.Context) {
 	// Bind JSON request
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{
 			Error: "invalid request body",
 			Code:  "INVALID_REQUEST",
 		})
@@ -68,28 +68,7 @@ func (h *GuardianHandler) CreateGuardianRelation(c *gin.Context) {
 	)
 
 	if err != nil {
-		// Manejar errores usando shared/errors
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create guardian relation failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"guardian_id", req.GuardianID,
-				"student_id", req.StudentID,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		// Error no manejado
-		h.logger.Error("unexpected error", "error", err)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		_ = c.Error(err)
 		return
 	}
 
@@ -121,25 +100,7 @@ func (h *GuardianHandler) GetGuardianRelation(c *gin.Context) {
 
 	relation, err := h.guardianService.GetGuardianRelation(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Warn("get guardian relation failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"id", id,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		_ = c.Error(err)
 		return
 	}
 
@@ -161,25 +122,7 @@ func (h *GuardianHandler) GetGuardianRelations(c *gin.Context) {
 
 	relations, err := h.guardianService.GetGuardianRelations(c.Request.Context(), guardianID)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get guardian relations failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"guardian_id", guardianID,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "guardian_id", guardianID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		_ = c.Error(err)
 		return
 	}
 
@@ -201,33 +144,9 @@ func (h *GuardianHandler) GetStudentGuardians(c *gin.Context) {
 
 	relations, err := h.guardianService.GetStudentGuardians(c.Request.Context(), studentID)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get student guardians failed",
-				"error", appErr.Message,
-				"code", appErr.Code,
-				"student_id", studentID,
-			)
-
-			c.JSON(appErr.StatusCode, ErrorResponse{
-				Error: appErr.Message,
-				Code:  string(appErr.Code),
-			})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "student_id", studentID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: "internal server error",
-			Code:  "INTERNAL_ERROR",
-		})
+		_ = c.Error(err)
 		return
 	}
 
 	c.JSON(http.StatusOK, relations)
-}
-
-// ErrorResponse representa una respuesta de error HTTP
-type ErrorResponse struct {
-	Error string `json:"error"`
-	Code  string `json:"code"`
 }

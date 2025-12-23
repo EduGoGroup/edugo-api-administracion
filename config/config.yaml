@@ -92,3 +92,13 @@ redis:
   port: 6379
   password: ""
   db: 0
+
+# ============================================
+# VALORES POR DEFECTO
+# ============================================
+defaults:
+  school:
+    country: "CO" # País por defecto para escuelas
+    subscription_tier: "free" # Tier de suscripción por defecto
+    max_teachers: 50 # Límite de profesores por defecto
+    max_students: 500 # Límite de estudiantes por defecto

@@ -1,19 +1,20 @@
 package dto
 
 import (
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"time"
+
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 )
 
 type CreateUnitRequest struct {
-	SchoolID     string  `json:"school_id" validate:"required,uuid"`
-	ParentUnitID *string `json:"parent_unit_id" validate:"omitempty,uuid"`
-	Name         string  `json:"name" validate:"required,min=2"`
+	SchoolID     string  `json:"school_id" binding:"required,uuid" validate:"required,uuid"`
+	ParentUnitID *string `json:"parent_unit_id" binding:"omitempty,uuid" validate:"omitempty,uuid"`
+	Name         string  `json:"name" binding:"required,min=2" validate:"required,min=2"`
 	Description  string  `json:"description"`
 }
 
 type UpdateUnitRequest struct {
-	Name        *string `json:"name" validate:"omitempty,min=2"`
+	Name        *string `json:"name" binding:"omitempty,min=2" validate:"omitempty,min=2"`
 	Description *string `json:"description"`
 }
 

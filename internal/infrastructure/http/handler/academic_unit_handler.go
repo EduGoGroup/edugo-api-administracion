@@ -7,7 +7,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
-	"github.com/EduGoGroup/edugo-shared/common/errors"
+	httpdto "github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/dto"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
@@ -42,31 +42,23 @@ func (h *AcademicUnitHandler) CreateUnit(c *gin.Context) {
 	schoolID := c.Param("id") // En la ruta es /:id/units
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	var req dto.CreateAcademicUnitRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	unit, err := h.unitService.CreateUnit(c.Request.Context(), schoolID, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("create unit failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
-	h.logger.Info("unit created", "unit_id", unit.ID, "school_id", schoolID, "type", unit.Type)
 	c.JSON(http.StatusCreated, unit)
 }
 
@@ -85,20 +77,13 @@ func (h *AcademicUnitHandler) GetUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	unit, err := h.unitService.GetUnit(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -120,20 +105,13 @@ func (h *AcademicUnitHandler) GetUnitTree(c *gin.Context) {
 	schoolID := c.Param("id") // En la ruta es /:id/units/tree
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	tree, err := h.unitService.GetUnitTree(c.Request.Context(), schoolID)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get unit tree failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -156,7 +134,7 @@ func (h *AcademicUnitHandler) ListUnitsBySchool(c *gin.Context) {
 	schoolID := c.Param("id") // En la ruta es /:id/units
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
@@ -164,14 +142,7 @@ func (h *AcademicUnitHandler) ListUnitsBySchool(c *gin.Context) {
 
 	units, err := h.unitService.ListUnitsBySchool(c.Request.Context(), schoolID, includeDeleted)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list units failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -194,25 +165,18 @@ func (h *AcademicUnitHandler) ListUnitsByType(c *gin.Context) {
 	unitType := c.Query("type")
 
 	if schoolID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "school ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	if unitType == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit type is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit type is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	units, err := h.unitService.ListUnitsByType(c.Request.Context(), schoolID, unitType)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("list units by type failed", "error", appErr.Message, "code", appErr.Code, "school_id", schoolID, "type", unitType)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "school_id", schoolID, "type", unitType)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
@@ -236,31 +200,23 @@ func (h *AcademicUnitHandler) UpdateUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	var req dto.UpdateAcademicUnitRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("invalid request body", "error", err, "unit_id", id)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "invalid request body", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	unit, err := h.unitService.UpdateUnit(c.Request.Context(), id, req)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("update unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
-	h.logger.Info("unit updated", "unit_id", id)
 	c.JSON(http.StatusOK, unit)
 }
 
@@ -279,24 +235,16 @@ func (h *AcademicUnitHandler) DeleteUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	err := h.unitService.DeleteUnit(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("delete unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
-	h.logger.Info("unit deleted", "unit_id", id)
 	c.Status(http.StatusNoContent)
 }
 
@@ -315,24 +263,16 @@ func (h *AcademicUnitHandler) RestoreUnit(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	err := h.unitService.RestoreUnit(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("restore unit failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 
-	h.logger.Info("unit restored", "unit_id", id)
 	c.Status(http.StatusNoContent)
 }
 
@@ -351,20 +291,13 @@ func (h *AcademicUnitHandler) GetHierarchyPath(c *gin.Context) {
 	id := c.Param("id")
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{Error: "unit ID is required", Code: "INVALID_REQUEST"})
 		return
 	}
 
 	path, err := h.unitService.GetHierarchyPath(c.Request.Context(), id)
 	if err != nil {
-		if appErr, ok := errors.GetAppError(err); ok {
-			h.logger.Error("get hierarchy path failed", "error", appErr.Message, "code", appErr.Code, "unit_id", id)
-			c.JSON(appErr.StatusCode, ErrorResponse{Error: appErr.Message, Code: string(appErr.Code)})
-			return
-		}
-
-		h.logger.Error("unexpected error", "error", err, "unit_id", id)
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "internal server error", Code: "INTERNAL_ERROR"})
+		_ = c.Error(err)
 		return
 	}
 

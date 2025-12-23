@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/middleware"
 	commonErrors "github.com/EduGoGroup/edugo-shared/common/errors"
 )
 
@@ -149,12 +150,15 @@ func TestSchoolHandler_CreateSchool_AlreadyExists(t *testing.T) {
 	}
 	bodyBytes, _ := json.Marshal(reqBody)
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("POST", "/v1/schools", bytes.NewReader(bodyBytes))
-	c.Request.Header.Set("Content-Type", "application/json")
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(middleware.ErrorHandler(&MockLogger{}))
+	router.POST("/v1/schools", handler.CreateSchool)
 
-	handler.CreateSchool(c)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/v1/schools", bytes.NewReader(bodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusConflict, w.Code)
 	mockService.AssertExpectations(t)
@@ -193,12 +197,14 @@ func TestSchoolHandler_GetSchool_NotFound(t *testing.T) {
 	appErr := commonErrors.NewNotFoundError("school")
 	mockService.On("GetSchool", mock.Anything, "school-999").Return(nil, appErr)
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/v1/schools/school-999", nil)
-	c.Params = gin.Params{{Key: "id", Value: "school-999"}}
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(middleware.ErrorHandler(&MockLogger{}))
+	router.GET("/v1/schools/:id", handler.GetSchool)
 
-	handler.GetSchool(c)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/v1/schools/school-999", nil)
+	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
 	mockService.AssertExpectations(t)
@@ -278,12 +284,14 @@ func TestSchoolHandler_DeleteSchool_InternalError(t *testing.T) {
 
 	mockService.On("DeleteSchool", mock.Anything, "school-123").Return(errors.New("database error"))
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("DELETE", "/v1/schools/school-123", nil)
-	c.Params = gin.Params{{Key: "id", Value: "school-123"}}
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(middleware.ErrorHandler(&MockLogger{}))
+	router.DELETE("/v1/schools/:id", handler.DeleteSchool)
 
-	handler.DeleteSchool(c)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/v1/schools/school-123", nil)
+	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	mockService.AssertExpectations(t)

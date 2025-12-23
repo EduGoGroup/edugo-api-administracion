@@ -4,16 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/handler"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/middleware"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
 
 // Config configuración para el router
 type Config struct {
-	SchoolRepo repository.SchoolRepository
-	UnitRepo   repository.AcademicUnitRepository
-	Logger     logger.Logger
+	SchoolRepo     repository.SchoolRepository
+	UnitRepo       repository.AcademicUnitRepository
+	Logger         logger.Logger
+	SchoolDefaults config.SchoolDefaults
 }
 
 // SetupRouter configura todas las rutas de la API
@@ -23,6 +26,7 @@ func SetupRouter(cfg *Config) *gin.Engine {
 	// Middleware global
 	router.Use(gin.Recovery())
 	router.Use(corsMiddleware())
+	router.Use(middleware.ErrorHandler(cfg.Logger))
 
 	// Health check
 	router.GET("/health", func(c *gin.Context) {
@@ -33,7 +37,7 @@ func SetupRouter(cfg *Config) *gin.Engine {
 	v1 := router.Group("/api/v1")
 	{
 		// Inicializar servicios
-		schoolService := service.NewSchoolService(cfg.SchoolRepo, cfg.Logger)
+		schoolService := service.NewSchoolService(cfg.SchoolRepo, cfg.Logger, cfg.SchoolDefaults)
 		academicUnitService := service.NewAcademicUnitService(cfg.UnitRepo, cfg.SchoolRepo, cfg.Logger)
 
 		// Handlers

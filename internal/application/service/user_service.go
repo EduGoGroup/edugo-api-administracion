@@ -6,6 +6,7 @@ import (
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/domain/repository"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/shared/crypto"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/entities"
 	"github.com/EduGoGroup/edugo-shared/common/errors"
 	"github.com/EduGoGroup/edugo-shared/common/types/enum"
@@ -33,8 +34,9 @@ type UserService interface {
 
 // userService implementa UserService
 type userService struct {
-	userRepo repository.UserRepository
-	logger   logger.Logger
+	userRepo       repository.UserRepository
+	passwordHasher *crypto.PasswordHasher
+	logger         logger.Logger
 }
 
 // NewUserService crea un nuevo UserService
@@ -43,8 +45,9 @@ func NewUserService(
 	logger logger.Logger,
 ) UserService {
 	return &userService{
-		userRepo: userRepo,
-		logger:   logger,
+		userRepo:       userRepo,
+		passwordHasher: crypto.NewPasswordHasher(12), // bcrypt cost 12 para producción
+		logger:         logger,
 	}
 }
 
@@ -62,10 +65,6 @@ func (s *userService) CreateUser(
 	// 2. Verificar si ya existe un usuario con ese email
 	exists, err := s.userRepo.ExistsByEmail(ctx, req.Email)
 	if err != nil {
-		s.logger.Error("failed to check existing user",
-			"error", err,
-			"email", req.Email,
-		)
 		return nil, errors.NewDatabaseError("check user", err)
 	}
 
@@ -86,12 +85,22 @@ func (s *userService) CreateUser(
 		return nil, errors.NewBusinessRuleError("cannot create admin users through this endpoint")
 	}
 
-	// 4. Crear entidad de infrastructure (sin lógica de negocio)
+	// 4. Validar y hashear password
+	if err := s.passwordHasher.Validate(req.Password); err != nil {
+		return nil, errors.NewValidationError(err.Error())
+	}
+
+	passwordHash, err := s.passwordHasher.Hash(req.Password)
+	if err != nil {
+		return nil, errors.NewDatabaseError("hash password", err)
+	}
+
+	// 5. Crear entidad de infrastructure
 	now := time.Now()
 	user := &entities.User{
 		ID:            uuid.New(),
 		Email:         req.Email,
-		PasswordHash:  "", // TODO: Implementar hash de password cuando se agregue autenticación
+		PasswordHash:  passwordHash,
 		FirstName:     req.FirstName,
 		LastName:      req.LastName,
 		Role:          req.Role,
@@ -104,17 +113,14 @@ func (s *userService) CreateUser(
 
 	// 5. Persistir en repositorio
 	if err := s.userRepo.Create(ctx, user); err != nil {
-		s.logger.Error("failed to save user",
-			"error", err,
-			"email", req.Email,
-		)
 		return nil, errors.NewDatabaseError("create user", err)
 	}
 
-	s.logger.Info("user created",
-		"user_id", user.ID.String(),
-		"email", req.Email,
-		"role", req.Role,
+	s.logger.Info("entity created",
+		"entity_type", "user",
+		"entity_id", user.ID.String(),
+		"email", user.Email,
+		"role", user.Role,
 	)
 
 	// 6. Retornar DTO de respuesta
@@ -130,7 +136,6 @@ func (s *userService) GetUser(ctx context.Context, id string) (*dto.UserResponse
 
 	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
-		s.logger.Error("failed to find user", "error", err, "id", id)
 		return nil, errors.NewDatabaseError("find user", err)
 	}
 
@@ -143,14 +148,8 @@ func (s *userService) GetUser(ctx context.Context, id string) (*dto.UserResponse
 
 // GetUserByEmail obtiene un usuario por email
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (*dto.UserResponse, error) {
-	// Validar email (lógica de negocio movida del value object)
-	if email == "" {
-		return nil, errors.NewValidationError("email is required")
-	}
-
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
-		s.logger.Error("failed to find user", "error", err, "email", email)
 		return nil, errors.NewDatabaseError("find user", err)
 	}
 
@@ -179,16 +178,20 @@ func (s *userService) UpdateUser(
 	}
 
 	user, err := s.userRepo.FindByID(ctx, userID)
-	if err != nil || user == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_user",
+			"user_id", userID,
+			"error", err.Error(),
+		)
+		return nil, errors.NewDatabaseError("find user", err)
+	}
+	if user == nil {
 		return nil, errors.NewNotFoundError("user")
 	}
 
 	// Actualizar campos (lógica de negocio movida del entity)
 	if req.FirstName != nil && req.LastName != nil {
-		// Validaciones (antes estaban en entity.UpdateName)
-		if *req.FirstName == "" || *req.LastName == "" {
-			return nil, errors.NewValidationError("first_name and last_name are required")
-		}
 		user.FirstName = *req.FirstName
 		user.LastName = *req.LastName
 	}
@@ -229,11 +232,25 @@ func (s *userService) UpdateUser(
 
 	// Persistir
 	if err := s.userRepo.Update(ctx, user); err != nil {
-		s.logger.Error("failed to update user", "error", err)
 		return nil, errors.NewDatabaseError("update user", err)
 	}
 
-	s.logger.Info("user updated", "user_id", user.ID.String())
+	updatedFields := []string{}
+	if req.FirstName != nil && req.LastName != nil {
+		updatedFields = append(updatedFields, "first_name", "last_name")
+	}
+	if req.Role != nil {
+		updatedFields = append(updatedFields, "role")
+	}
+	if req.IsActive != nil {
+		updatedFields = append(updatedFields, "is_active")
+	}
+
+	s.logger.Info("entity updated",
+		"entity_type", "user",
+		"entity_id", user.ID.String(),
+		"fields_updated", updatedFields,
+	)
 
 	return dto.ToUserResponse(user), nil
 }
@@ -247,17 +264,27 @@ func (s *userService) DeleteUser(ctx context.Context, id string) error {
 
 	// Verificar que existe
 	user, err := s.userRepo.FindByID(ctx, userID)
-	if err != nil || user == nil {
+	if err != nil {
+		s.logger.Error("database error",
+			"operation", "find_user",
+			"user_id", userID,
+			"error", err.Error(),
+		)
+		return errors.NewDatabaseError("find user", err)
+	}
+	if user == nil {
 		return errors.NewNotFoundError("user")
 	}
 
 	// Soft delete
 	if err := s.userRepo.Delete(ctx, userID); err != nil {
-		s.logger.Error("failed to delete user", "error", err, "id", id)
 		return errors.NewDatabaseError("delete user", err)
 	}
 
-	s.logger.Info("user deleted", "user_id", userID.String())
+	s.logger.Info("entity deleted",
+		"entity_type", "user",
+		"entity_id", userID.String(),
+	)
 
 	return nil
 }
