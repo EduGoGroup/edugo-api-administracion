@@ -337,3 +337,19 @@ func (r *MockUnitMembershipRepository) copyMembership(membership *entities.Membe
 
 	return &membershipCopy
 }
+
+// FindByUserAndSchool busca una membership activa por usuario y escuela
+func (r *MockUnitMembershipRepository) FindByUserAndSchool(ctx context.Context, userID, schoolID uuid.UUID) (*entities.Membership, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, membership := range r.memberships {
+		if membership.UserID == userID &&
+			membership.SchoolID == schoolID &&
+			membership.IsActive {
+			return r.copyMembership(membership), nil
+		}
+	}
+
+	return nil, nil
+}

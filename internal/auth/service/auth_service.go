@@ -20,6 +20,8 @@ var (
 	ErrUserNotFound        = errors.New("usuario no encontrado")
 	ErrUserInactive        = errors.New("usuario inactivo")
 	ErrInvalidRefreshToken = errors.New("refresh token inválido")
+	ErrNoMembership        = errors.New("no tiene membresía activa en esta escuela")
+	ErrInvalidSchoolID     = errors.New("school_id inválido")
 )
 
 // AuthService define la interfaz del servicio de autenticación
@@ -30,6 +32,10 @@ type AuthService interface {
 	// Logout invalida los tokens del usuario
 	Logout(ctx context.Context, accessToken string) error
 
+	// SwitchContext cambia el contexto de escuela del usuario
+	// Valida que el usuario tenga membresía activa en la escuela destino
+	SwitchContext(ctx context.Context, userID, targetSchoolID string) (*dto.SwitchContextResponse, error)
+
 	// RefreshToken genera un nuevo access token usando el refresh token
 	// Retorna RefreshResponse (solo access_token) para compatibilidad con api-mobile
 	RefreshToken(ctx context.Context, refreshToken string) (*dto.RefreshResponse, error)
@@ -37,6 +43,7 @@ type AuthService interface {
 
 // authService implementa AuthService
 type authService struct {
+	membershipRepo repository.UnitMembershipRepository
 	userRepo       repository.UserRepository
 	tokenService   *TokenService
 	passwordHasher *crypto.PasswordHasher
@@ -45,12 +52,14 @@ type authService struct {
 
 // NewAuthService crea una nueva instancia del servicio
 func NewAuthService(
+	membershipRepo repository.UnitMembershipRepository,
 	userRepo repository.UserRepository,
 	tokenService *TokenService,
 	passwordHasher *crypto.PasswordHasher,
 	logger logger.Logger,
 ) AuthService {
 	return &authService{
+		membershipRepo: membershipRepo,
 		userRepo:       userRepo,
 		tokenService:   tokenService,
 		passwordHasher: passwordHasher,
@@ -205,4 +214,76 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 	)
 
 	return refreshResponse, nil
+}
+
+// SwitchContext cambia el contexto de escuela del usuario
+// Valida que el usuario tenga una membresía activa en la escuela destino
+func (s *authService) SwitchContext(ctx context.Context, userID, targetSchoolID string) (*dto.SwitchContextResponse, error) {
+	// 1. Parsear y validar UUIDs
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("user_id inválido: %w", err)
+	}
+
+	schoolUUID, err := uuid.Parse(targetSchoolID)
+	if err != nil {
+		return nil, ErrInvalidSchoolID
+	}
+
+	// 2. Verificar que el usuario existe y está activo
+	user, err := s.userRepo.FindByID(ctx, userUUID)
+	if err != nil {
+		return nil, fmt.Errorf("error buscando usuario: %w", err)
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+	if !user.IsActive {
+		return nil, ErrUserInactive
+	}
+
+	// 3. Verificar que el usuario tiene membresía activa en la escuela destino
+	membership, err := s.membershipRepo.FindByUserAndSchool(ctx, userUUID, schoolUUID)
+	if err != nil {
+		return nil, fmt.Errorf("error verificando membresía: %w", err)
+	}
+	if membership == nil {
+		s.logger.Warn("intento de switch-context sin membresía",
+			"user_id", userID,
+			"target_school_id", targetSchoolID,
+		)
+		return nil, ErrNoMembership
+	}
+
+	// 4. Generar nuevos tokens con el nuevo school_id y rol de la membresía
+	tokenResponse, err := s.tokenService.GenerateTokenPair(
+		user.ID.String(),
+		user.Email,
+		membership.Role, // Usar el rol de la membresía en esa escuela
+		targetSchoolID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error generando tokens: %w", err)
+	}
+
+	s.logger.Info("context switched",
+		"entity_type", "auth_context",
+		"user_id", userID,
+		"new_school_id", targetSchoolID,
+		"new_role", membership.Role,
+	)
+
+	// 5. Construir respuesta
+	return &dto.SwitchContextResponse{
+		AccessToken:  tokenResponse.AccessToken,
+		RefreshToken: tokenResponse.RefreshToken,
+		ExpiresIn:    tokenResponse.ExpiresIn,
+		TokenType:    tokenResponse.TokenType,
+		Context: &dto.ContextInfo{
+			SchoolID: targetSchoolID,
+			Role:     membership.Role,
+			UserID:   userID,
+			Email:    user.Email,
+		},
+	}, nil
 }

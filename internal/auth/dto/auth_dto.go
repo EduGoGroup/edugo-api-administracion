@@ -28,6 +28,30 @@ type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
+// SwitchContextRequest representa el request para cambiar de contexto (escuela)
+type SwitchContextRequest struct {
+	SchoolID string `json:"school_id" binding:"required,uuid"`
+}
+
+// SwitchContextResponse representa la respuesta al cambiar de contexto
+type SwitchContextResponse struct {
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
+	ExpiresIn    int64        `json:"expires_in"`
+	TokenType    string       `json:"token_type"`
+	Context      *ContextInfo `json:"context"`
+}
+
+// ContextInfo representa información del contexto actual (escuela + rol)
+type ContextInfo struct {
+	SchoolID   string `json:"school_id"`
+	SchoolName string `json:"school_name,omitempty"`
+	Role       string `json:"role"`
+	UserID     string `json:"user_id"`
+	Email      string `json:"email"`
+
+}
+
 // ===============================================
 // RESPONSE DTOs
 // ===============================================
