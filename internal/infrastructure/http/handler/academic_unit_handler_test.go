@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/middleware"
 	commonErrors "github.com/EduGoGroup/edugo-shared/common/errors"
 )
 
@@ -298,12 +299,13 @@ func TestAcademicUnitHandler_GetUnit_NotFound(t *testing.T) {
 	appErr := commonErrors.NewNotFoundError("unit")
 	mockService.On("GetUnit", mock.Anything, "unit-999").Return(nil, appErr)
 
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/v1/units/unit-999", nil)
-	c.Params = gin.Params{{Key: "id", Value: "unit-999"}}
+	router := gin.New()
+	router.Use(middleware.ErrorHandler(&MockLogger{}))
+	router.GET("/v1/units/:id", handler.GetUnit)
 
-	handler.GetUnit(c)
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/v1/units/unit-999", nil)
+	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
 	mockService.AssertExpectations(t)

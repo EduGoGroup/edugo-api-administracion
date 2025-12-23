@@ -44,7 +44,7 @@ func (h *SubjectHandler) CreateSubject(c *gin.Context) {
 
 	subject, err := h.subjectService.CreateSubject(c.Request.Context(), req)
 	if err != nil {
-		handleError(c, h.logger, err, "create subject")
+		_ = c.Error(err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *SubjectHandler) UpdateSubject(c *gin.Context) {
 
 	subject, err := h.subjectService.UpdateSubject(c.Request.Context(), id, req)
 	if err != nil {
-		handleError(c, h.logger, err, "update subject")
+		_ = c.Error(err)
 		return
 	}
 
