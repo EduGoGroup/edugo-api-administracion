@@ -149,6 +149,7 @@ func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string, cfg *confi
 	c.SchoolService = service.NewSchoolService(
 		c.SchoolRepository,
 		logger,
+		cfg.Defaults.School,
 	)
 	c.AcademicUnitService = service.NewAcademicUnitService(
 		c.AcademicUnitRepository,
