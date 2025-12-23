@@ -100,11 +100,16 @@ func (s *unitMembershipService) CreateMembership(ctx context.Context, req dto.Cr
 
 	// Persistir
 	if err := s.membershipRepo.Create(ctx, membership); err != nil {
-		s.logger.Error("failed to create membership", "error", err)
 		return nil, errors.NewDatabaseError("create membership", err)
 	}
 
-	s.logger.Info("membership created", "id", membership.ID.String())
+	s.logger.Info("entity created",
+		"entity_type", "membership",
+		"entity_id", membership.ID.String(),
+		"user_id", userID.String(),
+		"unit_id", unitID.String(),
+		"role", membership.Role,
+	)
 	response := dto.ToMembershipResponse(membership)
 	return &response, nil
 }
@@ -117,7 +122,6 @@ func (s *unitMembershipService) GetMembership(ctx context.Context, id string) (*
 
 	membership, err := s.membershipRepo.FindByID(ctx, membershipID)
 	if err != nil {
-		s.logger.Error("failed to find membership", "error", err)
 		return nil, errors.NewDatabaseError("find membership", err)
 	}
 	if membership == nil {
@@ -232,9 +236,22 @@ func (s *unitMembershipService) UpdateMembership(ctx context.Context, id string,
 	membership.UpdatedAt = time.Now()
 
 	if err := s.membershipRepo.Update(ctx, membership); err != nil {
-		s.logger.Error("failed to update membership", "error", err)
 		return nil, errors.NewDatabaseError("update membership", err)
 	}
+
+	updatedFields := []string{}
+	if req.Role != nil {
+		updatedFields = append(updatedFields, "role")
+	}
+	if req.ValidUntil != nil {
+		updatedFields = append(updatedFields, "valid_until")
+	}
+
+	s.logger.Info("entity updated",
+		"entity_type", "membership",
+		"entity_id", id,
+		"fields_updated", updatedFields,
+	)
 
 	response := dto.ToMembershipResponse(membership)
 	return &response, nil
@@ -264,9 +281,13 @@ func (s *unitMembershipService) ExpireMembership(ctx context.Context, id string)
 	membership.UpdatedAt = now
 
 	if err := s.membershipRepo.Update(ctx, membership); err != nil {
-		s.logger.Error("failed to expire membership", "error", err)
 		return errors.NewDatabaseError("expire membership", err)
 	}
+
+	s.logger.Info("membership expired",
+		"entity_type", "membership",
+		"entity_id", id,
+	)
 
 	return nil
 }
@@ -278,9 +299,13 @@ func (s *unitMembershipService) DeleteMembership(ctx context.Context, id string)
 	}
 
 	if err := s.membershipRepo.Delete(ctx, membershipID); err != nil {
-		s.logger.Error("failed to delete membership", "error", err)
 		return errors.NewDatabaseError("delete membership", err)
 	}
+
+	s.logger.Info("entity deleted",
+		"entity_type", "membership",
+		"entity_id", id,
+	)
 
 	return nil
 }

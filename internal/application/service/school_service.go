@@ -45,7 +45,6 @@ func (s *schoolService) CreateSchool(ctx context.Context, req dto.CreateSchoolRe
 	// Verificar código único
 	exists, err := s.schoolRepo.ExistsByCode(ctx, req.Code)
 	if err != nil {
-		s.logger.Error("failed to check existing school", "error", err, "code", req.Code)
 		return nil, errors.NewDatabaseError("check school", err)
 	}
 	if exists {
@@ -119,11 +118,15 @@ func (s *schoolService) CreateSchool(ctx context.Context, req dto.CreateSchoolRe
 
 	// Persistir
 	if err := s.schoolRepo.Create(ctx, school); err != nil {
-		s.logger.Error("failed to create school", "error", err, "name", req.Name)
 		return nil, errors.NewDatabaseError("create school", err)
 	}
 
-	s.logger.Info("school created successfully", "id", school.ID.String(), "name", req.Name)
+	s.logger.Info("entity created",
+		"entity_type", "school",
+		"entity_id", school.ID.String(),
+		"name", school.Name,
+		"code", school.Code,
+	)
 
 	response := dto.ToSchoolResponse(school)
 	return &response, nil
@@ -137,7 +140,6 @@ func (s *schoolService) GetSchool(ctx context.Context, id string) (*dto.SchoolRe
 
 	school, err := s.schoolRepo.FindByID(ctx, schoolID)
 	if err != nil {
-		s.logger.Error("failed to find school", "error", err, "id", id)
 		return nil, errors.NewDatabaseError("find school", err)
 	}
 	if school == nil {
@@ -151,7 +153,6 @@ func (s *schoolService) GetSchool(ctx context.Context, id string) (*dto.SchoolRe
 func (s *schoolService) GetSchoolByCode(ctx context.Context, code string) (*dto.SchoolResponse, error) {
 	school, err := s.schoolRepo.FindByCode(ctx, code)
 	if err != nil {
-		s.logger.Error("failed to find school by code", "error", err, "code", code)
 		return nil, errors.NewDatabaseError("find school", err)
 	}
 	if school == nil {
@@ -230,11 +231,46 @@ func (s *schoolService) UpdateSchool(ctx context.Context, id string, req dto.Upd
 
 	// Persistir
 	if err := s.schoolRepo.Update(ctx, school); err != nil {
-		s.logger.Error("failed to update school", "error", err, "id", id)
 		return nil, errors.NewDatabaseError("update school", err)
 	}
 
-	s.logger.Info("school updated", "id", id)
+	updatedFields := []string{}
+	if req.Name != nil {
+		updatedFields = append(updatedFields, "name")
+	}
+	if req.Address != nil {
+		updatedFields = append(updatedFields, "address")
+	}
+	if req.ContactEmail != nil {
+		updatedFields = append(updatedFields, "contact_email")
+	}
+	if req.ContactPhone != nil {
+		updatedFields = append(updatedFields, "contact_phone")
+	}
+	if req.City != nil {
+		updatedFields = append(updatedFields, "city")
+	}
+	if req.Country != nil {
+		updatedFields = append(updatedFields, "country")
+	}
+	if req.SubscriptionTier != nil {
+		updatedFields = append(updatedFields, "subscription_tier")
+	}
+	if req.MaxTeachers != nil {
+		updatedFields = append(updatedFields, "max_teachers")
+	}
+	if req.MaxStudents != nil {
+		updatedFields = append(updatedFields, "max_students")
+	}
+	if req.Metadata != nil {
+		updatedFields = append(updatedFields, "metadata")
+	}
+
+	s.logger.Info("entity updated",
+		"entity_type", "school",
+		"entity_id", id,
+		"fields_updated", updatedFields,
+	)
 
 	response := dto.ToSchoolResponse(school)
 	return &response, nil
@@ -243,7 +279,6 @@ func (s *schoolService) UpdateSchool(ctx context.Context, id string, req dto.Upd
 func (s *schoolService) ListSchools(ctx context.Context) ([]dto.SchoolResponse, error) {
 	schools, err := s.schoolRepo.List(ctx, repository.ListFilters{})
 	if err != nil {
-		s.logger.Error("failed to list schools", "error", err)
 		return nil, errors.NewDatabaseError("list schools", err)
 	}
 
@@ -270,10 +305,12 @@ func (s *schoolService) DeleteSchool(ctx context.Context, id string) error {
 	}
 
 	if err := s.schoolRepo.Delete(ctx, schoolID); err != nil {
-		s.logger.Error("failed to delete school", "error", err, "id", id)
 		return errors.NewDatabaseError("delete school", err)
 	}
 
-	s.logger.Info("school deleted", "id", id)
+	s.logger.Info("entity deleted",
+		"entity_type", "school",
+		"entity_id", id,
+	)
 	return nil
 }

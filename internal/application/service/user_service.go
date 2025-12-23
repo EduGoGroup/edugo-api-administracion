@@ -65,10 +65,6 @@ func (s *userService) CreateUser(
 	// 2. Verificar si ya existe un usuario con ese email
 	exists, err := s.userRepo.ExistsByEmail(ctx, req.Email)
 	if err != nil {
-		s.logger.Error("failed to check existing user",
-			"error", err,
-			"email", req.Email,
-		)
 		return nil, errors.NewDatabaseError("check user", err)
 	}
 
@@ -96,7 +92,6 @@ func (s *userService) CreateUser(
 
 	passwordHash, err := s.passwordHasher.Hash(req.Password)
 	if err != nil {
-		s.logger.Error("failed to hash password", "error", err)
 		return nil, errors.NewDatabaseError("hash password", err)
 	}
 
@@ -118,17 +113,14 @@ func (s *userService) CreateUser(
 
 	// 5. Persistir en repositorio
 	if err := s.userRepo.Create(ctx, user); err != nil {
-		s.logger.Error("failed to save user",
-			"error", err,
-			"email", req.Email,
-		)
 		return nil, errors.NewDatabaseError("create user", err)
 	}
 
-	s.logger.Info("user created",
-		"user_id", user.ID.String(),
-		"email", req.Email,
-		"role", req.Role,
+	s.logger.Info("entity created",
+		"entity_type", "user",
+		"entity_id", user.ID.String(),
+		"email", user.Email,
+		"role", user.Role,
 	)
 
 	// 6. Retornar DTO de respuesta
@@ -144,7 +136,6 @@ func (s *userService) GetUser(ctx context.Context, id string) (*dto.UserResponse
 
 	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
-		s.logger.Error("failed to find user", "error", err, "id", id)
 		return nil, errors.NewDatabaseError("find user", err)
 	}
 
@@ -164,7 +155,6 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*dto.Us
 
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
-		s.logger.Error("failed to find user", "error", err, "email", email)
 		return nil, errors.NewDatabaseError("find user", err)
 	}
 
@@ -251,11 +241,25 @@ func (s *userService) UpdateUser(
 
 	// Persistir
 	if err := s.userRepo.Update(ctx, user); err != nil {
-		s.logger.Error("failed to update user", "error", err)
 		return nil, errors.NewDatabaseError("update user", err)
 	}
 
-	s.logger.Info("user updated", "user_id", user.ID.String())
+	updatedFields := []string{}
+	if req.FirstName != nil && req.LastName != nil {
+		updatedFields = append(updatedFields, "first_name", "last_name")
+	}
+	if req.Role != nil {
+		updatedFields = append(updatedFields, "role")
+	}
+	if req.IsActive != nil {
+		updatedFields = append(updatedFields, "is_active")
+	}
+
+	s.logger.Info("entity updated",
+		"entity_type", "user",
+		"entity_id", user.ID.String(),
+		"fields_updated", updatedFields,
+	)
 
 	return dto.ToUserResponse(user), nil
 }
@@ -283,11 +287,13 @@ func (s *userService) DeleteUser(ctx context.Context, id string) error {
 
 	// Soft delete
 	if err := s.userRepo.Delete(ctx, userID); err != nil {
-		s.logger.Error("failed to delete user", "error", err, "id", id)
 		return errors.NewDatabaseError("delete user", err)
 	}
 
-	s.logger.Info("user deleted", "user_id", userID.String())
+	s.logger.Info("entity deleted",
+		"entity_type", "user",
+		"entity_id", userID.String(),
+	)
 
 	return nil
 }

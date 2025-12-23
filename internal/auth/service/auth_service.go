@@ -63,7 +63,6 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 	// 1. Buscar usuario por email
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
-		s.logger.Error("error buscando usuario", "error", err, "email", email)
 		return nil, fmt.Errorf("error buscando usuario: %w", err)
 	}
 	if user == nil {
@@ -90,7 +89,6 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 		user.Role,
 	)
 	if err != nil {
-		s.logger.Error("error generando tokens", "error", err, "user_id", user.ID.String())
 		return nil, fmt.Errorf("error generando tokens: %w", err)
 	}
 
@@ -104,9 +102,10 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 		Role:      user.Role,
 	}
 
-	s.logger.Info("login exitoso",
+	s.logger.Info("user logged in",
+		"entity_type", "auth_session",
 		"user_id", user.ID.String(),
-		"email", email,
+		"email", user.Email,
 		"role", user.Role,
 	)
 
@@ -128,11 +127,12 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 func (s *authService) Logout(ctx context.Context, accessToken string) error {
 	// Revocar el token (agregarlo a blacklist)
 	if err := s.tokenService.RevokeToken(ctx, accessToken); err != nil {
-		s.logger.Error("error revocando token", "error", err)
 		return fmt.Errorf("error en logout: %w", err)
 	}
 
-	s.logger.Info("logout exitoso")
+	s.logger.Info("user logged out",
+		"entity_type", "auth_session",
+	)
 	return nil
 }
 
@@ -142,7 +142,6 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 	// 1. Verificar el refresh token
 	response, err := s.tokenService.VerifyToken(ctx, refreshToken)
 	if err != nil {
-		s.logger.Error("error verificando refresh token", "error", err)
 		return nil, fmt.Errorf("error verificando token: %w", err)
 	}
 
@@ -154,13 +153,11 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 	// 2. Buscar usuario por ID (el refresh token tiene UserID en Subject)
 	userID, err := uuid.Parse(response.UserID)
 	if err != nil {
-		s.logger.Error("error parseando user_id del token", "error", err, "user_id", response.UserID)
 		return nil, ErrInvalidRefreshToken
 	}
 
 	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
-		s.logger.Error("error buscando usuario para refresh", "error", err)
 		return nil, fmt.Errorf("error buscando usuario: %w", err)
 	}
 	if user == nil {
@@ -185,7 +182,10 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 		return nil, fmt.Errorf("error generando nuevo access token: %w", err)
 	}
 
-	s.logger.Info("token refresh exitoso", "user_id", user.ID.String())
+	s.logger.Info("token refreshed",
+		"entity_type", "auth_token",
+		"user_id", user.ID.String(),
+	)
 
 	return refreshResponse, nil
 }
