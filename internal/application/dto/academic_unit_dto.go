@@ -10,7 +10,7 @@ import (
 // CreateAcademicUnitRequest representa la solicitud para crear una unidad académica
 type CreateAcademicUnitRequest struct {
 	ParentUnitID *string                `json:"parent_unit_id" validate:"omitempty,uuid"`
-	Type         string                 `json:"type" validate:"required,oneof=school grade section club department"`
+	Type         string                 `json:"type" validate:"required"` // Validación realizada por valueobject.ParseUnitType
 	DisplayName  string                 `json:"display_name" validate:"required,min=3,max=255"`
 	Code         string                 `json:"code" validate:"omitempty,min=2,max=50"`
 	Description  string                 `json:"description"`
