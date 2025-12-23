@@ -141,8 +141,8 @@ type DefaultsConfig struct {
 
 // SchoolDefaults contiene los valores por defecto para escuelas
 type SchoolDefaults struct {
-	Country          string `mapstructure:"country"`           // ENV: DEFAULT_SCHOOL_COUNTRY
-	SubscriptionTier string `mapstructure:"subscription_tier"` // ENV: DEFAULT_SCHOOL_SUBSCRIPTION_TIER
-	MaxTeachers      int    `mapstructure:"max_teachers"`      // ENV: DEFAULT_SCHOOL_MAX_TEACHERS
-	MaxStudents      int    `mapstructure:"max_students"`      // ENV: DEFAULT_SCHOOL_MAX_STUDENTS
+	Country          string `mapstructure:"country"`           // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_COUNTRY
+	SubscriptionTier string `mapstructure:"subscription_tier"` // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_SUBSCRIPTION_TIER
+	MaxTeachers      int    `mapstructure:"max_teachers"`      // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_MAX_TEACHERS
+	MaxStudents      int    `mapstructure:"max_students"`      // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_MAX_STUDENTS
 }
