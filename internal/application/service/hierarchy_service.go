@@ -63,14 +63,7 @@ func (s *HierarchyService) CreateUnit(
 		}
 	}
 
-	// Crear la unidad (lógica de negocio movida aquí)
-	if name == "" {
-		return nil, errors.NewValidationError("name is required")
-	}
-	if len(name) < 3 {
-		return nil, errors.NewValidationError("name must be at least 3 characters")
-	}
-
+	// Crear la unidad
 	now := time.Now()
 	desc := &description
 	unit := &entities.AcademicUnit{

@@ -9,18 +9,18 @@ import (
 
 // CreateAcademicUnitRequest representa la solicitud para crear una unidad académica
 type CreateAcademicUnitRequest struct {
-	ParentUnitID *string                `json:"parent_unit_id" validate:"omitempty,uuid"`
-	Type         string                 `json:"type" validate:"required"` // Validación realizada por valueobject.ParseUnitType
-	DisplayName  string                 `json:"display_name" validate:"required,min=3,max=255"`
-	Code         string                 `json:"code" validate:"omitempty,min=2,max=50"`
+	ParentUnitID *string                `json:"parent_unit_id" binding:"omitempty,uuid" validate:"omitempty,uuid"`
+	Type         string                 `json:"type" binding:"required" validate:"required"` // Validación realizada por valueobject.ParseUnitType
+	DisplayName  string                 `json:"display_name" binding:"required,min=3,max=255" validate:"required,min=3,max=255"`
+	Code         string                 `json:"code" binding:"omitempty,min=2,max=50" validate:"omitempty,min=2,max=50"`
 	Description  string                 `json:"description"`
 	Metadata     map[string]interface{} `json:"metadata"`
 }
 
 // UpdateAcademicUnitRequest representa la solicitud para actualizar una unidad
 type UpdateAcademicUnitRequest struct {
-	ParentUnitID *string                `json:"parent_unit_id" validate:"omitempty,uuid"`
-	DisplayName  *string                `json:"display_name" validate:"omitempty,min=3,max=255"`
+	ParentUnitID *string                `json:"parent_unit_id" binding:"omitempty,uuid" validate:"omitempty,uuid"`
+	DisplayName  *string                `json:"display_name" binding:"omitempty,min=3,max=255" validate:"omitempty,min=3,max=255"`
 	Description  *string                `json:"description"`
 	Metadata     map[string]interface{} `json:"metadata"`
 }

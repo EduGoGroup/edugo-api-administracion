@@ -148,11 +148,6 @@ func (s *userService) GetUser(ctx context.Context, id string) (*dto.UserResponse
 
 // GetUserByEmail obtiene un usuario por email
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (*dto.UserResponse, error) {
-	// Validar email (lógica de negocio movida del value object)
-	if email == "" {
-		return nil, errors.NewValidationError("email is required")
-	}
-
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.NewDatabaseError("find user", err)
@@ -197,10 +192,6 @@ func (s *userService) UpdateUser(
 
 	// Actualizar campos (lógica de negocio movida del entity)
 	if req.FirstName != nil && req.LastName != nil {
-		// Validaciones (antes estaban en entity.UpdateName)
-		if *req.FirstName == "" || *req.LastName == "" {
-			return nil, errors.NewValidationError("first_name and last_name are required")
-		}
 		user.FirstName = *req.FirstName
 		user.LastName = *req.LastName
 	}
