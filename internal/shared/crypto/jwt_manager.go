@@ -30,9 +30,10 @@ type JWTConfig struct {
 
 // Claims representa los claims personalizados del JWT
 type Claims struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
-	Role   string `json:"role"`
+	UserID   string `json:"user_id"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+	SchoolID string `json:"school_id,omitempty"` // Escuela principal del usuario (vacío para super_admin)
 	jwt.RegisteredClaims
 }
 
@@ -60,14 +61,15 @@ func NewJWTManager(config JWTConfig) (*JWTManager, error) {
 }
 
 // GenerateAccessToken genera un nuevo access token
-func (m *JWTManager) GenerateAccessToken(userID, email, role string) (string, time.Time, error) {
+func (m *JWTManager) GenerateAccessToken(userID, email, role, schoolID string) (string, time.Time, error) {
 	now := time.Now()
 	expiresAt := now.Add(m.config.AccessTokenDuration)
 
 	claims := Claims{
-		UserID: userID,
-		Email:  email,
-		Role:   role,
+		UserID:   userID,
+		Email:    email,
+		Role:     role,
+		SchoolID: schoolID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
 			Issuer:    m.config.Issuer,

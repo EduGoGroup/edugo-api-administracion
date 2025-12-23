@@ -4,8 +4,8 @@ github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 h1:He8af
 github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6/go.mod h1:8o94RPi1/7XTJvwPpRSzSUedZrtlirdB3r9Z20bi2f8=
 github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 h1:UQHMgLO+TxOElx5B5HZ4hJQsoJ/PvUvKRhJHDQXO8P8=
 github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
-github.com/EduGoGroup/edugo-infrastructure/postgres v0.12.0 h1:Ux3EFSMuJPNiGKPf+INxH0FOdV6klVPwCAncUTTFgGY=
-github.com/EduGoGroup/edugo-infrastructure/postgres v0.12.0/go.mod h1:GqIhSbUAFyeFfD9t24oGmnSfO+JhlsWiwiDweUy2d4E=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.13.0 h1:g3vkqTtBNiR85/RPkl9XVQdifSKuOdhQBRbW0YrcRPQ=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.13.0/go.mod h1:GqIhSbUAFyeFfD9t24oGmnSfO+JhlsWiwiDweUy2d4E=
 github.com/EduGoGroup/edugo-infrastructure/tools/mock-generator v0.1.0 h1:T5m/4w0qwcTCrEIfdPo0P06BFmFO99wcZS65uWRo1Hc=
 github.com/EduGoGroup/edugo-infrastructure/tools/mock-generator v0.1.0/go.mod h1:WsBQaVSKld1RHAdIs673B5t7x2KC4arebpfCva1peRw=
 github.com/EduGoGroup/edugo-shared/auth v0.9.0 h1:SJla0wBe5f6fsntAemFuTD6jBQ6MPx38d0+EWB/UoPw=

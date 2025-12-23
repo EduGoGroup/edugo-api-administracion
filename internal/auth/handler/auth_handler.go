@@ -189,5 +189,82 @@ func (h *AuthHandler) RegisterRoutes(router *gin.RouterGroup) {
 		auth.POST("/login", h.Login)
 		auth.POST("/refresh", h.Refresh)
 		auth.POST("/logout", h.Logout)
+		auth.POST("/switch-context", h.SwitchContext)
 	}
+}
+
+// SwitchContext godoc
+// @Summary Cambiar contexto de escuela
+// @Description Cambia el contexto (escuela) del usuario autenticado
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param request body dto.SwitchContextRequest true "Escuela destino"
+// @Success 200 {object} dto.SwitchContextResponse
+// @Failure 400 {object} dto.ErrorResponse "Request inválido"
+// @Failure 401 {object} dto.ErrorResponse "Token inválido"
+// @Failure 403 {object} dto.ErrorResponse "Sin membresía en escuela destino"
+// @Failure 500 {object} dto.ErrorResponse "Error interno"
+// @Router /v1/auth/switch-context [post]
+func (h *AuthHandler) SwitchContext(c *gin.Context) {
+	// Obtener user_id del contexto (seteado por middleware de auth)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, dto.ErrorResponse{
+			Error:   "unauthorized",
+			Message: "Usuario no autenticado",
+			Code:    "NOT_AUTHENTICATED",
+		})
+		return
+	}
+
+	var req dto.SwitchContextRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "bad_request",
+			Message: "school_id es requerido y debe ser un UUID válido",
+			Code:    "INVALID_REQUEST",
+		})
+		return
+	}
+
+	response, err := h.authService.SwitchContext(c.Request.Context(), userID.(string), req.SchoolID)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrNoMembership):
+			c.JSON(http.StatusForbidden, dto.ErrorResponse{
+				Error:   "forbidden",
+				Message: "No tiene membresía activa en la escuela seleccionada",
+				Code:    "NO_MEMBERSHIP",
+			})
+		case errors.Is(err, service.ErrUserNotFound):
+			c.JSON(http.StatusUnauthorized, dto.ErrorResponse{
+				Error:   "unauthorized",
+				Message: "Usuario no encontrado",
+				Code:    "USER_NOT_FOUND",
+			})
+		case errors.Is(err, service.ErrUserInactive):
+			c.JSON(http.StatusForbidden, dto.ErrorResponse{
+				Error:   "forbidden",
+				Message: "Usuario inactivo",
+				Code:    "USER_INACTIVE",
+			})
+		case errors.Is(err, service.ErrInvalidSchoolID):
+			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+				Error:   "bad_request",
+				Message: "school_id inválido",
+				Code:    "INVALID_SCHOOL_ID",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+				Error:   "internal_error",
+				Message: "Error cambiando contexto",
+				Code:    "SWITCH_CONTEXT_ERROR",
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }

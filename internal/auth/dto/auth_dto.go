@@ -28,6 +28,30 @@ type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
+// SwitchContextRequest representa el request para cambiar de contexto (escuela)
+type SwitchContextRequest struct {
+	SchoolID string `json:"school_id" binding:"required,uuid"`
+}
+
+// SwitchContextResponse representa la respuesta al cambiar de contexto
+type SwitchContextResponse struct {
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
+	ExpiresIn    int64        `json:"expires_in"`
+	TokenType    string       `json:"token_type"`
+	Context      *ContextInfo `json:"context"`
+}
+
+// ContextInfo representa información del contexto actual (escuela + rol)
+type ContextInfo struct {
+	SchoolID   string `json:"school_id"`
+	SchoolName string `json:"school_name,omitempty"`
+	Role       string `json:"role"`
+	UserID     string `json:"user_id"`
+	Email      string `json:"email"`
+
+}
+
 // ===============================================
 // RESPONSE DTOs
 // ===============================================
@@ -38,6 +62,7 @@ type VerifyTokenResponse struct {
 	UserID    string     `json:"user_id,omitempty"`
 	Email     string     `json:"email,omitempty"`
 	Role      string     `json:"role,omitempty"`
+	SchoolID  string     `json:"school_id,omitempty"` // Escuela principal del usuario
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	Error     string     `json:"error,omitempty"`
 }
@@ -74,6 +99,7 @@ type UserInfo struct {
 	LastName  string `json:"last_name"`
 	FullName  string `json:"full_name"`
 	Role      string `json:"role"`
+	SchoolID  string `json:"school_id,omitempty"` // Escuela principal del usuario
 }
 
 // ErrorResponse representa una respuesta de error estándar
@@ -92,6 +118,7 @@ type TokenClaims struct {
 	UserID    string    `json:"user_id"`
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
+	SchoolID  string    `json:"school_id,omitempty"` // Escuela principal del usuario
 	TokenID   string    `json:"jti"`
 	IssuedAt  time.Time `json:"iat"`
 	ExpiresAt time.Time `json:"exp"`

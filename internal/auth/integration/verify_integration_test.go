@@ -129,7 +129,7 @@ func TestIntegration_VerifyToken_FullFlow(t *testing.T) {
 	defer rateLimiter.Stop()
 
 	// Generar token
-	token, _, err := jwtManager.GenerateAccessToken("user-integration", "integration@test.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-integration", "integration@test.com", "admin", "")
 	require.NoError(t, err)
 
 	// Act
@@ -165,7 +165,7 @@ func TestIntegration_VerifyToken_InternalService(t *testing.T) {
 	router, jwtManager, rateLimiter := setupIntegrationServer(t)
 	defer rateLimiter.Stop()
 
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@test.com", "user")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@test.com", "user", "")
 	require.NoError(t, err)
 
 	// Act - Request con API Key interna
@@ -211,7 +211,7 @@ func TestIntegration_VerifyToken_RateLimitEnforced(t *testing.T) {
 	v1.Use(rateLimiter.Middleware())
 	verifyHandler.RegisterRoutes(v1)
 
-	token, _, _ := jwtManager.GenerateAccessToken("user-123", "test@test.com", "user")
+	token, _, _ := jwtManager.GenerateAccessToken("user-123", "test@test.com", "user", "")
 
 	// Act - Hacer 4 requests (límite es 3)
 	for i := 0; i < 4; i++ {
@@ -242,8 +242,8 @@ func TestIntegration_VerifyTokenBulk_FullFlow(t *testing.T) {
 	defer rateLimiter.Stop()
 
 	// Generar múltiples tokens
-	token1, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@test.com", "admin")
-	token2, _, _ := jwtManager.GenerateAccessToken("user-2", "user2@test.com", "user")
+	token1, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@test.com", "admin", "")
+	token2, _, _ := jwtManager.GenerateAccessToken("user-2", "user2@test.com", "user", "")
 
 	// Act
 	body, _ := json.Marshal(dto.VerifyTokenBulkRequest{
@@ -280,7 +280,7 @@ func TestIntegration_VerifyTokenBulk_RequiresAPIKey(t *testing.T) {
 	router, jwtManager, rateLimiter := setupIntegrationServer(t)
 	defer rateLimiter.Stop()
 
-	token, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@test.com", "admin")
+	token, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@test.com", "admin", "")
 
 	// Act - Sin API Key
 	body, _ := json.Marshal(dto.VerifyTokenBulkRequest{
@@ -328,7 +328,7 @@ func TestIntegration_WrongIssuer(t *testing.T) {
 	verifyHandler.RegisterRoutes(v1)
 
 	// Generar token con issuer incorrecto
-	token, _, _ := wrongIssuerManager.GenerateAccessToken("user-123", "test@test.com", "user")
+	token, _, _ := wrongIssuerManager.GenerateAccessToken("user-123", "test@test.com", "user", "")
 
 	// Act
 	body, _ := json.Marshal(dto.VerifyTokenRequest{Token: token})
@@ -352,7 +352,7 @@ func TestIntegration_ConcurrentRequests(t *testing.T) {
 	router, jwtManager, rateLimiter := setupIntegrationServer(t)
 	defer rateLimiter.Stop()
 
-	token, _, _ := jwtManager.GenerateAccessToken("user-concurrent", "concurrent@test.com", "user")
+	token, _, _ := jwtManager.GenerateAccessToken("user-concurrent", "concurrent@test.com", "user", "")
 
 	// Act - Hacer múltiples requests concurrentes
 	done := make(chan bool, 10)
@@ -409,7 +409,7 @@ func TestIntegration_TokenCaching(t *testing.T) {
 	router, jwtManager, rateLimiter := setupIntegrationServer(t)
 	defer rateLimiter.Stop()
 
-	token, _, _ := jwtManager.GenerateAccessToken("user-cache", "cache@test.com", "user")
+	token, _, _ := jwtManager.GenerateAccessToken("user-cache", "cache@test.com", "user", "")
 
 	// Act - Primera llamada
 	body, _ := json.Marshal(dto.VerifyTokenRequest{Token: token})
