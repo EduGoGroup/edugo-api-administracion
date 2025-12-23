@@ -82,17 +82,24 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 		return nil, ErrInvalidCredentials
 	}
 
-	// 4. Generar tokens
+	// 4. Obtener school_id del usuario (puede ser nil para super_admin)
+	schoolID := ""
+	if user.SchoolID != nil {
+		schoolID = user.SchoolID.String()
+	}
+
+	// 5. Generar tokens (incluyendo school_id)
 	tokenResponse, err := s.tokenService.GenerateTokenPair(
 		user.ID.String(),
 		user.Email,
 		user.Role,
+		schoolID,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error generando tokens: %w", err)
 	}
 
-	// 5. Agregar info del usuario a la respuesta (compatible con api-mobile)
+	// 6. Agregar info del usuario a la respuesta (compatible con api-mobile)
 	tokenResponse.User = &dto.UserInfo{
 		ID:        user.ID.String(),
 		Email:     user.Email,
@@ -100,6 +107,7 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 		LastName:  user.LastName,
 		FullName:  user.FirstName + " " + user.LastName,
 		Role:      user.Role,
+		SchoolID:  schoolID,
 	}
 
 	s.logger.Info("user logged in",
@@ -107,9 +115,10 @@ func (s *authService) Login(ctx context.Context, email, password string) (*dto.L
 		"user_id", user.ID.String(),
 		"email", user.Email,
 		"role", user.Role,
+		"school_id", schoolID,
 	)
 
-	// 6. Actualizar último login (fire and forget)
+	// 7. Actualizar último login (fire and forget)
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -171,12 +180,19 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 		return nil, ErrUserInactive
 	}
 
-	// 4. Generar solo un nuevo access token (NO revocar el refresh token)
+	// 4. Obtener school_id del usuario
+	schoolID := ""
+	if user.SchoolID != nil {
+		schoolID = user.SchoolID.String()
+	}
+
+	// 5. Generar solo un nuevo access token (NO revocar el refresh token)
 	// El refresh token sigue siendo válido hasta su expiración
 	refreshResponse, err := s.tokenService.GenerateAccessToken(
 		user.ID.String(),
 		user.Email,
 		user.Role,
+		schoolID,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error generando nuevo access token: %w", err)
@@ -185,6 +201,7 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 	s.logger.Info("token refreshed",
 		"entity_type", "auth_token",
 		"user_id", user.ID.String(),
+		"school_id", schoolID,
 	)
 
 	return refreshResponse, nil

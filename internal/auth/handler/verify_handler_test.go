@@ -90,7 +90,7 @@ func setupTestHandler(t *testing.T) (*VerifyHandler, *crypto.JWTManager) {
 func TestVerifyHandler_VerifyToken_Success(t *testing.T) {
 	// Arrange
 	handler, jwtManager := setupTestHandler(t)
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	router := gin.New()
@@ -119,7 +119,7 @@ func TestVerifyHandler_VerifyToken_Success(t *testing.T) {
 func TestVerifyHandler_VerifyToken_WithBearerPrefix(t *testing.T) {
 	// Arrange
 	handler, jwtManager := setupTestHandler(t)
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	router := gin.New()
@@ -238,7 +238,7 @@ func TestVerifyHandler_VerifyToken_MissingBody(t *testing.T) {
 func TestVerifyHandler_VerifyToken_ResponseTimeHeader(t *testing.T) {
 	// Arrange
 	handler, jwtManager := setupTestHandler(t)
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	router := gin.New()
@@ -259,8 +259,8 @@ func TestVerifyHandler_VerifyToken_ResponseTimeHeader(t *testing.T) {
 func TestVerifyHandler_VerifyTokenBulk_Success(t *testing.T) {
 	// Arrange
 	handler, jwtManager := setupTestHandler(t)
-	token1, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin")
-	token2, _, _ := jwtManager.GenerateAccessToken("user-2", "user2@example.com", "user")
+	token1, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin", "")
+	token2, _, _ := jwtManager.GenerateAccessToken("user-2", "user2@example.com", "user", "")
 
 	router := gin.New()
 	router.POST("/v1/auth/verify-bulk", handler.VerifyTokenBulk)
@@ -286,7 +286,7 @@ func TestVerifyHandler_VerifyTokenBulk_Success(t *testing.T) {
 func TestVerifyHandler_VerifyTokenBulk_Unauthorized(t *testing.T) {
 	// Arrange
 	handler, jwtManager := setupTestHandler(t)
-	token, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin")
+	token, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin", "")
 
 	router := gin.New()
 	router.POST("/v1/auth/verify-bulk", handler.VerifyTokenBulk)
@@ -466,7 +466,7 @@ func TestNewVerifyHandler_ParseCIDR(t *testing.T) {
 func TestVerifyHandler_VerifyTokenBulk_MixedResults(t *testing.T) {
 	// Arrange
 	handler, jwtManager := setupTestHandler(t)
-	validToken, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin")
+	validToken, _, _ := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin", "")
 	invalidToken := "invalid-token-here"
 
 	router := gin.New()

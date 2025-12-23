@@ -100,6 +100,7 @@ func (s *TokenService) VerifyToken(ctx context.Context, token string) (*dto.Veri
 		UserID:    claims.UserID,
 		Email:     claims.Email,
 		Role:      claims.Role,
+		SchoolID:  claims.SchoolID,
 		ExpiresAt: &expiresAt,
 	}
 
@@ -172,8 +173,8 @@ func (s *TokenService) RevokeToken(ctx context.Context, token string) error {
 }
 
 // GenerateTokenPair genera un par de tokens (access + refresh) para login
-func (s *TokenService) GenerateTokenPair(userID, email, role string) (*dto.LoginResponse, error) {
-	accessToken, expiresAt, err := s.jwtManager.GenerateAccessToken(userID, email, role)
+func (s *TokenService) GenerateTokenPair(userID, email, role, schoolID string) (*dto.LoginResponse, error) {
+	accessToken, expiresAt, err := s.jwtManager.GenerateAccessToken(userID, email, role, schoolID)
 	if err != nil {
 		return nil, fmt.Errorf("error generando access token: %w", err)
 	}
@@ -192,8 +193,8 @@ func (s *TokenService) GenerateTokenPair(userID, email, role string) (*dto.Login
 }
 
 // GenerateAccessToken genera solo un nuevo access token (para refresh)
-func (s *TokenService) GenerateAccessToken(userID, email, role string) (*dto.RefreshResponse, error) {
-	accessToken, expiresAt, err := s.jwtManager.GenerateAccessToken(userID, email, role)
+func (s *TokenService) GenerateAccessToken(userID, email, role, schoolID string) (*dto.RefreshResponse, error) {
+	accessToken, expiresAt, err := s.jwtManager.GenerateAccessToken(userID, email, role, schoolID)
 	if err != nil {
 		return nil, fmt.Errorf("error generando access token: %w", err)
 	}

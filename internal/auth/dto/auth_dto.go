@@ -38,6 +38,7 @@ type VerifyTokenResponse struct {
 	UserID    string     `json:"user_id,omitempty"`
 	Email     string     `json:"email,omitempty"`
 	Role      string     `json:"role,omitempty"`
+	SchoolID  string     `json:"school_id,omitempty"` // Escuela principal del usuario
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	Error     string     `json:"error,omitempty"`
 }
@@ -74,6 +75,7 @@ type UserInfo struct {
 	LastName  string `json:"last_name"`
 	FullName  string `json:"full_name"`
 	Role      string `json:"role"`
+	SchoolID  string `json:"school_id,omitempty"` // Escuela principal del usuario
 }
 
 // ErrorResponse representa una respuesta de error estándar
@@ -92,6 +94,7 @@ type TokenClaims struct {
 	UserID    string    `json:"user_id"`
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
+	SchoolID  string    `json:"school_id,omitempty"` // Escuela principal del usuario
 	TokenID   string    `json:"jti"`
 	IssuedAt  time.Time `json:"iat"`
 	ExpiresAt time.Time `json:"exp"`
