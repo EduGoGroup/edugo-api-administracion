@@ -5,6 +5,32 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2025-12-23
+
+### Tipo de Release: patch
+
+- chore: eliminar helpers.go con función handleError sin usar
+- refactor: eliminar validaciones duplicadas entre DTOs y Services
+- refactor: estandarizar logging en services y handlers
+- fix: separar manejo de errores DB de validación nil en servicios
+- refactor: Fase 5 - Centralizar error handling en middleware (#61)
+- feat: Fase 4 - Sistema de configuración de defaults para School (#60)
+- refactor: crear value objects para MembershipRole y UnitType
+- fix: resolver feedback de Copilot en response types
+- chore: actualizar dependencias y centralizar response types
+- fix: eliminar función handleErrorWithContext no utilizada
+- test: agregar campo password a tests de CreateUser
+- fix: implementar filtro por rol y activeOnly en ListMembershipsByRole
+- chore: eliminar documentación antigua y agregar plan de trabajo por fases
+- refactor: completar handlers + value objects + hash de passwords
+- refactor: centralizar validación de roles con value object
+- refactor: centralizar error handling y eliminar valores hardcodeados
+- fix: resolver deuda técnica de alta prioridad
+- chore: limpiar documentación antigua y mover a archivado-documentos
+- docs: agregar documentación completa del proyecto y carpeta de mejoras
+
+---
+
 ## [0.8.0] - 2025-12-01
 
 ### Tipo de Release: minor
