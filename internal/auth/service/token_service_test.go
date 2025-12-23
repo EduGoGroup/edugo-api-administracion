@@ -73,7 +73,7 @@ func TestTokenService_VerifyToken_Valid(t *testing.T) {
 
 	service := NewTokenService(jwtManager, cache, config)
 
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	// Act
@@ -123,7 +123,7 @@ func TestTokenService_VerifyToken_Blacklisted(t *testing.T) {
 
 	service := NewTokenService(jwtManager, cache, config)
 
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	// Agregar el token al blacklist
@@ -153,7 +153,7 @@ func TestTokenService_VerifyToken_CachedResult(t *testing.T) {
 
 	service := NewTokenService(jwtManager, cache, config)
 
-	token, _, err := jwtManager.GenerateAccessToken("user-456", "cached@example.com", "user")
+	token, _, err := jwtManager.GenerateAccessToken("user-456", "cached@example.com", "user", "")
 	require.NoError(t, err)
 
 	// Primera verificación - debería cachear
@@ -180,10 +180,10 @@ func TestTokenService_VerifyTokenBulk(t *testing.T) {
 
 	service := NewTokenService(jwtManager, cache, config)
 
-	token1, _, err := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin")
+	token1, _, err := jwtManager.GenerateAccessToken("user-1", "user1@example.com", "admin", "")
 	require.NoError(t, err)
 
-	token2, _, err := jwtManager.GenerateAccessToken("user-2", "user2@example.com", "user")
+	token2, _, err := jwtManager.GenerateAccessToken("user-2", "user2@example.com", "user", "")
 	require.NoError(t, err)
 
 	tokens := []string{token1, token2, "invalid-token"}
@@ -241,7 +241,7 @@ func TestTokenService_RevokeToken(t *testing.T) {
 
 	service := NewTokenService(jwtManager, cache, config)
 
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	// Verificar que el token es válido antes de revocar
@@ -292,7 +292,7 @@ func TestTokenService_GenerateTokenPair(t *testing.T) {
 	service := NewTokenService(jwtManager, cache, config)
 
 	// Act
-	result, err := service.GenerateTokenPair("user-123", "test@example.com", "admin")
+	result, err := service.GenerateTokenPair("user-123", "test@example.com", "admin", "")
 
 	// Assert
 	require.NoError(t, err)
@@ -319,7 +319,7 @@ func TestNewTokenService_DefaultTTL(t *testing.T) {
 	assert.NotNil(t, service)
 
 	// Verificar que funciona correctamente
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	result, err := service.VerifyToken(context.Background(), token)
@@ -338,7 +338,7 @@ func TestTokenService_VerifyToken_NilCache(t *testing.T) {
 
 	service := NewTokenService(jwtManager, nil, config)
 
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	// Act
@@ -360,7 +360,7 @@ func TestTokenService_RevokeToken_NilCache(t *testing.T) {
 
 	service := NewTokenService(jwtManager, nil, config)
 
-	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin")
+	token, _, err := jwtManager.GenerateAccessToken("user-123", "test@example.com", "admin", "")
 	require.NoError(t, err)
 
 	// Act - Sin cache, revocar no hace nada pero no debe fallar

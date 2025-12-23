@@ -125,6 +125,7 @@ func NewContainer(db *sql.DB, logger logger.Logger, jwtSecret string, cfg *confi
 
 	// Auth Service (usa UserRepository y TokenService)
 	c.AuthService = authService.NewAuthService(
+		c.UnitMembershipRepository,
 		c.UserRepository,
 		c.TokenService,
 		c.PasswordHasher,

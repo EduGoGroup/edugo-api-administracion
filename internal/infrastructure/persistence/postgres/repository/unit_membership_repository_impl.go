@@ -151,3 +151,18 @@ func (r *postgresUnitMembershipRepository) ExistsByUnitAndUser(ctx context.Conte
 	err := r.db.QueryRowContext(ctx, query, unitID, userID).Scan(&exists)
 	return exists, err
 }
+
+func (r *postgresUnitMembershipRepository) FindByUserAndSchool(ctx context.Context, userID, schoolID uuid.UUID) (*entities.Membership, error) {
+	query := `SELECT id, user_id, school_id, academic_unit_id, role, metadata, is_active, enrolled_at, withdrawn_at, created_at, updated_at
+		FROM memberships WHERE user_id = $1 AND school_id = $2 AND is_active = true LIMIT 1`
+	membership := &entities.Membership{}
+	err := r.db.QueryRowContext(ctx, query, userID, schoolID).Scan(
+		&membership.ID, &membership.UserID, &membership.SchoolID, &membership.AcademicUnitID,
+		&membership.Role, &membership.Metadata, &membership.IsActive, &membership.EnrolledAt,
+		&membership.WithdrawnAt, &membership.CreatedAt, &membership.UpdatedAt,
+	)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return membership, err
+}

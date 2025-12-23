@@ -85,7 +85,7 @@ func TestGenerateAndValidateToken(t *testing.T) {
 	email := "test@edugo.com"
 	role := "teacher"
 
-	token, expiresAt, err := manager.GenerateAccessToken(userID, email, role)
+	token, expiresAt, err := manager.GenerateAccessToken(userID, email, role, "")
 	if err != nil {
 		t.Fatalf("error generando token: %v", err)
 	}
@@ -197,7 +197,7 @@ func TestValidateToken_ExpiredToken(t *testing.T) {
 	}
 
 	// Generar token
-	token, _, err := manager.GenerateAccessToken("user-1", "test@test.com", "student")
+	token, _, err := manager.GenerateAccessToken("user-1", "test@test.com", "student", "")
 	if err != nil {
 		t.Fatalf("error generando token: %v", err)
 	}
@@ -228,7 +228,7 @@ func TestValidateToken_WrongIssuer(t *testing.T) {
 	})
 
 	// Generar token con manager2
-	token, _, _ := manager2.GenerateAccessToken("user-1", "test@test.com", "student")
+	token, _, _ := manager2.GenerateAccessToken("user-1", "test@test.com", "student", "")
 
 	// Intentar validar con manager1
 	_, err := manager1.ValidateToken(token)
@@ -244,7 +244,7 @@ func TestValidateToken_WrongIssuer(t *testing.T) {
 func TestGetTokenID(t *testing.T) {
 	manager := createTestManager(t)
 
-	token, _, _ := manager.GenerateAccessToken("user-1", "test@test.com", "student")
+	token, _, _ := manager.GenerateAccessToken("user-1", "test@test.com", "student", "")
 
 	tokenID, err := manager.GetTokenID(token)
 	if err != nil {
@@ -264,7 +264,7 @@ func TestGetTokenID(t *testing.T) {
 func TestGetExpirationTime(t *testing.T) {
 	manager := createTestManager(t)
 
-	token, expectedExpiry, _ := manager.GenerateAccessToken("user-1", "test@test.com", "student")
+	token, expectedExpiry, _ := manager.GenerateAccessToken("user-1", "test@test.com", "student", "")
 
 	expiry, err := manager.GetExpirationTime(token)
 	if err != nil {

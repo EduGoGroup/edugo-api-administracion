@@ -17,4 +17,5 @@ type UnitMembershipRepository interface {
 	Update(ctx context.Context, membership *entities.Membership) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	ExistsByUnitAndUser(ctx context.Context, unitID, userID uuid.UUID) (bool, error)
+	FindByUserAndSchool(ctx context.Context, userID, schoolID uuid.UUID) (*entities.Membership, error)
 }
