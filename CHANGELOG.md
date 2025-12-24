@@ -5,6 +5,20 @@ Todos los cambios notables en edugo-api-administracion serán documentados en es
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2025-12-24
+
+### Tipo de Release: patch
+
+- fix: aplicar correcciones de Copilot review
+- feat(api): completar CRUD de Subjects y Guardian Relations
+- docs: actualizar swagger y agregar stats endpoint
+- chore: verificar limpieza de campos sin uso PT-005
+- feat(auth): agregar endpoint POST /auth/switch-context
+- chore(deps): actualizar edugo-infrastructure/postgres a v0.13.0
+- feat(auth): agregar school_id a JWT Claims
+
+---
+
 ## [0.10.0] - 2025-12-23
 
 ### Tipo de Release: patch
