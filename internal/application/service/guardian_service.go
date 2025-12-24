@@ -17,6 +17,8 @@ type GuardianService interface {
 	GetGuardianRelation(ctx context.Context, id string) (*dto.GuardianRelationResponse, error)
 	GetGuardianRelations(ctx context.Context, guardianID string) ([]*dto.GuardianRelationResponse, error)
 	GetStudentGuardians(ctx context.Context, studentID string) ([]*dto.GuardianRelationResponse, error)
+	UpdateGuardianRelation(ctx context.Context, id string, req dto.UpdateGuardianRelationRequest) (*dto.GuardianRelationResponse, error)
+	DeleteGuardianRelation(ctx context.Context, id string) error
 }
 
 type guardianService struct {
@@ -150,4 +152,86 @@ func (s *guardianService) GetStudentGuardians(ctx context.Context, studentID str
 	}
 
 	return responses, nil
+}
+
+func (s *guardianService) UpdateGuardianRelation(
+	ctx context.Context,
+	id string,
+	req dto.UpdateGuardianRelationRequest,
+) (*dto.GuardianRelationResponse, error) {
+	relationID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.NewValidationError("invalid relation ID")
+	}
+
+	// Buscar la relación existente
+	relation, err := s.guardianRepo.FindByID(ctx, relationID)
+	if err != nil {
+		s.logger.Error("failed to find relation for update", "error", err, "id", id)
+		return nil, errors.NewDatabaseError("find relation", err)
+	}
+
+	if relation == nil {
+		return nil, errors.NewNotFoundError("guardian relation").WithField("id", id)
+	}
+
+	// Actualizar campos si fueron proporcionados
+	if req.RelationshipType != nil {
+		// Validar que el tipo de relación sea válido
+		validRelationshipTypes := map[string]struct{}{
+			"father":      {},
+			"mother":      {},
+			"grandfather": {},
+			"grandmother": {},
+			"uncle":       {},
+			"aunt":        {},
+			"other":       {},
+		}
+
+		if _, ok := validRelationshipTypes[*req.RelationshipType]; !ok {
+			return nil, errors.NewValidationError("invalid relationship type")
+		}
+		relation.RelationshipType = *req.RelationshipType
+	}
+	if req.IsActive != nil {
+		relation.IsActive = *req.IsActive
+	}
+
+	relation.UpdatedAt = time.Now()
+
+	// Persistir cambios
+	if err := s.guardianRepo.Update(ctx, relation); err != nil {
+		s.logger.Error("failed to update guardian relation", "error", err, "id", id)
+		return nil, errors.NewDatabaseError("update relation", err)
+	}
+
+	s.logger.Info("guardian relation updated", "relation_id", id)
+	return dto.ToGuardianRelationResponse(relation), nil
+}
+
+func (s *guardianService) DeleteGuardianRelation(ctx context.Context, id string) error {
+	relationID, err := uuid.Parse(id)
+	if err != nil {
+		return errors.NewValidationError("invalid relation ID")
+	}
+
+	// Verificar que existe antes de eliminar
+	relation, err := s.guardianRepo.FindByID(ctx, relationID)
+	if err != nil {
+		s.logger.Error("failed to find relation for deletion", "error", err, "id", id)
+		return errors.NewDatabaseError("find relation", err)
+	}
+
+	if relation == nil {
+		return errors.NewNotFoundError("guardian relation").WithField("id", id)
+	}
+
+	// Realizar soft delete
+	if err := s.guardianRepo.Delete(ctx, relationID); err != nil {
+		s.logger.Error("failed to delete guardian relation", "error", err, "id", id)
+		return errors.NewDatabaseError("delete relation", err)
+	}
+
+	s.logger.Info("guardian relation deleted", "id", id)
+	return nil
 }

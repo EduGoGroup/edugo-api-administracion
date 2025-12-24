@@ -80,3 +80,70 @@ func (h *SubjectHandler) UpdateSubject(c *gin.Context) {
 	h.logger.Info("subject updated", "subject_id", subject.ID)
 	c.JSON(http.StatusOK, subject)
 }
+
+// GetSubject godoc
+// @Summary Get subject by ID
+// @Description Retrieves a subject by its unique identifier
+// @Tags subjects
+// @Accept json
+// @Produce json
+// @Param id path string true "Subject ID" format(uuid)
+// @Success 200 {object} dto.SubjectResponse
+// @Failure 404 {object} httpdto.ErrorResponse
+// @Router /v1/subjects/{id} [get]
+// @Security BearerAuth
+func (h *SubjectHandler) GetSubject(c *gin.Context) {
+	id := c.Param("id")
+
+	subject, err := h.subjectService.GetSubject(c.Request.Context(), id)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, subject)
+}
+
+// ListSubjects godoc
+// @Summary List subjects
+// @Description Lists all subjects, optionally filtered by school
+// @Tags subjects
+// @Accept json
+// @Produce json
+// @Param school_id query string false "Filter by school ID" format(uuid)
+// @Success 200 {array} dto.SubjectResponse
+// @Router /v1/subjects [get]
+// @Security BearerAuth
+func (h *SubjectHandler) ListSubjects(c *gin.Context) {
+	schoolID := c.Query("school_id")
+
+	subjects, err := h.subjectService.ListSubjects(c.Request.Context(), schoolID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, subjects)
+}
+
+// DeleteSubject godoc
+// @Summary Delete subject
+// @Description Soft deletes a subject
+// @Tags subjects
+// @Param id path string true "Subject ID" format(uuid)
+// @Success 204 "No Content"
+// @Failure 404 {object} httpdto.ErrorResponse
+// @Router /v1/subjects/{id} [delete]
+// @Security BearerAuth
+func (h *SubjectHandler) DeleteSubject(c *gin.Context) {
+	id := c.Param("id")
+
+	err := h.subjectService.DeleteSubject(c.Request.Context(), id)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	h.logger.Info("subject deleted", "subject_id", id)
+	c.Status(http.StatusNoContent)
+}

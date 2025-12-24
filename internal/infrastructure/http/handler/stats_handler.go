@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	// Importado para que swag pueda resolver las referencias en las anotaciones swagger
+	_ "github.com/EduGoGroup/edugo-api-administracion/internal/application/dto"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/application/service"
 	"github.com/EduGoGroup/edugo-shared/logger"
 )
