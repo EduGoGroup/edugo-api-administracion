@@ -150,3 +150,61 @@ func (h *GuardianHandler) GetStudentGuardians(c *gin.Context) {
 
 	c.JSON(http.StatusOK, relations)
 }
+
+// UpdateGuardianRelation godoc
+// @Summary Update guardian relation
+// @Description Updates an existing guardian-student relationship
+// @Tags guardians
+// @Accept json
+// @Produce json
+// @Param id path string true "Relation ID" format(uuid)
+// @Param request body dto.UpdateGuardianRelationRequest true "Update data"
+// @Success 200 {object} dto.GuardianRelationResponse
+// @Failure 400 {object} httpdto.ErrorResponse
+// @Failure 404 {object} httpdto.ErrorResponse
+// @Router /v1/guardian-relations/{id} [put]
+// @Security BearerAuth
+func (h *GuardianHandler) UpdateGuardianRelation(c *gin.Context) {
+	id := c.Param("id")
+	var req dto.UpdateGuardianRelationRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Warn("invalid request body", "error", err)
+		c.JSON(http.StatusBadRequest, httpdto.ErrorResponse{
+			Error: "invalid request body",
+			Code:  "INVALID_REQUEST",
+		})
+		return
+	}
+
+	relation, err := h.guardianService.UpdateGuardianRelation(c.Request.Context(), id, req)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	h.logger.Info("guardian relation updated", "relation_id", id)
+	c.JSON(http.StatusOK, relation)
+}
+
+// DeleteGuardianRelation godoc
+// @Summary Delete guardian relation
+// @Description Soft deletes a guardian-student relationship
+// @Tags guardians
+// @Param id path string true "Relation ID" format(uuid)
+// @Success 204 "No Content"
+// @Failure 404 {object} httpdto.ErrorResponse
+// @Router /v1/guardian-relations/{id} [delete]
+// @Security BearerAuth
+func (h *GuardianHandler) DeleteGuardianRelation(c *gin.Context) {
+	id := c.Param("id")
+
+	err := h.guardianService.DeleteGuardianRelation(c.Request.Context(), id)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	h.logger.Info("guardian relation deleted", "relation_id", id)
+	c.Status(http.StatusNoContent)
+}

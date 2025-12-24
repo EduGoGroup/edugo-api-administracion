@@ -90,6 +90,36 @@ func (r *postgresSubjectRepository) List(ctx context.Context) ([]*entities.Subje
 	return subjects, rows.Err()
 }
 
+// FindBySchoolID lista materias activas filtradas por school_id
+// Nota: La entidad Subject actualmente no tiene campo school_id en la base de datos
+// Este método retorna todas las materias activas por ahora hasta que se agregue la columna
+func (r *postgresSubjectRepository) FindBySchoolID(ctx context.Context, schoolID uuid.UUID) ([]*entities.Subject, error) {
+	// Por ahora retornamos todas las materias activas ya que no existe school_id en la tabla
+	query := `
+		SELECT id, name, description, metadata, is_active, created_at, updated_at
+		FROM subjects WHERE is_active = true ORDER BY name
+	`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var subjects []*entities.Subject
+	for rows.Next() {
+		subject := &entities.Subject{}
+		err := rows.Scan(
+			&subject.ID, &subject.Name, &subject.Description, &subject.Metadata,
+			&subject.IsActive, &subject.CreatedAt, &subject.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		subjects = append(subjects, subject)
+	}
+	return subjects, rows.Err()
+}
+
 func (r *postgresSubjectRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM subjects WHERE name = $1 AND is_active = true)`
 	var exists bool

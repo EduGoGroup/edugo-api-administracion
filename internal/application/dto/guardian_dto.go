@@ -14,7 +14,13 @@ type CreateGuardianRelationRequest struct {
 	RelationshipType string `json:"relationship_type"`
 }
 
-// Validate Valídate valida el request usando shared/validator
+// UpdateGuardianRelationRequest representa la solicitud para actualizar una relación
+type UpdateGuardianRelationRequest struct {
+	RelationshipType *string `json:"relationship_type,omitempty"`
+	IsActive         *bool   `json:"is_active,omitempty"`
+}
+
+// Validate valida el request usando shared/validator
 func (r *CreateGuardianRelationRequest) Validate() error {
 	v := validator.New()
 

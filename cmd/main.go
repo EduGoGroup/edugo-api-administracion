@@ -140,6 +140,36 @@ func main() {
 		{
 			users.GET("/:userId/memberships", c.UnitMembershipHandler.ListMembershipsByUser)
 		}
+
+		// ==================== SUBJECTS ====================
+		subjects := v1.Group("/subjects")
+		{
+			subjects.POST("", c.SubjectHandler.CreateSubject)
+			subjects.GET("", c.SubjectHandler.ListSubjects)
+			subjects.GET("/:id", c.SubjectHandler.GetSubject)
+			subjects.PATCH("/:id", c.SubjectHandler.UpdateSubject)
+			subjects.DELETE("/:id", c.SubjectHandler.DeleteSubject)
+		}
+
+		// ==================== GUARDIAN RELATIONS ====================
+		guardianRelations := v1.Group("/guardian-relations")
+		{
+			guardianRelations.POST("", c.GuardianHandler.CreateGuardianRelation)
+			guardianRelations.GET("/:id", c.GuardianHandler.GetGuardianRelation)
+			guardianRelations.PUT("/:id", c.GuardianHandler.UpdateGuardianRelation)
+			guardianRelations.DELETE("/:id", c.GuardianHandler.DeleteGuardianRelation)
+		}
+
+		// Guardian relations by guardian or student
+		guardians := v1.Group("/guardians")
+		{
+			guardians.GET("/:guardian_id/relations", c.GuardianHandler.GetGuardianRelations)
+		}
+
+		students := v1.Group("/students")
+		{
+			students.GET("/:student_id/guardians", c.GuardianHandler.GetStudentGuardians)
+		}
 	}
 
 	// 5. Servidor HTTP con graceful shutdown

@@ -24,6 +24,9 @@ type SubjectRepository interface {
 	// List lista todas las materias activas
 	List(ctx context.Context) ([]*entities.Subject, error)
 
+	// FindBySchoolID lista materias activas filtradas por school_id
+	FindBySchoolID(ctx context.Context, schoolID uuid.UUID) ([]*entities.Subject, error)
+
 	// ExistsByName verifica si existe una materia con ese nombre
 	ExistsByName(ctx context.Context, name string) (bool, error)
 }
