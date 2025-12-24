@@ -14,6 +14,7 @@ import (
 	"github.com/EduGoGroup/edugo-api-administracion/internal/bootstrap"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/config"
 	"github.com/EduGoGroup/edugo-api-administracion/internal/container"
+	"github.com/EduGoGroup/edugo-api-administracion/internal/infrastructure/http/middleware"
 	ginmiddleware "github.com/EduGoGroup/edugo-shared/middleware/gin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -70,6 +71,9 @@ func main() {
 
 	// 4. Configurar Gin
 	r := gin.Default()
+
+	// CORS middleware
+	r.Use(middleware.CORSMiddleware(&cfg.CORS))
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {

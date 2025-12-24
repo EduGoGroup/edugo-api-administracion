@@ -13,6 +13,7 @@ type Config struct {
 	Auth        AuthConfig     `mapstructure:"auth"`
 	Redis       RedisConfig    `mapstructure:"redis"`
 	Defaults    DefaultsConfig `mapstructure:"defaults"`
+	CORS        CORSConfig     `mapstructure:"cors"`
 }
 
 type ServerConfig struct {
@@ -145,4 +146,11 @@ type SchoolDefaults struct {
 	SubscriptionTier string `mapstructure:"subscription_tier"` // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_SUBSCRIPTION_TIER
 	MaxTeachers      int    `mapstructure:"max_teachers"`      // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_MAX_TEACHERS
 	MaxStudents      int    `mapstructure:"max_students"`      // ENV: EDUGO_ADMIN_DEFAULTS_SCHOOL_MAX_STUDENTS
+}
+
+// CORSConfig contiene la configuración de CORS
+type CORSConfig struct {
+	AllowedOrigins string `mapstructure:"allowed_origins"` // ENV: ALLOWED_ORIGINS - formato CSV
+	AllowedMethods string `mapstructure:"allowed_methods"` // ENV: ALLOWED_METHODS - formato CSV
+	AllowedHeaders string `mapstructure:"allowed_headers"` // ENV: ALLOWED_HEADERS - formato CSV
 }
