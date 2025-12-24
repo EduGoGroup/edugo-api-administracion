@@ -17,16 +17,18 @@ type Config struct {
 	UnitRepo       repository.AcademicUnitRepository
 	Logger         logger.Logger
 	SchoolDefaults config.SchoolDefaults
-	CORSConfig     *config.CORSConfig
+	// NOTA: CORSConfig removido - CORS se configura en main.go para evitar duplicación
+	// Si en el futuro se usa SetupRouter desde main.go, pasar CORSConfig como parámetro
 }
 
 // SetupRouter configura todas las rutas de la API
+// NOTA: CORS middleware se configura en main.go, no aquí, para evitar duplicación
 func SetupRouter(cfg *Config) *gin.Engine {
 	router := gin.Default()
 
 	// Middleware global
 	router.Use(gin.Recovery())
-	router.Use(middleware.CORSMiddleware(cfg.CORSConfig))
+	// CORS removido de aquí - se configura en main.go
 	router.Use(middleware.ErrorHandler(cfg.Logger))
 
 	// Health check
