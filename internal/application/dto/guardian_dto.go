@@ -20,7 +20,7 @@ type UpdateGuardianRelationRequest struct {
 	IsActive         *bool   `json:"is_active,omitempty"`
 }
 
-// Validate Valídate valida el request usando shared/validator
+// Validate valida el request usando shared/validator
 func (r *CreateGuardianRelationRequest) Validate() error {
 	v := validator.New()
 

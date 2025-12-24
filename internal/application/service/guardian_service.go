@@ -177,6 +177,20 @@ func (s *guardianService) UpdateGuardianRelation(
 
 	// Actualizar campos si fueron proporcionados
 	if req.RelationshipType != nil {
+		// Validar que el tipo de relación sea válido
+		validRelationshipTypes := map[string]struct{}{
+			"father":      {},
+			"mother":      {},
+			"grandfather": {},
+			"grandmother": {},
+			"uncle":       {},
+			"aunt":        {},
+			"other":       {},
+		}
+
+		if _, ok := validRelationshipTypes[*req.RelationshipType]; !ok {
+			return nil, errors.NewValidationError("invalid relationship type")
+		}
 		relation.RelationshipType = *req.RelationshipType
 	}
 	if req.IsActive != nil {

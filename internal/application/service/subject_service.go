@@ -130,6 +130,11 @@ func (s *subjectService) ListSubjects(ctx context.Context, schoolID string) ([]d
 		if parseErr != nil {
 			return nil, errors.NewValidationError("invalid school ID")
 		}
+		// ADVERTENCIA: El filtro por school_id no está implementado actualmente
+		// porque la entidad Subject no tiene el campo school_id en la base de datos
+		s.logger.Warn("school_id filter requested but not implemented - returning all active subjects",
+			"school_id", schoolID,
+			"note", "Subject entity does not have school_id field")
 		subjects, err = s.subjectRepo.FindBySchoolID(ctx, schoolUUID)
 	} else {
 		subjects, err = s.subjectRepo.List(ctx)
