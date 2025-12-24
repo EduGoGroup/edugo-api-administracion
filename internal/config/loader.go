@@ -61,6 +61,11 @@ func Load() (*Config, error) {
 	v.SetDefault("redis.port", 6379)
 	v.SetDefault("redis.db", 0)
 
+	// Defaults - CORS
+	v.SetDefault("cors.allowed_origins", "http://localhost:3000,http://localhost:5173")
+	v.SetDefault("cors.allowed_methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH")
+	v.SetDefault("cors.allowed_headers", "Content-Type,Authorization,X-Requested-With")
+
 	// Ambiente
 	env := os.Getenv("APP_ENV")
 	if env == "" {
@@ -127,6 +132,11 @@ func Load() (*Config, error) {
 	_ = v.BindEnv("redis.port", "REDIS_PORT")
 	_ = v.BindEnv("redis.password", "REDIS_PASSWORD")
 	_ = v.BindEnv("redis.db", "REDIS_DB")
+
+	// CORS
+	_ = v.BindEnv("cors.allowed_origins", "ALLOWED_ORIGINS")
+	_ = v.BindEnv("cors.allowed_methods", "ALLOWED_METHODS")
+	_ = v.BindEnv("cors.allowed_headers", "ALLOWED_HEADERS")
 
 	// Unmarshal
 	var cfg Config
