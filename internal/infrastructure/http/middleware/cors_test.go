@@ -13,39 +13,51 @@ func TestCORSMiddleware(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	tests := []struct {
-		name           string
-		corsConfig     *config.CORSConfig
-		requestOrigin  string
-		requestMethod  string
-		expectedOrigin string
-		expectedStatus int
-		shouldHaveCORS bool
+		name                string
+		corsConfig          *config.CORSConfig
+		requestOrigin       string
+		requestMethod       string
+		expectedOrigin      string
+		expectedStatus      int
+		shouldHaveOrigin    bool
+		shouldHaveCredentials bool
+		shouldHaveMethods   bool // Solo en OPTIONS
+		shouldHaveHeaders   bool // Solo en OPTIONS
+		shouldHaveMaxAge    bool // Solo en OPTIONS
 	}{
 		{
-			name: "Origen permitido - localhost:3000",
+			name: "Origen permitido - localhost:3000 (GET request)",
 			corsConfig: &config.CORSConfig{
 				AllowedOrigins: "http://localhost:3000,http://localhost:5173",
 				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
 				AllowedHeaders: "Content-Type,Authorization",
 			},
-			requestOrigin:  "http://localhost:3000",
-			requestMethod:  "GET",
-			expectedOrigin: "http://localhost:3000",
-			expectedStatus: 200,
-			shouldHaveCORS: true,
+			requestOrigin:         "http://localhost:3000",
+			requestMethod:         "GET",
+			expectedOrigin:        "http://localhost:3000",
+			expectedStatus:        200,
+			shouldHaveOrigin:      true,
+			shouldHaveCredentials: true,
+			shouldHaveMethods:     false, // Solo en OPTIONS
+			shouldHaveHeaders:     false, // Solo en OPTIONS
+			shouldHaveMaxAge:      false, // Solo en OPTIONS
 		},
 		{
-			name: "Origen permitido - localhost:5173",
+			name: "Origen permitido - localhost:5173 (POST request)",
 			corsConfig: &config.CORSConfig{
 				AllowedOrigins: "http://localhost:3000,http://localhost:5173",
 				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
 				AllowedHeaders: "Content-Type,Authorization",
 			},
-			requestOrigin:  "http://localhost:5173",
-			requestMethod:  "GET",
-			expectedOrigin: "http://localhost:5173",
-			expectedStatus: 200,
-			shouldHaveCORS: true,
+			requestOrigin:         "http://localhost:5173",
+			requestMethod:         "POST",
+			expectedOrigin:        "http://localhost:5173",
+			expectedStatus:        200,
+			shouldHaveOrigin:      true,
+			shouldHaveCredentials: true,
+			shouldHaveMethods:     false, // Solo en OPTIONS
+			shouldHaveHeaders:     false, // Solo en OPTIONS
+			shouldHaveMaxAge:      false, // Solo en OPTIONS
 		},
 		{
 			name: "Origen no permitido",
@@ -54,24 +66,32 @@ func TestCORSMiddleware(t *testing.T) {
 				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
 				AllowedHeaders: "Content-Type,Authorization",
 			},
-			requestOrigin:  "http://evil.com",
-			requestMethod:  "GET",
-			expectedOrigin: "",
-			expectedStatus: 200,
-			shouldHaveCORS: false,
+			requestOrigin:         "http://evil.com",
+			requestMethod:         "GET",
+			expectedOrigin:        "",
+			expectedStatus:        200,
+			shouldHaveOrigin:      false,
+			shouldHaveCredentials: false,
+			shouldHaveMethods:     false,
+			shouldHaveHeaders:     false,
+			shouldHaveMaxAge:      false,
 		},
 		{
-			name: "Wildcard - todos los orígenes permitidos",
+			name: "Wildcard - sin credenciales (seguridad)",
 			corsConfig: &config.CORSConfig{
 				AllowedOrigins: "*",
 				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
 				AllowedHeaders: "Content-Type,Authorization",
 			},
-			requestOrigin:  "http://any-origin.com",
-			requestMethod:  "GET",
-			expectedOrigin: "http://any-origin.com",
-			expectedStatus: 200,
-			shouldHaveCORS: true,
+			requestOrigin:         "http://any-origin.com",
+			requestMethod:         "GET",
+			expectedOrigin:        "*",
+			expectedStatus:        200,
+			shouldHaveOrigin:      true,
+			shouldHaveCredentials: false, // NO credentials con wildcard
+			shouldHaveMethods:     false, // Solo en OPTIONS
+			shouldHaveHeaders:     false, // Solo en OPTIONS
+			shouldHaveMaxAge:      false, // Solo en OPTIONS
 		},
 		{
 			name: "Preflight request (OPTIONS) - origen permitido",
@@ -80,11 +100,15 @@ func TestCORSMiddleware(t *testing.T) {
 				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
 				AllowedHeaders: "Content-Type,Authorization",
 			},
-			requestOrigin:  "http://localhost:3000",
-			requestMethod:  "OPTIONS",
-			expectedOrigin: "http://localhost:3000",
-			expectedStatus: 204,
-			shouldHaveCORS: true,
+			requestOrigin:         "http://localhost:3000",
+			requestMethod:         "OPTIONS",
+			expectedOrigin:        "http://localhost:3000",
+			expectedStatus:        204,
+			shouldHaveOrigin:      true,
+			shouldHaveCredentials: true,
+			shouldHaveMethods:     true, // SÍ en OPTIONS
+			shouldHaveHeaders:     true, // SÍ en OPTIONS
+			shouldHaveMaxAge:      true, // SÍ en OPTIONS
 		},
 		{
 			name: "Preflight request (OPTIONS) - origen no permitido",
@@ -93,11 +117,32 @@ func TestCORSMiddleware(t *testing.T) {
 				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
 				AllowedHeaders: "Content-Type,Authorization",
 			},
-			requestOrigin:  "http://evil.com",
-			requestMethod:  "OPTIONS",
-			expectedOrigin: "",
-			expectedStatus: 204,
-			shouldHaveCORS: false,
+			requestOrigin:         "http://evil.com",
+			requestMethod:         "OPTIONS",
+			expectedOrigin:        "",
+			expectedStatus:        204,
+			shouldHaveOrigin:      false,
+			shouldHaveCredentials: false,
+			shouldHaveMethods:     true, // SÍ en OPTIONS (aunque origen no permitido)
+			shouldHaveHeaders:     true, // SÍ en OPTIONS (aunque origen no permitido)
+			shouldHaveMaxAge:      true, // SÍ en OPTIONS (aunque origen no permitido)
+		},
+		{
+			name: "Preflight con wildcard - sin credenciales",
+			corsConfig: &config.CORSConfig{
+				AllowedOrigins: "*",
+				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
+				AllowedHeaders: "Content-Type,Authorization",
+			},
+			requestOrigin:         "http://any-origin.com",
+			requestMethod:         "OPTIONS",
+			expectedOrigin:        "*",
+			expectedStatus:        204,
+			shouldHaveOrigin:      true,
+			shouldHaveCredentials: false, // NO credentials con wildcard
+			shouldHaveMethods:     true,  // SÍ en OPTIONS
+			shouldHaveHeaders:     true,  // SÍ en OPTIONS
+			shouldHaveMaxAge:      true,  // SÍ en OPTIONS
 		},
 		{
 			name: "Sin origen en request",
@@ -106,11 +151,15 @@ func TestCORSMiddleware(t *testing.T) {
 				AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
 				AllowedHeaders: "Content-Type,Authorization",
 			},
-			requestOrigin:  "",
-			requestMethod:  "GET",
-			expectedOrigin: "",
-			expectedStatus: 200,
-			shouldHaveCORS: false,
+			requestOrigin:         "",
+			requestMethod:         "GET",
+			expectedOrigin:        "",
+			expectedStatus:        200,
+			shouldHaveOrigin:      false,
+			shouldHaveCredentials: false,
+			shouldHaveMethods:     false,
+			shouldHaveHeaders:     false,
+			shouldHaveMaxAge:      false,
 		},
 	}
 
@@ -139,14 +188,39 @@ func TestCORSMiddleware(t *testing.T) {
 			// Assert
 			assert.Equal(t, tt.expectedStatus, w.Code)
 
-			if tt.shouldHaveCORS {
+			// Verificar Origin header
+			if tt.shouldHaveOrigin {
 				assert.Equal(t, tt.expectedOrigin, w.Header().Get("Access-Control-Allow-Origin"))
-				assert.Equal(t, tt.corsConfig.AllowedMethods, w.Header().Get("Access-Control-Allow-Methods"))
-				assert.Equal(t, tt.corsConfig.AllowedHeaders, w.Header().Get("Access-Control-Allow-Headers"))
-				assert.Equal(t, "true", w.Header().Get("Access-Control-Allow-Credentials"))
-				assert.Equal(t, "86400", w.Header().Get("Access-Control-Max-Age"))
 			} else {
 				assert.Empty(t, w.Header().Get("Access-Control-Allow-Origin"))
+			}
+
+			// Verificar Credentials header
+			if tt.shouldHaveCredentials {
+				assert.Equal(t, "true", w.Header().Get("Access-Control-Allow-Credentials"))
+			} else {
+				assert.Empty(t, w.Header().Get("Access-Control-Allow-Credentials"))
+			}
+
+			// Verificar Methods header (solo en OPTIONS)
+			if tt.shouldHaveMethods {
+				assert.Equal(t, tt.corsConfig.AllowedMethods, w.Header().Get("Access-Control-Allow-Methods"))
+			} else {
+				assert.Empty(t, w.Header().Get("Access-Control-Allow-Methods"))
+			}
+
+			// Verificar Headers header (solo en OPTIONS)
+			if tt.shouldHaveHeaders {
+				assert.Equal(t, tt.corsConfig.AllowedHeaders, w.Header().Get("Access-Control-Allow-Headers"))
+			} else {
+				assert.Empty(t, w.Header().Get("Access-Control-Allow-Headers"))
+			}
+
+			// Verificar Max-Age header (solo en OPTIONS)
+			if tt.shouldHaveMaxAge {
+				assert.Equal(t, "86400", w.Header().Get("Access-Control-Max-Age"))
+			} else {
+				assert.Empty(t, w.Header().Get("Access-Control-Max-Age"))
 			}
 		})
 	}

@@ -9,23 +9,40 @@ import (
 
 // CORSMiddleware configura CORS basado en variables de entorno
 func CORSMiddleware(cfg *config.CORSConfig) gin.HandlerFunc {
+	// Parsear orígenes permitidos una sola vez (Issue #5 - Performance)
+	allowedOrigins := parseCSV(cfg.AllowedOrigins)
+	
+	// Detectar si hay wildcard en la configuración (Issue #2 - Seguridad)
+	hasWildcard := false
+	for _, allowed := range allowedOrigins {
+		if allowed == "*" {
+			hasWildcard = true
+			break
+		}
+	}
+	
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 		
-		// Validar si el origen está permitido
-		allowedOrigins := parseCSV(cfg.AllowedOrigins)
+		// Validar y configurar origen permitido (Issue #2 - Wildcard + Credentials)
 		if isOriginAllowed(origin, allowedOrigins) {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			if hasWildcard {
+				// Cuando se usa wildcard, no se deben permitir credenciales
+				c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+			} else {
+				// Lista explícita de orígenes: permitir credenciales para el origen concreto
+				c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+				c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			}
 		}
 		
-		// Configurar métodos y headers permitidos
-		c.Writer.Header().Set("Access-Control-Allow-Methods", cfg.AllowedMethods)
-		c.Writer.Header().Set("Access-Control-Allow-Headers", cfg.AllowedHeaders)
-		c.Writer.Header().Set("Access-Control-Max-Age", "86400") // 24 horas
-		
-		// Manejar preflight requests
+		// Manejar preflight requests (Issue #1 - Headers solo en OPTIONS)
 		if c.Request.Method == "OPTIONS" {
+			// Configurar métodos y headers permitidos solo para preflight
+			c.Writer.Header().Set("Access-Control-Allow-Methods", cfg.AllowedMethods)
+			c.Writer.Header().Set("Access-Control-Allow-Headers", cfg.AllowedHeaders)
+			c.Writer.Header().Set("Access-Control-Max-Age", "86400") // 24 horas
+			
 			c.AbortWithStatus(204)
 			return
 		}
