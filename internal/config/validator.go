@@ -119,6 +119,23 @@ func Validate(cfg *Config) error {
 	}
 
 	// ============================================
+	// Validar CORS (Issue #4 Copilot)
+	// ============================================
+	if cfg.CORS.AllowedOrigins == "" {
+		validationErrors = append(validationErrors, "cors.allowed_origins is required (use '*' for development or specific origins)")
+	}
+
+	if cfg.CORS.AllowedMethods == "" {
+		validationErrors = append(validationErrors, "cors.allowed_methods is required")
+	} else if !strings.Contains(cfg.CORS.AllowedMethods, "OPTIONS") {
+		validationErrors = append(validationErrors, "cors.allowed_methods must include OPTIONS for preflight requests")
+	}
+
+	if cfg.CORS.AllowedHeaders == "" {
+		validationErrors = append(validationErrors, "cors.allowed_headers is required")
+	}
+
+	// ============================================
 	// Retornar errores si existen
 	// ============================================
 	if len(validationErrors) > 0 {
