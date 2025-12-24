@@ -49,6 +49,14 @@ func (m *MockSubjectRepository) List(ctx context.Context) ([]*entities.Subject, 
 	return args.Get(0).([]*entities.Subject), args.Error(1)
 }
 
+func (m *MockSubjectRepository) FindBySchoolID(ctx context.Context, schoolID uuid.UUID) ([]*entities.Subject, error) {
+	args := m.Called(ctx, schoolID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entities.Subject), args.Error(1)
+}
+
 func (m *MockSubjectRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
 	args := m.Called(ctx, name)
 	return args.Bool(0), args.Error(1)

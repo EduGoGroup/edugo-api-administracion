@@ -123,6 +123,25 @@ func (r *MockSubjectRepository) List(ctx context.Context) ([]*entities.Subject, 
 	return result, nil
 }
 
+// FindBySchoolID lista materias activas filtradas por school_id
+// Nota: La entidad Subject actualmente no tiene campo school_id
+// Este método retorna todas las materias activas por ahora
+func (r *MockSubjectRepository) FindBySchoolID(ctx context.Context, schoolID uuid.UUID) ([]*entities.Subject, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []*entities.Subject
+
+	for _, subject := range r.subjects {
+		if subject.IsActive {
+			subjectCopy := *subject
+			result = append(result, &subjectCopy)
+		}
+	}
+
+	return result, nil
+}
+
 // ExistsByName verifica si existe una materia con el nombre dado
 func (r *MockSubjectRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
 	r.mu.RLock()
